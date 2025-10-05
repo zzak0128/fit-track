@@ -1,0 +1,30 @@
+﻿@using FitTrack;
+@using FitTrack.Shared.DTOs.Exercises
+@inject IDialogService _dialogService
+
+<MudPaper Elevation="1" style="padding: 12px;" >
+    <MudStack>
+        <MudPaper Width="240px" Height="240px" Elevation="2" Style="background-color:deepskyblue;"></MudPaper>
+        <MudText Typo="Typo.h5">@Exercise.Name</MudText>
+        <MudStack Row>
+            <MudText Typo="Typo.caption">@Exercise.MuscleGroup</MudText>
+            <MudSpacer />
+            <MudLink OnClick="OpenDialogAsync" Color="Color.Primary" Typo="Typo.button">Details</MudLink>
+        </MudStack>
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Parameter] 
+    public required ExerciseDto Exercise { get; set; }
+
+    private Task OpenDialogAsync()
+    {
+        var dialogParameters = new DialogParameters<ExerciseDetailDialog>
+        {
+            {x => x.Exercise, Exercise}
+        };
+
+        return _dialogService.ShowAsync<ExerciseDetailDialog>(Exercise.Name, dialogParameters);
+    }
+}

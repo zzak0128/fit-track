@@ -1,0 +1,52 @@
+﻿@using FitTrack.Client.Interfaces
+@using FitTrack.Shared.DTOs.Exercises
+@inject IRoutineService routineService
+
+<MudDialog>
+    <TitleContent>
+        Create a new Exercise!
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="@form" @bind-IsValid="@success" @bind-Errors="@errors">
+            <MudTextField @bind-Value="NewExercise.Name" Label="Name" Required="true" Variant="Variant.Outlined" RequiredError="A name is required for a new Exercise." />
+            <MudTextField @bind-Value="NewExercise.Description" AutoGrow Lines="5" MaxLines="10" Label="Description" Variant="Variant.Outlined" />
+            <MudSelect T="MuscleGroup" @bind-Value="NewExercise.MuscleGroup" Label="Muscle Group" Required="true" Variant="Variant.Outlined">
+                @foreach (var group in Enum.GetValues<MuscleGroup>())
+                {
+                    <MudSelectItem T="MuscleGroup" Value="group">@group</MudSelectItem>
+                }
+            </MudSelect>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="() => MudDialog.Cancel()" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="CreateExerciseAsync" Variant="Variant.Filled">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private CreateExerciseDto NewExercise { get; set; } = new();
+    private MudForm form;
+    private bool success;
+    private string[] errors = [];
+
+    private async Task CreateExerciseAsync()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            try
+            {
+                await routineService.CreateExerciseAsync(NewExercise);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            catch
+            {
+                MudDialog.Close(DialogResult.Ok(false));
+            }
+        }
+    }
+}

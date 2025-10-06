@@ -136,6 +136,8 @@ public class RoutineService : IRoutineService
             User = routine.User
         });
 
+        context.Attach(routine.User);
+
         try
         {
             await context.SaveChangesAsync();

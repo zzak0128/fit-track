@@ -1,6 +1,6 @@
 using FitTrack.Components.Account.Pages;
 using FitTrack.Components.Account.Pages.Manage;
-using FitTrack.Data;
+using FitTrack.Shared.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;

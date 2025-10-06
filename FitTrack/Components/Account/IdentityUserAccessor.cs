@@ -1,4 +1,4 @@
-using FitTrack.Data;
+using FitTrack.Shared.Auth;
 using Microsoft.AspNetCore.Identity;
 
 namespace FitTrack.Components.Account;

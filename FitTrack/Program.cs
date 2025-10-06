@@ -3,6 +3,7 @@ using FitTrack.Components;
 using FitTrack.Components.Account;
 using FitTrack.Data;
 using FitTrack.Services;
+using FitTrack.Shared.Auth;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

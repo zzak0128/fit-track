@@ -1,4 +1,5 @@
 using FitTrack.Data;
+using FitTrack.Shared.Auth;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;

@@ -3,6 +3,7 @@ using System;
 using FitTrack.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FitTrack.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251008140421_add routine to workout dto")]
+    partial class addroutinetoworkoutdto
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.9");
@@ -204,16 +207,13 @@ namespace FitTrack.Migrations
                     b.Property<int>("Repetitions")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Sequence")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("SetCount")
                         .HasColumnType("INTEGER");
 
                     b.Property<double>("Weight")
                         .HasColumnType("REAL");
 
-                    b.Property<int>("WorkoutId")
+                    b.Property<int?>("WorkoutId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -261,9 +261,19 @@ namespace FitTrack.Migrations
                     b.Property<int>("RoutineId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("RoutineId1")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("RoutineId");
+
+                    b.HasIndex("RoutineId1");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Workouts");
                 });
@@ -405,7 +415,7 @@ namespace FitTrack.Migrations
                     b.HasOne("FitTrack.Data.Models.Routines.Workout", "Workout")
                         .WithMany()
                         .HasForeignKey("WorkoutId")
-                        .OnDelete(DeleteBehavior.SetNull)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -449,15 +459,12 @@ namespace FitTrack.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("FitTrack.Data.Models.Routines.Workout", "Workout")
+                    b.HasOne("FitTrack.Data.Models.Routines.Workout", null)
                         .WithMany("ExerciseSets")
                         .HasForeignKey("WorkoutId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Exercise");
-
-                    b.Navigation("Workout");
                 });
 
             modelBuilder.Entity("FitTrack.Data.Models.Routines.Routine", b =>
@@ -471,13 +478,25 @@ namespace FitTrack.Migrations
 
             modelBuilder.Entity("FitTrack.Data.Models.Routines.Workout", b =>
                 {
-                    b.HasOne("FitTrack.Data.Models.Routines.Routine", "Routine")
+                    b.HasOne("FitTrack.Data.Models.Routines.Routine", null)
                         .WithMany("Workouts")
                         .HasForeignKey("RoutineId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("FitTrack.Data.Models.Routines.Routine", "Routine")
+                        .WithMany()
+                        .HasForeignKey("RoutineId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FitTrack.Data.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Routine");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

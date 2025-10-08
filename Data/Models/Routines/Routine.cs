@@ -11,5 +11,4 @@ public class Routine
     public List<Workout> Workouts { get; set; } = [];
 
     public ApplicationUser User { get; set; }
-
 }

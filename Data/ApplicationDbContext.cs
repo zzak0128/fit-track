@@ -27,12 +27,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<Workout>()
             .HasMany(w => w.ExerciseSets)
-            .WithOne()
-            .OnDelete(DeleteBehavior.SetNull);
+            .WithOne(e => e.Workout)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Routine>()
             .HasMany(r => r.Workouts)
-            .WithOne()
+            .WithOne(w => w.Routine)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<ExerciseSet>()
@@ -43,6 +43,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Activity>()
             .HasOne(e => e.Workout)
             .WithMany()
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

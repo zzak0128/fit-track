@@ -8,22 +8,37 @@
 @inject IDialogService DialogService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ISnackbar Snackbar
 
 @attribute [Authorize]
 
-@if (RoutineList.Any())
+@if (!RoutineList.Any())
 {
-    @foreach (var item in RoutineList)
-    {
-        @item.Name
-    }
+    <MudText Typo="Typo.h2" Color="Color.Primary">No routines are available</MudText>
 }
 else
 {
-    <p>No routines are available</p>
+    <MudTable Items="@RoutineList" Hover Striped>
+        <ToolBarContent>
+            <MudText Typo="Typo.h5">Routines</MudText>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>Name</MudTh>
+            <MudTh>Description</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name">@context.Name</MudTd>
+            <MudTd DataLabel="Description">@context.Description</MudTd>
+            <MudTd Class="d-flex justify-end">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="() => EditRoutineAsync(context)" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteRoutineAsync(context.Id)"/>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 
-<MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateExerciseAsync" Style="position:fixed; bottom:25px; right:25px;" />
+<MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateRoutineAsync" Style="position:fixed; bottom:25px; right:25px;" />
 
 @code {
     public List<BaseRoutineDto> RoutineList { get; set; } = [];
@@ -34,14 +49,13 @@ else
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         CurrentUser = await UserManager.GetUserAsync(authState.User);
 
-        if(CurrentUser is not null)
+        if (CurrentUser is not null)
         {
             RoutineList = await RoutineService.GetBaseRoutinesAsync(CurrentUser);
-
         }
     }
 
-    private async Task CreateExerciseAsync()
+    private async Task CreateRoutineAsync()
     {
         var dialogParams = new DialogParameters<CreateRoutineDialog>
         {
@@ -56,12 +70,50 @@ else
             if (success)
             {
                 createDialog.Close();
+                RoutineList = await RoutineService.GetBaseRoutinesAsync(CurrentUser!);
+            }
+            else
+            {
+                Snackbar.Add("Failed to Save the new Routine", Severity.Error);
+            }
+        }
+    }
+
+    private async Task EditRoutineAsync(BaseRoutineDto editRoutine)
+    {
+        var dialogParameters = new DialogParameters<UpdateRoutineDialog>
+        {
+                { x => x.UpdateRoutine, editRoutine }
+        };
+
+        var updateDialog = await DialogService.ShowAsync<UpdateRoutineDialog>("Update this Routine!", dialogParameters);
+        var result = await updateDialog.Result;
+        if (!result.Canceled)
+        {
+            bool success = await updateDialog.GetReturnValueAsync<bool>();
+            if (success)
+            {
+                updateDialog.Close();
                 RoutineList = await RoutineService.GetBaseRoutinesAsync(CurrentUser);
             }
             else
             {
-                throw new Exception("Failed to Save the new Routine");
+                Snackbar.Add("Failed to update the Routine", Severity.Error);
             }
         }
+    }
+
+    private async Task DeleteRoutineAsync(int routineId)
+    {
+        try
+        {
+            await RoutineService.DeleteRoutineAsync(routineId);
+        }
+        catch
+        {
+            Snackbar.Add("Failed to delete the routine", Severity.Error);
+        }
+
+        RoutineList = await RoutineService.GetBaseRoutinesAsync(CurrentUser);
     }
 }

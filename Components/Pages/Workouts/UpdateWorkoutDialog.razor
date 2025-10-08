@@ -1,0 +1,186 @@
+﻿@using FitTrack.Data
+@using FitTrack.Data.DTOs.ExerciseSets
+@using FitTrack.Data.DTOs.Exercises
+@using FitTrack.Data.DTOs.Routines
+@using FitTrack.Data.DTOs.Workouts
+@using FitTrack.Services.Routines
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@inject IRoutineService RoutineService
+
+<MudDialog>
+    <TitleContent>
+        Update this Workout!
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="@form" @bind-IsValid="@success" @bind-Errors="@errors" Spacing="2">
+            <MudTextField @bind-Value="UpdateWorkout.Name" Label="Name" Required="true" Variant="Variant.Outlined" RequiredError="A name is required for a new Workout." />
+        </MudForm>
+
+        <MudStack Row>
+            <MudAutocomplete @bind-Value="SelectedExercise"
+                             SearchFunc="Search"
+                             Variant="Variant.Outlined"
+                             Label="Add an Exercise"
+                             Dense
+                             Placeholder="Search"
+                             Clearable
+                             ToStringFunc="(e) => e?.Name">
+                <ItemTemplate>
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText>@context.Name</MudText>
+                        <MudChip T="MuscleGroup" Color="Color.Secondary" Variant="Variant.Filled">@context.MuscleGroup</MudChip>
+                    </MudStack>
+                </ItemTemplate>
+            </MudAutocomplete>
+
+            <MudButton StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="AddToSelectedExerciseList">Add</MudButton>
+        </MudStack>
+
+        @if (!ExerciseSets.Any())
+        {
+            <MudText>No Exercise have been Selected</MudText>
+        }
+        else
+        {
+            <MudDataGrid T="ExerciseSetDto"
+                         Items="ExerciseSets"
+                         ReadOnly="false"
+                         EditMode="DataGridEditMode.Cell"
+                         StartedEditingItem="@StartedEditingItem"
+                         CanceledEditingItem="@CanceledEditingItem"
+                         CommittedItemChanges="@CommittedItemChanges"
+                         EditTrigger="DataGridEditTrigger.OnRowClick">
+                <Columns>
+                        <HierarchyColumn T="ExerciseSetDto" />
+                        <PropertyColumn Property="x => x.Sequence" />
+                        <PropertyColumn Property="x => x.Exercise.Name" Title="Exercise" Editable="false" />
+                        <PropertyColumn Title="Weight" Property="x => x.Weight" />
+                        <PropertyColumn Title="Reps" Property="x => x.Repetitions" />
+                        <PropertyColumn Title="# of Sets" Property="x => x.SetCount" />
+                </Columns>
+                <ChildRowContent>
+                    <MudStack>
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Row AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.h6">@context.Item.Exercise.Name</MudText>
+                                <MudChip T="MuscleGroup" Color="Color.Secondary" Variant="Variant.Filled">@context.Item.Exercise.MuscleGroup</MudChip>
+                            </MudStack>
+                            <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.RemoveCircle" OnClick="() => DeleteExerciseSet(context.Item)">Remove</MudButton>
+                        </MudStack>
+                        <MudText>@context.Item.Exercise.Description</MudText>
+                    </MudStack>
+                </ChildRowContent>
+            </MudDataGrid>
+        }
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="() => MudDialog.Cancel()" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="OK" Variant="Variant.Filled">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public required BaseWorkoutDto UpdateWorkout { get; set; }
+
+    private ExerciseDto? SelectedExercise;
+    private List<ExerciseDto> ExerciseList { get; set; } = [];
+    private List<ExerciseSetDto> ExerciseSets { get; set; } = [];
+
+    private ExerciseSetDto ExerciseSetBackup;
+
+    private MudForm form;
+    private bool success;
+    private string[] errors = [];
+
+    protected async override Task OnInitializedAsync()
+    {
+        ExerciseList = await RoutineService.GetAllExercisesAsync();
+        ExerciseSets = await RoutineService.GetAllExerciseSetsAsync(UpdateWorkout.Id);
+    }
+
+    private async Task OK()
+    {
+        UpdateWorkoutExerciseSetDto workoutExerciseUpdate = new()
+        {
+            WorkoutId = UpdateWorkout.Id,
+            WorkoutName = UpdateWorkout.Name,
+            ExerciseSets = ExerciseSets
+        };
+
+        try
+        {
+            await RoutineService.UpdateWorkoutAsync(workoutExerciseUpdate);
+        }
+        catch
+        {
+
+        }
+        MudDialog.Close(DialogResult.Ok(UpdateWorkout));
+    }
+
+    private async Task<IEnumerable<ExerciseDto>> Search(string value, CancellationToken token)
+    {
+        ExerciseList = await RoutineService.GetAllExercisesAsync();
+
+        // if text is null or empty, show complete list
+        if (string.IsNullOrEmpty(value))
+        {
+            return ExerciseList;
+        }
+
+        return ExerciseList.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private void AddToSelectedExerciseList()
+    {
+        if (SelectedExercise is null)
+        {
+            return;
+        }
+
+        ExerciseSets.Add(new ExerciseSetDto
+        {
+            Exercise = SelectedExercise
+        });
+
+        SelectedExercise = null;
+    }
+
+    // Data Grid Events
+    void StartedEditingItem(ExerciseSetDto item)
+    {
+        ExerciseSetBackup.Id = item.Id;
+        ExerciseSetBackup.Exercise = item.Exercise;
+        ExerciseSetBackup.Weight = item.Weight;
+        ExerciseSetBackup.Repetitions = item.Repetitions;
+        ExerciseSetBackup.SetCount = item.SetCount;
+    }
+
+    void CanceledEditingItem(ExerciseSetDto item)
+    {
+        item.Id = ExerciseSetBackup.Id;
+        item.Exercise = ExerciseSetBackup.Exercise;
+        item.Weight = ExerciseSetBackup.Weight;
+        item.Repetitions = ExerciseSetBackup.Repetitions;
+        item.SetCount = ExerciseSetBackup.SetCount;
+    }
+
+    void CommittedItemChanges(ExerciseSetDto item)
+    {
+        var exerciseToUpdate = ExerciseSets.Find(x => x.Id == item.Id);
+        exerciseToUpdate = item;
+
+        ExerciseSets = ExerciseSets.OrderBy(x => x.Sequence).ToList();
+    }
+
+    void DeleteExerciseSet(ExerciseSetDto exercise)
+    {
+        var exerciseToUpdate = ExerciseSets.Remove(exercise);
+    }
+}

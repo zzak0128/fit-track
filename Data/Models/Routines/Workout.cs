@@ -8,5 +8,5 @@ public class Workout
 
     public List<ExerciseSet> ExerciseSets { get; set; } = [];
 
-    public ApplicationUser User { get; set; }
+    public virtual Routine Routine { get; set; }
 }

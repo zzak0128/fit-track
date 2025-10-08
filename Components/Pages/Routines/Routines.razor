@@ -1,0 +1,67 @@
+﻿@page "/routines"
+@using FitTrack.Data
+@using FitTrack.Data.DTOs.Routines
+@using FitTrack.Services.Routines
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@inject IRoutineService RoutineService
+@inject IDialogService DialogService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@attribute [Authorize]
+
+@if (RoutineList.Any())
+{
+    @foreach (var item in RoutineList)
+    {
+        @item.Name
+    }
+}
+else
+{
+    <p>No routines are available</p>
+}
+
+<MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateExerciseAsync" Style="position:fixed; bottom:25px; right:25px;" />
+
+@code {
+    public List<BaseRoutineDto> RoutineList { get; set; } = [];
+    public ApplicationUser? CurrentUser { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        CurrentUser = await UserManager.GetUserAsync(authState.User);
+
+        if(CurrentUser is not null)
+        {
+            RoutineList = await RoutineService.GetBaseRoutinesAsync(CurrentUser);
+
+        }
+    }
+
+    private async Task CreateExerciseAsync()
+    {
+        var dialogParams = new DialogParameters<CreateRoutineDialog>
+        {
+            {x  => x.ApplicationUser, CurrentUser }
+        };
+
+        var createDialog = await DialogService.ShowAsync<CreateRoutineDialog>("Create a new Routine!", dialogParams);
+        var result = await createDialog.Result;
+        if (!result.Canceled)
+        {
+            bool success = await createDialog.GetReturnValueAsync<bool>();
+            if (success)
+            {
+                createDialog.Close();
+                RoutineList = await RoutineService.GetBaseRoutinesAsync(CurrentUser);
+            }
+            else
+            {
+                throw new Exception("Failed to Save the new Routine");
+            }
+        }
+    }
+}

@@ -1,0 +1,26 @@
+﻿@using FitTrack.Data.DTOs.Exercises
+<MudDialog>
+    <DialogContent>
+        <MudPaper Class="ma-4">
+            <MudImage Width="240" Height="240"></MudImage>
+        </MudPaper>
+        <MudText Typo="Typo.subtitle1">@Exercise.MuscleGroup</MudText>
+        <MudText Typo="Typo.body1">@Exercise.Description</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudStack Row>
+            <MudButton Color="Color.Secondary" Variant="Variant.Text">EDIT</MudButton>
+            <MudButton Color="Color.Primary" OnClick="Close"  Variant="Variant.Filled">OK</MudButton>
+        </MudStack>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] 
+    public required ExerciseDto Exercise { get; set; }
+
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+}

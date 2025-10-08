@@ -1,0 +1,101 @@
+﻿@page "/exercises"
+@using FitTrack.Data.DTOs.Exercises
+@using FitTrack.Services.Routines
+@inject IRoutineService RoutineService
+@inject IDialogService DialogService
+
+<h1>Exercises</h1>
+
+@if (!ExerciseList.Any())
+{
+    <MudText>No exercises found.</MudText>
+}
+else
+{
+    <MudGrid T="ExerciseDto" Items="ExerciseList" Spacing="6" Justify="Justify.FlexStart" Class="pa-4">
+
+
+        @foreach (var exercise in ExerciseList)
+        {
+            <MudItem>
+                <MudMenu ActivationEvent="MouseEvent.RightClick" PositionAtCursor>
+                    <ActivatorContent>
+                        <ExerciseGridItem Exercise="exercise" />
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudMenuItem Label="Edit" OnClick="() => EditExerciseAsync(exercise)" />
+                        <MudMenuItem Label="Delete" OnClick="() => DeleteExerciseAsync(exercise)" />
+                    </ChildContent>
+                </MudMenu>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+<MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateExerciseAsync" Style="position:fixed; bottom:25px; right:25px;" />
+
+@code {
+    public List<ExerciseDto> ExerciseList { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        ExerciseList = await RoutineService.GetAllExercisesAsync();
+    }
+
+    private async Task CreateExerciseAsync()
+    {
+        var createDialog = await DialogService.ShowAsync<CreateExerciseDialog>("Create an Exercise!");
+        var result = await createDialog.Result;
+        if (!result.Canceled)
+        {
+            bool success = await createDialog.GetReturnValueAsync<bool>();
+            if (success)
+            {
+                createDialog.Close();
+                ExerciseList = await RoutineService.GetAllExercisesAsync();
+            }
+            else
+            {
+                throw new Exception("Failed to Save the new Exercise");
+            }
+        }
+    }
+
+    private async Task DeleteExerciseAsync(ExerciseDto exercise)
+    {
+        try
+        {
+            await RoutineService.DeleteExerciseAsync(exercise.Id);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Failed to delete the Exercise", ex);
+        }
+
+        ExerciseList = await RoutineService.GetAllExercisesAsync();
+    }
+
+    private async Task EditExerciseAsync(ExerciseDto exercise)
+    {
+        var dialogParameters = new DialogParameters<UpdateExerciseDialog>
+        {
+                { x => x.UpdateExercise, exercise }
+        };
+
+        var updateDialog = await DialogService.ShowAsync<UpdateExerciseDialog>("Update this Exercise!", dialogParameters);
+        var result = await updateDialog.Result;
+        if (!result.Canceled)
+        {
+            bool success = await updateDialog.GetReturnValueAsync<bool>();
+            if (success)
+            {
+                updateDialog.Close();
+                ExerciseList = await RoutineService.GetAllExercisesAsync();
+            }
+            else
+            {
+                throw new Exception("Failed to Update the Exercise");
+            }
+        }
+    }
+}

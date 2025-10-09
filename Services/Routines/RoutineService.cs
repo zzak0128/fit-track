@@ -90,6 +90,20 @@ public class RoutineService : IRoutineService
     }
 
     // Routines
+
+    public async Task AddWorkoutToRoutineAsync(int routineId, BaseWorkoutDto newWorkout)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        var routine = await context.Routines.FindAsync(routineId) ?? throw new Exception("Unable to find the Routine");
+
+        routine.Workouts.Add(new Workout
+        {
+            Name = newWorkout.Name
+        });
+
+        await context.SaveChangesAsync();
+    }
+
     public async Task<List<BaseRoutineDto>> GetBaseRoutinesAsync(ApplicationUser user)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
@@ -102,6 +116,69 @@ public class RoutineService : IRoutineService
                 User = x.User
             }).Where(x => x.User == user)
             .ToListAsync();
+    }
+
+    public async Task<DetailRoutineDto> GetDetailRoutineByIdAsync(int routineId, ApplicationUser user)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        BaseRoutineDto? routine = await context.Routines
+            .Where(x => x.Id == routineId && x.User.Id == user.Id)
+            .Select(x => new BaseRoutineDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Description = x.Description,
+                User = x.User
+            })
+            .FirstOrDefaultAsync();
+
+        List<BaseWorkoutDto> workouts = await context.Workouts
+            .Where(x => x.Routine.Id == routineId)
+            .Select(x => new BaseWorkoutDto
+            {
+                Id = x.Id,
+                Name = x.Name
+            })
+            .ToListAsync();
+
+        List<DetailExerciseSetDto> exerciseSets = [];
+        foreach (var workout in workouts)
+        {
+            exerciseSets.AddRange(await context.ExerciseSets
+                .Include(x => x.Exercise)
+                .Where(x => x.Workout.Id == workout.Id)
+                .Select(x => new DetailExerciseSetDto
+                {
+                    Id = x.Id,
+                    Sequence = x.Sequence,
+                    Exercise = new ExerciseDto
+                    {
+                        Id = x.Exercise.Id,
+                        Name = x.Exercise.Name,
+                        Description = x.Exercise.Description,
+                        MuscleGroup = x.Exercise.MuscleGroup
+                    },
+                    Weight = x.Weight,
+                    Repetitions = x.Repetitions,
+                    SetCount = x.SetCount,
+                    WorkoutId = x.Workout.Id
+                })
+                .ToListAsync());
+        }
+
+        if (routine == null)
+        {
+            throw new Exception("Routine not found or access denied");
+        }
+
+        return new DetailRoutineDto
+        {
+            Routine = routine,
+            Workouts = workouts,
+            ExerciseSets = exerciseSets,
+            User = user
+        };
+
     }
 
     public async Task CreateRoutineAsync(CreateRoutineDto routine)
@@ -257,6 +334,23 @@ public class RoutineService : IRoutineService
     }
 
     // EXERCISE SETS
+
+    // TODO: Implement this to add a new set to a workout
+    public async Task AddExerciseSetToWorkoutAsync(int workoutId, CreateExerciseSetDto newSet)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        var workout = await context.Workouts.FindAsync(workoutId) ?? throw new Exception("Unable to find the Routine");
+
+        workout.ExerciseSets.Add(new ExerciseSet
+        {
+            Sequence = newSet.Sequence,
+            Weight = newSet.Weight,
+            Repetitions = newSet.Repetitions,
+            SetCount = newSet.SetCount
+        });
+
+        await context.SaveChangesAsync();
+    }
     public async Task<List<ExerciseSetDto>> GetAllExerciseSetsAsync(int WorkoutId)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();

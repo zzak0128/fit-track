@@ -20,4 +20,6 @@ public interface IRoutineService
     Task CreateWorkoutAsync(CreateWorkoutDto workout);
     Task UpdateWorkoutAsync(UpdateWorkoutExerciseSetDto updateWorkout);
     Task<List<ExerciseSetDto>> GetAllExerciseSetsAsync(int WorkoutId);
+    Task<DetailRoutineDto> GetDetailRoutineByIdAsync(int routineId, ApplicationUser user);
+    Task AddWorkoutToRoutineAsync(int routineId, BaseWorkoutDto newWorkout);
 }

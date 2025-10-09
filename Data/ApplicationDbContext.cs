@@ -38,11 +38,22 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<ExerciseSet>()
             .HasOne(e => e.Exercise)
             .WithMany()
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Exercise>()
+            .HasMany(e => e.ExerciseSet)
+            .WithOne(x => x.Exercise)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Activity>()
             .HasOne(e => e.Workout)
             .WithMany()
             .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Measurement>()
+            .HasMany(e => e.MeasurementData)
+            .WithOne(m => m.Measurement)
+            .OnDelete(DeleteBehavior.Cascade);
+
     }
 }

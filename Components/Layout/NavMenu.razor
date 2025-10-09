@@ -4,11 +4,13 @@
 
 <MudNavMenu>
     <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-    <MudNavLink Href="routines" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CalendarToday">Routines</MudNavLink>
     <MudNavLink Href="exercises" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.DirectionsBike">Exercises</MudNavLink>
     <AuthorizeView>
         <Authorized>
+            <MudNavLink Href="routines" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CalendarToday">Routines</MudNavLink>
+            <MudNavLink Href="measurements" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart">Measurements</MudNavLink>
             <MudNavLink Href="Account/Manage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">@context.User.Identity?.Name</MudNavLink>
+            <MudNavLink Href="auth" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Lock">Auth Required</MudNavLink>
             <form action="Account/Logout" method="post">
                 <AntiforgeryToken />
                 <input type="hidden" name="ReturnUrl" value="@currentUrl" />
@@ -16,14 +18,12 @@
                     <MudIcon Icon="@Icons.Material.Filled.Logout" Color="Color.Info" Class="mr-3"></MudIcon> Logout
                 </button>
             </form>
-            <MudNavLink Href="routines" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CalendarToday">Routines</MudNavLink>
         </Authorized>
         <NotAuthorized>
-            <MudNavLink Href="Account/Register" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Register</MudNavLink>
+            <MudNavLink Href="auth" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Lock">Auth Required</MudNavLink>
             <MudNavLink Href="Account/Login" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Password">Login</MudNavLink>
         </NotAuthorized>
     </AuthorizeView>
-    <MudNavLink Href="auth" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Lock">Auth Required</MudNavLink>
 </MudNavMenu>
 
 

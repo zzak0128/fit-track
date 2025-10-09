@@ -3,6 +3,7 @@ using System;
 using FitTrack.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FitTrack.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251009155115_UpdateExerciseRelationshipDelete")]
+    partial class UpdateExerciseRelationshipDelete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.9");
@@ -151,9 +154,15 @@ namespace FitTrack.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Name")
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Metric")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<double>("Number")
+                        .HasColumnType("REAL");
 
                     b.Property<string>("UserId")
                         .HasColumnType("TEXT");
@@ -163,32 +172,6 @@ namespace FitTrack.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Measurements");
-                });
-
-            modelBuilder.Entity("FitTrack.Data.Models.Measurements.MeasurementData", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<double>("Amount")
-                        .HasColumnType("REAL");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("MeasurementId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MeasurementId");
-
-                    b.ToTable("MeasurementData");
                 });
 
             modelBuilder.Entity("FitTrack.Data.Models.Routines.Exercise", b =>
@@ -461,17 +444,6 @@ namespace FitTrack.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("FitTrack.Data.Models.Measurements.MeasurementData", b =>
-                {
-                    b.HasOne("FitTrack.Data.Models.Measurements.Measurement", "Measurement")
-                        .WithMany("MeasurementData")
-                        .HasForeignKey("MeasurementId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Measurement");
-                });
-
             modelBuilder.Entity("FitTrack.Data.Models.Routines.ExerciseSet", b =>
                 {
                     b.HasOne("FitTrack.Data.Models.Routines.Exercise", "Exercise")
@@ -560,11 +532,6 @@ namespace FitTrack.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("FitTrack.Data.Models.Measurements.Measurement", b =>
-                {
-                    b.Navigation("MeasurementData");
                 });
 
             modelBuilder.Entity("FitTrack.Data.Models.Routines.Exercise", b =>

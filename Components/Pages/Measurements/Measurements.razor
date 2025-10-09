@@ -1,0 +1,82 @@
+﻿@page "/measurements"
+@using FitTrack.Data
+@using FitTrack.Data.DTOs.Measurements
+@using FitTrack.Services.Measurements
+@using Microsoft.AspNetCore.Identity
+@inject IMeasurementService MeasurementService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@if (!MeasurementsList.Any())
+{
+    <MudText Typo="Typo.h6" Class="mt-4">No measurements found. Please add some measurements to see the charts.</MudText>
+    return;
+}
+else
+{
+    @foreach (var measurement in MeasurementsList)
+    {
+        <MudPaper Elevation="2" Class="ma-6">
+            <MudStack Spacing="3" Class="m-6" Justify="Justify.Center" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.h3" Color="Color.Primary">@measurement.Name</MudText>
+                <MudChart Class="pa-6"
+                          ChartType="ChartType.Line"
+                          ChartSeries="@measurement.Series"
+                          XAxisLabels="@measurement.Dates"
+                          AxisChartOptions="_axisChartOptions" />
+
+                          <MudText>This is where other options will go.</MudText>
+            </MudStack>
+        </MudPaper>
+    }
+}
+
+<MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AddMeasurementAsync" Style="position:fixed; bottom:25px; right:25px;" />
+
+@code {
+    private List<MeasurementChartDto> MeasurementsList { get; set; } = [];
+    private ApplicationUser? CurrentUser { get; set; } = null!;
+    private AxisChartOptions _axisChartOptions = new();
+    private ChartOptions _chartOptions = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        CurrentUser = await UserManager.GetUserAsync(authState.User);
+
+        if (CurrentUser is not null)
+        {
+            _chartOptions.ShowLabels = true;
+            _chartOptions.ShowLegend = true;
+            _axisChartOptions.MatchBoundsToSize = true;
+            //_axisChartOptions.LabelRotation = 20;
+            MeasurementsList = await MeasurementService.GetMeasurementChartDataAsync(CurrentUser);
+        }
+    }
+
+    private async Task AddMeasurementAsync()
+    {
+        var parameters = new DialogParameters<AddMeasurementDialog>
+        {
+            { x => x.ApplicationUser, CurrentUser }
+        };
+
+        var addMeasurementDialog = await DialogService.ShowAsync<AddMeasurementDialog>("Add a measurement!", parameters);
+        var result = await addMeasurementDialog.Result;
+        if (!result.Canceled)
+        {
+            bool success = await addMeasurementDialog.GetReturnValueAsync<bool>();
+            if (success)
+            {
+                addMeasurementDialog.Close();
+                MeasurementsList = await MeasurementService.GetMeasurementChartDataAsync(CurrentUser);
+            }
+            else
+            {
+                Snackbar.Add("Failed to Save the new measurement", Severity.Error);
+            }
+        }
+    }
+}

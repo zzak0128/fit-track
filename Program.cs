@@ -6,6 +6,7 @@ using FitTrack.Components;
 using FitTrack.Components.Account;
 using FitTrack.Data;
 using FitTrack.Services.Routines;
+using FitTrack.Services.Measurements;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,8 @@ builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 builder.Services.AddScoped<IRoutineService, RoutineService>();
+builder.Services.AddScoped<IMeasurementService, MeasurementService>();
+
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;

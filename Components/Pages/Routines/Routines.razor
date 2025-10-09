@@ -32,7 +32,6 @@ else
             <MudTd DataLabel="Name">@context.Name</MudTd>
             <MudTd DataLabel="Description">@context.Description</MudTd>
             <MudTd Class="d-flex justify-end">
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="() => EditRoutineAsync(context)" />
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteRoutineAsync(context.Id)"/>
             </MudTd>
         </RowTemplate>
@@ -83,30 +82,6 @@ else
             else
             {
                 Snackbar.Add("Failed to Save the new Routine", Severity.Error);
-            }
-        }
-    }
-
-    private async Task EditRoutineAsync(BaseRoutineDto editRoutine)
-    {
-        var dialogParameters = new DialogParameters<UpdateRoutineDialog>
-        {
-                { x => x.UpdateRoutine, editRoutine }
-        };
-
-        var updateDialog = await DialogService.ShowAsync<UpdateRoutineDialog>("Update this Routine!", dialogParameters);
-        var result = await updateDialog.Result;
-        if (!result.Canceled)
-        {
-            bool success = await updateDialog.GetReturnValueAsync<bool>();
-            if (success)
-            {
-                updateDialog.Close();
-                RoutineList = await RoutineService.GetBaseRoutinesAsync(CurrentUser);
-            }
-            else
-            {
-                Snackbar.Add("Failed to update the Routine", Severity.Error);
             }
         }
     }

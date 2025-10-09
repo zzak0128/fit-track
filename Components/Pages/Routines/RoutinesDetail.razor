@@ -2,9 +2,11 @@
 @using FitTrack.Components.Pages.Workouts
 @using FitTrack.Data
 @using FitTrack.Data.DTOs.ExerciseSets
+@using FitTrack.Data.DTOs.Exercises
 @using FitTrack.Data.DTOs.Routines
 @using FitTrack.Services.Routines
 @using FitTrack.Data.DTOs.Workouts
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @inject IRoutineService RoutineService
 @inject IDialogService DialogService
@@ -12,34 +14,66 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+@attribute [Authorize]
+<MudText Class="mb-3" Typo="Typo.h2">Routine Overview</MudText>
+
 <MudStack row Justify="Justify.SpaceBetween">
-    <MudText Class="mb-3" Typo="Typo.h2">Routine Overview</MudText>
+    <MudText Class="mb-3" Typo="Typo.h3">@DetailRoutine.Routine.Name</MudText>
     <MudIconButton Size="Size.Large" Color="Color.Primary" Icon="@Icons.Material.Rounded.AddCircle" OnClick="CreateWorkoutAsync" />
 </MudStack>
 
-<MudText Class="mb-3" Typo="Typo.h3">@DetailRoutine.Routine.Name</MudText>
 <MudTabs Elevation="1" Outlined ApplyEffectsToContainer Ripple PanelClass="pa-6">
     @foreach (var workout in DetailRoutine.Workouts)
     {
         <MudTabPanel Text="@workout.Name" OnClick="() => GetTabList(workout.Id)">
-                <MudTable T="DetailExerciseSetDto" Hover Striped Items="CurrentSets">
-                    <ToolBarContent>
-                    <MudText Class="mb-3" Typo="Typo.h6">@workout.Name</MudText>
-                    <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Rounded.AddCircle" OnClick="CreateExerciseSetAsync" />
-                </ToolBarContent>
-                    <HeaderContent>
-                        <MudTh>Exercise</MudTh>
-                        <MudTh>Weight</MudTh>
-                        <MudTh>Reps</MudTh>
-                        <MudTh>Sets</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                            <MudTd DataLabel="Exercise">@context.Exercise.Name</MudTd>
-                            <MudTd DataLabel="Weight">@context.Weight</MudTd>
-                            <MudTd DataLabel="Reps">@context.Repetitions</MudTd>
-                            <MudTd DataLabel="Sets">@context.SetCount</MudTd>
-                    </RowTemplate>
-                </MudTable>
+            <MudStack Row AlignItems="AlignItems.Center" Class="mb-2">
+                <MudButton StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="() => AddToSelectedExerciseList(workout.Id)">Add Set</MudButton>
+                <MudAutocomplete @bind-Value="SelectedExercise"
+                                 SearchFunc="Search"
+                                 Variant="Variant.Outlined"
+                                 Label="Add an Exercise"
+                                 Dense
+                                 Placeholder="Search"
+                                 Clearable
+                                 ToStringFunc="(e) => e?.Name">
+                    <ItemTemplate>
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudText>@context.Name</MudText>
+                            <MudChip T="MuscleGroup" Color="Color.Secondary" Variant="Variant.Filled">@context.MuscleGroup</MudChip>
+                        </MudStack>
+                    </ItemTemplate>
+                </MudAutocomplete>
+                <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Filled.RemoveCircle" OnClick="() => RemoveWorkoutAsync(workout)">Remove @workout.Name</MudButton>
+            </MudStack>
+            <MudDataGrid T="DetailExerciseSetDto"
+                         Items="CurrentSets"
+                         ReadOnly="false"
+                         EditMode="DataGridEditMode.Cell"
+                         StartedEditingItem="@StartedEditingItem"
+                         CanceledEditingItem="@CanceledEditingItem"
+                         CommittedItemChanges="@CommittedItemChanges"
+                         EditTrigger="DataGridEditTrigger.OnRowClick">
+                <Columns>
+                    <HierarchyColumn T="DetailExerciseSetDto" />
+                    <PropertyColumn Property="x => x.Sequence" />
+                    <PropertyColumn Property="x => x.Exercise.Name" Title="Exercise" Editable="false" />
+                    <PropertyColumn Title="Weight" Property="x => x.Weight" />
+                    <PropertyColumn Title="Reps" Property="x => x.Repetitions" />
+                    <PropertyColumn Title="# of Sets" Property="x => x.SetCount" />
+                </Columns>
+                <ChildRowContent>
+                    <MudStack>
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Row AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.h6">@context.Item.Exercise.Name</MudText>
+                                <MudChip T="MuscleGroup" Color="Color.Secondary" Variant="Variant.Filled">@context.Item.Exercise.MuscleGroup</MudChip>
+                            </MudStack>
+                            <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Filled.RemoveCircle" OnClick="() => RemoveExerciseSetAsync(context.Item)">Remove</MudButton>
+                        </MudStack>
+                        <MudText>@context.Item.Exercise.Description</MudText>
+                    </MudStack>
+                </ChildRowContent>
+            </MudDataGrid>
         </MudTabPanel>
     }
 </MudTabs>
@@ -47,6 +81,12 @@
 @code {
     [Parameter]
     public int RoutineId { get; set; }
+
+    private ExerciseDto? SelectedExercise;
+    private List<ExerciseDto> ExerciseList { get; set; } = [];
+    private List<DetailExerciseSetDto> ExerciseSets { get; set; } = [];
+
+    private DetailExerciseSetDto ExerciseSetBackup = new();
 
     private DetailRoutineDto DetailRoutine;
     private ApplicationUser CurrentUser;
@@ -60,13 +100,21 @@
         if (CurrentUser is not null)
         {
             DetailRoutine = await RoutineService.GetDetailRoutineByIdAsync(RoutineId, CurrentUser);
+            ExerciseList = await RoutineService.GetAllExercisesAsync(); ;
         }
+    }
+
+    private async Task RefreshDetailRoutineAsync(int workoutId)
+    {
+        DetailRoutine = await RoutineService.GetDetailRoutineByIdAsync(RoutineId, CurrentUser);
+        GetTabList(workoutId);
     }
 
     private void GetTabList(int workoutId)
     {
         CurrentSets = DetailRoutine.ExerciseSets
             .Where(es => es.WorkoutId == workoutId)
+            .OrderBy(x => x.Sequence)
             .ToList();
     }
 
@@ -87,7 +135,7 @@
                 });
 
                 await RoutineService.AddWorkoutToRoutineAsync(DetailRoutine.Routine.Id, workout);
-                DetailRoutine = await RoutineService.GetDetailRoutineByIdAsync(RoutineId, CurrentUser);
+                await RefreshDetailRoutineAsync(workout.Id);
             }
             else
             {
@@ -96,24 +144,93 @@
         }
     }
 
-    private async Task CreateExerciseSetAsync()
+    private async Task<IEnumerable<ExerciseDto>> Search(string value, CancellationToken token)
     {
-        // UpdateWorkoutExerciseSetDto workoutExerciseUpdate = new()
-        // {
-        //     WorkoutId = UpdateWorkout.Id,
-        //     WorkoutName = UpdateWorkout.Name,
-        //     ExerciseSets = ExerciseSets
-        // };
+        ExerciseList = await RoutineService.GetAllExercisesAsync();
 
-        // try
-        // {
-        //     await RoutineService.UpdateWorkoutAsync(workoutExerciseUpdate);
-        // }
-        // catch
-        // {
+        // if text is null or empty, show complete list
+        if (string.IsNullOrEmpty(value))
+        {
+            return ExerciseList;
+        }
 
-        // }
-        // MudDialog.Close(DialogResult.Ok(UpdateWorkout));
+        return ExerciseList.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private async Task AddToSelectedExerciseList(int workoutId)
+    {
+        if (SelectedExercise is null)
+        {
+            return;
+        }
+
+        await RoutineService.AddExerciseSetToWorkoutAsync(workoutId, new CreateExerciseSetDto
+        {
+            WorkoutId = workoutId,
+            Exercise = SelectedExercise
+        });
+
+        SelectedExercise = null;
+        await RefreshDetailRoutineAsync(workoutId);
+
+    }
+
+    private async Task RemoveExerciseSetAsync(DetailExerciseSetDto exercise)
+    {
+        await RoutineService.RemoveExerciseSetAsync(new RemoveExerciseSetDto
+        {
+            WorkoutId = exercise.WorkoutId,
+            ExerciseSetId = exercise.Id
+        });
+
+        await RefreshDetailRoutineAsync(exercise.WorkoutId);
+
+    }
+
+    private async Task RemoveWorkoutAsync(BaseWorkoutDto workout)
+    {
+        await RoutineService.RemoveWorkoutAsync(workout.Id);
+
+        await RefreshDetailRoutineAsync(workout.Id);
+    }
+
+
+
+    // Data Grid Events
+    private void StartedEditingItem(DetailExerciseSetDto item)
+    {
+        ExerciseSetBackup.Id = item.Id;
+        ExerciseSetBackup.Exercise = item.Exercise;
+        ExerciseSetBackup.Weight = item.Weight;
+        ExerciseSetBackup.Repetitions = item.Repetitions;
+        ExerciseSetBackup.SetCount = item.SetCount;
+    }
+
+    private void CanceledEditingItem(DetailExerciseSetDto item)
+    {
+        item.Id = ExerciseSetBackup.Id;
+        item.Exercise = ExerciseSetBackup.Exercise;
+        item.Weight = ExerciseSetBackup.Weight;
+        item.Repetitions = ExerciseSetBackup.Repetitions;
+        item.SetCount = ExerciseSetBackup.SetCount;
+    }
+
+    private async Task CommittedItemChanges(DetailExerciseSetDto item)
+    {
+        var exerciseToUpdate = ExerciseSets.Find(x => x.Id == item.Id);
+        exerciseToUpdate = item;
+
+        UpdateExerciseSetDto updateExerciseSet = new()
+        {
+            Id = item.Id,
+            Weight = item.Weight,
+            Repetitions = item.Repetitions,
+            SetCount = item.SetCount,
+            Sequence = item.Sequence,
+        };
+
+        await RoutineService.UpdateExerciseSetAsync(updateExerciseSet);
+        await RefreshDetailRoutineAsync(item.WorkoutId);
     }
 
 }

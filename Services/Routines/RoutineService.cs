@@ -1,11 +1,11 @@
-﻿using FitTrack.Data;
+﻿using FitTrack.Components.Pages.Routines;
+using FitTrack.Data;
 using FitTrack.Data.DTOs.Exercises;
 using FitTrack.Data.DTOs.ExerciseSets;
 using FitTrack.Data.DTOs.Routines;
 using FitTrack.Data.DTOs.Workouts;
 using FitTrack.Data.Models.Routines;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Metadata;
 
 namespace FitTrack.Services.Routines;
 
@@ -219,37 +219,6 @@ public class RoutineService : IRoutineService
         }
     }
 
-    public async Task UpdateRoutineAsync(UpdateRoutineWorkoutsDto updateRoutine)
-    {
-        await using var context = await _contextFactory.CreateDbContextAsync();
-        var routineToUpdate = await context.Routines
-            .Include(x => x.Workouts)
-            .FirstOrDefaultAsync(x => x.Id == updateRoutine.BaseRoutine.Id)
-            ?? throw new Exception("Routine not found");
-
-        routineToUpdate.Name = updateRoutine.BaseRoutine.Name;
-        routineToUpdate.Description = updateRoutine.BaseRoutine.Description;
-
-        List<Workout> updateWorkouts = updateRoutine.Workouts.Select(w => new Workout
-        {
-            Id = w.Id,
-            Name = w.Name,
-            Routine = routineToUpdate
-        }).ToList();
-
-        routineToUpdate.Workouts = updateWorkouts;
-        context.Entry(routineToUpdate).CurrentValues.SetValues(updateWorkouts);
-
-        try
-        {
-            await context.SaveChangesAsync();
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("Failed to update routine", ex);
-        }
-    }
-
     // Workouts
     public async Task<List<BaseWorkoutDto>> GetRoutineWorkoutsAsync(int routineId)
     {
@@ -267,70 +236,13 @@ public class RoutineService : IRoutineService
         return workouts;
     }
 
-    public async Task CreateWorkoutAsync(CreateWorkoutDto workout)
+    public async Task RemoveWorkoutAsync(int workoutId)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
-        var UpdateRoutine = await context.Routines.FindAsync(workout.RoutineId) ?? throw new Exception("Routine not found");
-        var newWorkout = new Workout
-        {
-            Name = workout.Name
-        };
+        var workout = await context.Workouts.FindAsync(workoutId) ?? throw new Exception("Workout not found");
 
-        context.Attach(newWorkout);
-
-        UpdateRoutine.Workouts.Add(newWorkout);
-
-        try
-        {
-            await context.SaveChangesAsync();
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("Failed to save the new workout", ex);
-        }
-    }
-
-    public async Task UpdateWorkoutAsync(UpdateWorkoutExerciseSetDto updateWorkout)
-    {
-        await using var context = await _contextFactory.CreateDbContextAsync();
-        var workoutToUpdate = await context.Workouts
-            .Include(x => x.ExerciseSets)
-            .ThenInclude(x => x.Exercise)
-            .FirstOrDefaultAsync(x => x.Id == updateWorkout.WorkoutId)
-            ?? throw new Exception("Workout not found");
-
-        workoutToUpdate.Name = updateWorkout.WorkoutName;
-
-        List<ExerciseSet> updateExerciseSets = [];
-
-        foreach (var exerciseSet in updateWorkout.ExerciseSets)
-        {
-            Exercise exercise = await context.Exercises.FindAsync(exerciseSet.Exercise.Id) ?? throw new Exception("Exercise not found");
-            ExerciseSet newExerciseSet = new ExerciseSet
-            {
-                Id = exerciseSet.Id,
-                Sequence = exerciseSet.Sequence,
-                Exercise = exercise,
-                Weight = exerciseSet.Weight,
-                Repetitions = exerciseSet.Repetitions,
-                SetCount = exerciseSet.SetCount,
-                Workout = workoutToUpdate
-            };
-
-            updateExerciseSets.Add(newExerciseSet);
-        }
-
-        workoutToUpdate.ExerciseSets = updateExerciseSets;
-        context.Entry(workoutToUpdate).CurrentValues.SetValues(updateExerciseSets);
-
-        try
-        {
-            await context.SaveChangesAsync();
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("Failed to update workout", ex);
-        }
+        context.Workouts.Remove(workout);
+        await context.SaveChangesAsync();
     }
 
     // EXERCISE SETS
@@ -340,17 +252,48 @@ public class RoutineService : IRoutineService
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
         var workout = await context.Workouts.FindAsync(workoutId) ?? throw new Exception("Unable to find the Routine");
-
+        var exercise = await context.Exercises.FindAsync(newSet.Exercise.Id) ?? throw new Exception("Unable to find the Exercise");
+        
         workout.ExerciseSets.Add(new ExerciseSet
         {
-            Sequence = newSet.Sequence,
-            Weight = newSet.Weight,
-            Repetitions = newSet.Repetitions,
-            SetCount = newSet.SetCount
+            Exercise = exercise
         });
 
         await context.SaveChangesAsync();
     }
+
+    public async Task UpdateExerciseSetAsync(UpdateExerciseSetDto updateExerciseSet)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        var exerciseSet = await context.ExerciseSets
+            .FirstOrDefaultAsync(x => x.Id == updateExerciseSet.Id)
+            ?? throw new Exception("Exercise Set not found");
+
+        exerciseSet.Sequence = updateExerciseSet.Sequence;
+        exerciseSet.Weight = updateExerciseSet.Weight;
+        exerciseSet.Repetitions = updateExerciseSet.Repetitions;
+        exerciseSet.SetCount = updateExerciseSet.SetCount;
+        context.ExerciseSets.Update(exerciseSet);
+
+        await context.SaveChangesAsync();
+    }
+
+    public async Task RemoveExerciseSetAsync(RemoveExerciseSetDto removeExerciseSet)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        var workout = await context.Workouts
+            .FirstOrDefaultAsync(x => x.Id == removeExerciseSet.WorkoutId)
+            ?? throw new Exception("Workout not found");
+
+        var exerciseSet = await context.ExerciseSets
+            .FirstOrDefaultAsync(x => x.Id == removeExerciseSet.ExerciseSetId)
+            ?? throw new Exception("Exercise Set not found");
+
+        workout.ExerciseSets.Remove(exerciseSet);
+
+        await context.SaveChangesAsync();
+    }
+
     public async Task<List<ExerciseSetDto>> GetAllExerciseSetsAsync(int WorkoutId)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();

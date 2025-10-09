@@ -22,61 +22,72 @@
     <MudIconButton Size="Size.Large" Color="Color.Primary" Icon="@Icons.Material.Rounded.AddCircle" OnClick="CreateWorkoutAsync" />
 </MudStack>
 
-<MudTabs Elevation="1" Outlined ApplyEffectsToContainer Ripple PanelClass="pa-6">
-    @foreach (var workout in DetailRoutine.Workouts)
-    {
-        <MudTabPanel Text="@workout.Name" OnClick="() => GetTabList(workout.Id)">
-            <MudStack Row AlignItems="AlignItems.Center" Class="mb-2">
-                <MudButton StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="() => AddToSelectedExerciseList(workout.Id)">Add Set</MudButton>
-                <MudAutocomplete @bind-Value="SelectedExercise"
-                                 SearchFunc="Search"
-                                 Variant="Variant.Outlined"
-                                 Label="Add an Exercise"
-                                 Dense
-                                 Placeholder="Search"
-                                 Clearable
-                                 ToStringFunc="(e) => e?.Name">
-                    <ItemTemplate>
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudText>@context.Name</MudText>
-                            <MudChip T="MuscleGroup" Color="Color.Secondary" Variant="Variant.Filled">@context.MuscleGroup</MudChip>
-                        </MudStack>
-                    </ItemTemplate>
-                </MudAutocomplete>
-                <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Filled.RemoveCircle" OnClick="() => RemoveWorkoutAsync(workout)">Remove @workout.Name</MudButton>
-            </MudStack>
-            <MudDataGrid T="DetailExerciseSetDto"
-                         Items="CurrentSets"
-                         ReadOnly="false"
-                         EditMode="DataGridEditMode.Cell"
-                         StartedEditingItem="@StartedEditingItem"
-                         CanceledEditingItem="@CanceledEditingItem"
-                         CommittedItemChanges="@CommittedItemChanges"
-                         EditTrigger="DataGridEditTrigger.OnRowClick">
-                <Columns>
-                    <HierarchyColumn T="DetailExerciseSetDto" />
-                    <PropertyColumn Property="x => x.Sequence" />
-                    <PropertyColumn Property="x => x.Exercise.Name" Title="Exercise" Editable="false" />
-                    <PropertyColumn Title="Weight" Property="x => x.Weight" />
-                    <PropertyColumn Title="Reps" Property="x => x.Repetitions" />
-                    <PropertyColumn Title="# of Sets" Property="x => x.SetCount" />
-                </Columns>
-                <ChildRowContent>
-                    <MudStack>
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Row AlignItems="AlignItems.Center">
-                                <MudText Typo="Typo.h6">@context.Item.Exercise.Name</MudText>
-                                <MudChip T="MuscleGroup" Color="Color.Secondary" Variant="Variant.Filled">@context.Item.Exercise.MuscleGroup</MudChip>
+@if (!DetailRoutine.Workouts.Any())
+{
+        <MudPaper Elevation="2" Class="pa-3">
+        <MudText Typo="Typo.h2" Color="Color.Primary">This routine has no workouts setup.</MudText>
+        <MudText Typo="Typo.h6">Click the add button to add your first Workout!</MudText>
+    </MudPaper>
+}
+else
+{
+    <MudTabs Elevation="1" Outlined ApplyEffectsToContainer Ripple PanelClass="pa-6">
+        @foreach (var workout in DetailRoutine.Workouts)
+        {
+            <MudTabPanel Text="@workout.Name" OnClick="() => GetTabList(workout.Id)">
+                <MudStack Row AlignItems="AlignItems.Center" Class="mb-2">
+                    <MudButton StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="() => AddToSelectedExerciseList(workout.Id)">Add Set</MudButton>
+                    <MudAutocomplete @bind-Value="SelectedExercise"
+                                     SearchFunc="Search"
+                                     Variant="Variant.Outlined"
+                                     Label="Add an Exercise"
+                                     Dense
+                                     Placeholder="Search"
+                                     Clearable
+                                     ToStringFunc="(e) => e?.Name">
+                        <ItemTemplate>
+                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText>@context.Name</MudText>
+                                <MudChip T="MuscleGroup" Color="Color.Secondary" Variant="Variant.Filled">@context.MuscleGroup</MudChip>
                             </MudStack>
-                            <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Filled.RemoveCircle" OnClick="() => RemoveExerciseSetAsync(context.Item)">Remove</MudButton>
+                        </ItemTemplate>
+                    </MudAutocomplete>
+                    <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Filled.RemoveCircle" OnClick="() => RemoveWorkoutAsync(workout)">Remove @workout.Name</MudButton>
+                </MudStack>
+                <MudDataGrid T="DetailExerciseSetDto"
+                             Items="CurrentSets"
+                             ReadOnly="false"
+                             EditMode="DataGridEditMode.Cell"
+                             StartedEditingItem="@StartedEditingItem"
+                             CanceledEditingItem="@CanceledEditingItem"
+                             CommittedItemChanges="@CommittedItemChanges"
+                             EditTrigger="DataGridEditTrigger.OnRowClick">
+                    <Columns>
+                        <HierarchyColumn T="DetailExerciseSetDto" />
+                        <PropertyColumn Property="x => x.Sequence" />
+                        <PropertyColumn Property="x => x.Exercise.Name" Title="Exercise" Editable="false" />
+                        <PropertyColumn Title="Weight" Property="x => x.Weight" />
+                        <PropertyColumn Title="Reps" Property="x => x.Repetitions" />
+                        <PropertyColumn Title="# of Sets" Property="x => x.SetCount" />
+                    </Columns>
+                    <ChildRowContent>
+                        <MudStack>
+                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudStack Row AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.h6">@context.Item.Exercise.Name</MudText>
+                                    <MudChip T="MuscleGroup" Color="Color.Secondary" Variant="Variant.Filled">@context.Item.Exercise.MuscleGroup</MudChip>
+                                </MudStack>
+                                <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Filled.RemoveCircle" OnClick="() => RemoveExerciseSetAsync(context.Item)">Remove</MudButton>
+                            </MudStack>
+                            <MudText>@context.Item.Exercise.Description</MudText>
                         </MudStack>
-                        <MudText>@context.Item.Exercise.Description</MudText>
-                    </MudStack>
-                </ChildRowContent>
-            </MudDataGrid>
-        </MudTabPanel>
-    }
-</MudTabs>
+                    </ChildRowContent>
+                </MudDataGrid>
+            </MudTabPanel>
+        }
+    </MudTabs>
+
+}
 
 @code {
     [Parameter]

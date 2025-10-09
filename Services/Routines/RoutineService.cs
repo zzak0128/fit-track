@@ -1,5 +1,4 @@
-﻿using FitTrack.Components.Pages.Routines;
-using FitTrack.Data;
+﻿using FitTrack.Data;
 using FitTrack.Data.DTOs.Exercises;
 using FitTrack.Data.DTOs.ExerciseSets;
 using FitTrack.Data.DTOs.Routines;
@@ -253,7 +252,7 @@ public class RoutineService : IRoutineService
         await using var context = await _contextFactory.CreateDbContextAsync();
         var workout = await context.Workouts.FindAsync(workoutId) ?? throw new Exception("Unable to find the Routine");
         var exercise = await context.Exercises.FindAsync(newSet.Exercise.Id) ?? throw new Exception("Unable to find the Exercise");
-        
+
         workout.ExerciseSets.Add(new ExerciseSet
         {
             Exercise = exercise

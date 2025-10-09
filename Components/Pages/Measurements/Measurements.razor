@@ -2,6 +2,7 @@
 @using FitTrack.Data
 @using FitTrack.Data.DTOs.Measurements
 @using FitTrack.Services.Measurements
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @inject IMeasurementService MeasurementService
 @inject IDialogService DialogService
@@ -9,28 +10,42 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+@attribute [Authorize]
+
 @if (!MeasurementsList.Any())
 {
-    <MudText Typo="Typo.h6" Class="mt-4">No measurements found. Please add some measurements to see the charts.</MudText>
-    return;
+    <MudPaper Elevation="2" Class="pa-3">
+        <MudText Typo="Typo.h2" Color="Color.Primary">No Measurements are available.</MudText>
+        <MudText Typo="Typo.h6">Click the button below to add your first metric to track!</MudText>
+    </MudPaper>
 }
 else
 {
-    @foreach (var measurement in MeasurementsList)
-    {
-        <MudPaper Elevation="2" Class="ma-6">
-            <MudStack Spacing="3" Class="m-6" Justify="Justify.Center" AlignItems="AlignItems.Center">
-                <MudText Typo="Typo.h3" Color="Color.Primary">@measurement.Name</MudText>
-                <MudChart Class="pa-6"
-                          ChartType="ChartType.Line"
-                          ChartSeries="@measurement.Series"
-                          XAxisLabels="@measurement.Dates"
-                          AxisChartOptions="_axisChartOptions" />
+    <PageHeaderTitle title="Metrics" />
 
-                          <MudText>This is where other options will go.</MudText>
-            </MudStack>
-        </MudPaper>
-    }
+    <MudGrid Spacing="6">
+        @foreach (var measurement in MeasurementsList)
+        {
+            <MudItem xs="12" sm="6">
+                <MudPaper Elevation="2">
+                    <MudStack Row Justify="Justify.FlexEnd">
+                        <MudIconButton Ripple Color="Color.Error" Icon="@Icons.Material.Filled.RemoveCircle" OnClick="() => RemoveMeasurementTypeAsync(measurement)" />
+                    </MudStack>
+                    <MudStack Spacing="3" Justify="Justify.Center" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h5" Color="Color.Primary">@measurement.Name</MudText>
+                        <MudChart Class="pa-6"
+                                  ChartType="ChartType.Line"
+                                  ChartSeries="@measurement.Series"
+                                  XAxisLabels="@measurement.Dates"
+                                  AxisChartOptions="_axisChartOptions" />
+
+                        <MudButton Class="mb-6" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="() => AddNewMeasurementAsync(measurement.Name)">Add Measurement</MudButton>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+
 }
 
 <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AddMeasurementAsync" Style="position:fixed; bottom:25px; right:25px;" />
@@ -63,7 +78,12 @@ else
             { x => x.ApplicationUser, CurrentUser }
         };
 
-        var addMeasurementDialog = await DialogService.ShowAsync<AddMeasurementDialog>("Add a measurement!", parameters);
+        var dialogOptions = new DialogOptions
+        {
+            FullWidth = false
+        };
+
+        var addMeasurementDialog = await DialogService.ShowAsync<AddMeasurementDialog>("Add a measurement!", parameters, dialogOptions);
         var result = await addMeasurementDialog.Result;
         if (!result.Canceled)
         {
@@ -78,5 +98,41 @@ else
                 Snackbar.Add("Failed to Save the new measurement", Severity.Error);
             }
         }
+    }
+
+    private async Task AddNewMeasurementAsync(string measurementName)
+    {
+        var parameters = new DialogParameters<AddNewMeasurementDialog>
+        {
+            { x => x.User, CurrentUser },
+            { x => x.MeasurementName, measurementName }
+        };
+
+        var dialogOptions = new DialogOptions
+        {
+            FullWidth = false
+        };
+
+        var addMeasurementDialog = await DialogService.ShowAsync<AddNewMeasurementDialog>($"Add an new {measurementName} measurement", parameters, dialogOptions);
+        var result = await addMeasurementDialog.Result;
+        if (!result.Canceled)
+        {
+            bool success = await addMeasurementDialog.GetReturnValueAsync<bool>();
+            if (success)
+            {
+                addMeasurementDialog.Close();
+                MeasurementsList = await MeasurementService.GetMeasurementChartDataAsync(CurrentUser);
+            }
+            else
+            {
+                Snackbar.Add("Failed to Save the new measurement", Severity.Error);
+            }
+        }
+    }
+
+    private async Task RemoveMeasurementTypeAsync(MeasurementChartDto measurement)
+    {
+        await MeasurementService.RemoveMeasurementTypeAsync(measurement.MeasurementId);
+        MeasurementsList = await MeasurementService.GetMeasurementChartDataAsync(CurrentUser);
     }
 }

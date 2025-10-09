@@ -1,12 +1,12 @@
+using FitTrack.Components;
+using FitTrack.Components.Account;
+using FitTrack.Data;
+using FitTrack.Services.Measurements;
+using FitTrack.Services.Routines;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
-using FitTrack.Components;
-using FitTrack.Components.Account;
-using FitTrack.Data;
-using FitTrack.Services.Routines;
-using FitTrack.Services.Measurements;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -26,11 +26,26 @@ public class MeasurementService : IMeasurementService
         return measurements.Select(x => x.Name).ToList();
     }
 
+    public async Task<AddMeasurementDto> GetMeasurementByNameAsync(string measurementName, ApplicationUser user)
+    {
+        var context = await _contextFactory.CreateDbContextAsync();
+        var measurement = await context.Measurements
+            .Include(m => m.MeasurementData)
+            .FirstOrDefaultAsync(m => m.Name == measurementName && m.User == user);
+
+        return new AddMeasurementDto
+        {
+            Name = measurement.Name,
+            Unit = measurement.MeasurementData.Select(x => x.Unit).FirstOrDefault(),
+        };
+    }
+
     public async Task AddMeasurementAsync(AddMeasurementDto measurement)
     {
         var context = await _contextFactory.CreateDbContextAsync();
         var existingMeasurement = await context.Measurements
             .Include(m => m.MeasurementData)
+            .Include(m => m.User)
             .FirstOrDefaultAsync(m => m.Name == measurement.Name && m.User.Id == measurement.User.Id);
 
         if (existingMeasurement != null)
@@ -86,22 +101,19 @@ public class MeasurementService : IMeasurementService
                 Data = measurement.MeasurementData
                     .OrderBy(x => x.Date)
                     .Select(x => x.Amount)
-                    .ToArray()
+                    .ToArray(),
+                ShowDataMarkers = true
             };
 
             chartSeries.Add(dataChart);
-
-
-
             var measurementDates = measurements.SelectMany(x => x.MeasurementData)
                 .OrderBy(x => x.Date)
                 .Select(x => x.Date.ToShortDateString())
                 .ToArray();
 
-
-
             output.Add(new MeasurementChartDto
             {
+                MeasurementId = measurement.Id,
                 Name = name,
                 Series = chartSeries,
                 Dates = measurementDates
@@ -109,5 +121,14 @@ public class MeasurementService : IMeasurementService
         }
 
         return output;
+    }
+
+    public async Task RemoveMeasurementTypeAsync(int measurementId)
+    {
+        var context = await _contextFactory.CreateDbContextAsync();
+        var measurement = await context.Measurements.FindAsync(measurementId) ?? throw new Exception("Unable to delete the Measurement.");
+
+        context.Measurements.Remove(measurement);
+        await context.SaveChangesAsync();
     }
 }

@@ -15,14 +15,16 @@
 
 @if (!RoutineList.Any())
 {
-    <MudText Typo="Typo.h2" Color="Color.Primary">No routines are available</MudText>
+    <MudPaper Elevation="2" Class="pa-3">
+        <MudText Typo="Typo.h2" Color="Color.Primary">No routines are available</MudText>
+        <MudText Typo="Typo.h6">Click the button below to create your first routine!</MudText>
+    </MudPaper>
 }
 else
 {
+    <PageHeaderTitle title="Routines" />
+
     <MudTable T="BaseRoutineDto" Items="@RoutineList" Hover Striped OnRowClick="@OnRowClickHandler">
-        <ToolBarContent>
-            <MudText Typo="Typo.h5">Routines</MudText>
-        </ToolBarContent>
         <HeaderContent>
             <MudTh>Name</MudTh>
             <MudTh>Description</MudTh>
@@ -69,7 +71,12 @@ else
             {x  => x.ApplicationUser, CurrentUser }
         };
 
-        var createDialog = await DialogService.ShowAsync<CreateRoutineDialog>("Create a new Routine!", dialogParams);
+        var dialogOptions = new DialogOptions
+        {
+            FullWidth = false
+        };
+
+        var createDialog = await DialogService.ShowAsync<CreateRoutineDialog>("Create a new Routine!", dialogParams, dialogOptions);
         var result = await createDialog.Result;
         if (!result.Canceled)
         {

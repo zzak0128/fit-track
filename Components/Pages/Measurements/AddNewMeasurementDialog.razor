@@ -1,0 +1,66 @@
+﻿@using FitTrack.Data
+@using FitTrack.Data.DTOs.Measurements
+@using FitTrack.Data.DTOs.Routines
+@using FitTrack.Services.Measurements
+@using FitTrack.Services.Routines
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@inject IMeasurementService MeasurementService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Add a new @AddMeasurement.Name Measurement.</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="@form" @bind-IsValid="@success">
+            <MudNumericField @bind-Value="AddMeasurement.Amount" Label="Amount" Required Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="AddMeasurement.Unit" Label="Unit" Disabled Variant="Variant.Outlined"/>
+            <MudDatePicker @bind-Value="AddMeasurement.Date" Label="Date" Required="true" Variant="Variant.Outlined" RequiredError="Please select a date." />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="() => MudDialog.Cancel()" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="AddMeasurementAsync" Variant="Variant.Filled">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public ApplicationUser User { get; set; } = null!;
+
+    [Parameter]
+    public string MeasurementName { get; set; }
+
+    private AddMeasurementDto AddMeasurement { get; set; } = new();
+    private MudForm form;
+    private bool success;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        AddMeasurement = await MeasurementService.GetMeasurementByNameAsync(MeasurementName, User);
+        AddMeasurement.User = User;
+    }
+
+    private async Task AddMeasurementAsync()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            try
+            {
+                await MeasurementService.AddMeasurementAsync(AddMeasurement);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            catch
+            {
+                MudDialog.Close(DialogResult.Ok(false));
+            }
+        }
+    }
+}

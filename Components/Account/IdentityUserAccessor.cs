@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Identity;
 using FitTrack.Data;
+using Microsoft.AspNetCore.Identity;
 
 namespace FitTrack.Components.Account;
 

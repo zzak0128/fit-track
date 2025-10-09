@@ -5,17 +5,18 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<h1>Exercises</h1>
-
 @if (!ExerciseList.Any())
 {
-    <MudText>No exercises found.</MudText>
+    <MudPaper Elevation="2" Class="pa-3">
+        <MudText Typo="Typo.h2" Color="Color.Primary">No exercises are available.</MudText>
+        <MudText Typo="Typo.h6">Click the button below to add your first Exercise!</MudText>
+    </MudPaper>
 }
 else
 {
-    <MudGrid T="ExerciseDto" Items="ExerciseList" Spacing="6" Justify="Justify.FlexStart" Class="pa-4">
+    <PageHeaderTitle title="Exercises" />
 
-
+    <MudGrid T="ExerciseDto" Items="ExerciseList" Spacing="6" Justify="Justify.FlexStart">
         @foreach (var exercise in ExerciseList)
         {
             <MudItem>
@@ -45,7 +46,12 @@ else
 
     private async Task CreateExerciseAsync()
     {
-        var createDialog = await DialogService.ShowAsync<CreateExerciseDialog>("Create an Exercise!");
+        var dialogOptions = new DialogOptions
+        {
+            FullWidth = false
+        };
+
+        var createDialog = await DialogService.ShowAsync<CreateExerciseDialog>("Create an Exercise!", dialogOptions);
         var result = await createDialog.Result;
         if (!result.Canceled)
         {
@@ -83,7 +89,12 @@ else
                 { x => x.UpdateExercise, exercise }
         };
 
-        var updateDialog = await DialogService.ShowAsync<UpdateExerciseDialog>("Update this Exercise!", dialogParameters);
+        var dialogOptions = new DialogOptions
+        {
+            FullWidth = false
+        };
+
+        var updateDialog = await DialogService.ShowAsync<UpdateExerciseDialog>("Update this Exercise!", dialogParameters, dialogOptions);
         var result = await updateDialog.Result;
         if (!result.Canceled)
         {

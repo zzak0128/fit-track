@@ -6,8 +6,8 @@
     <MudStack>
         <MudPaper Width="240px" Height="240px" Elevation="2" Style="background-color:deepskyblue;"></MudPaper>
         <MudText Typo="Typo.h5">@Exercise.Name</MudText>
-        <MudStack Row>
-            <MudText Typo="Typo.caption">@Exercise.MuscleGroup</MudText>
+        <MudStack AlignItems="AlignItems.Center" Row>
+            <MudChip T="string" Color="Color.Secondary" Variant="Variant.Filled">@Exercise.MuscleGroup</MudChip>
             <MudSpacer />
             <MudLink OnClick="OpenDialogAsync" Color="Color.Primary" Typo="Typo.button">Details</MudLink>
         </MudStack>

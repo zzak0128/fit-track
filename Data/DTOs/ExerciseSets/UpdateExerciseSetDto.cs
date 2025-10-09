@@ -1,6 +1,4 @@
-﻿using FitTrack.Data.DTOs.Exercises;
-
-namespace FitTrack.Data.DTOs.ExerciseSets;
+﻿namespace FitTrack.Data.DTOs.ExerciseSets;
 
 public class UpdateExerciseSetDto
 {

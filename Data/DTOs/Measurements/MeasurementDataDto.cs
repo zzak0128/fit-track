@@ -7,4 +7,6 @@ public class MeasurementDataDto
     public double Amount { get; set; }
 
     public DateTime Date { get; set; }
+
+    public string Unit { get; set; } = "";
 }

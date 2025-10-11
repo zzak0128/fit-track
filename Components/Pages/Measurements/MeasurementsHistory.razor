@@ -1,0 +1,57 @@
+﻿@page "/measurements/history/{MeasurementId:int}"
+@using FitTrack.Data
+@using FitTrack.Data.DTOs.Measurements
+@using FitTrack.Services.Measurements
+@using Microsoft.AspNetCore.Identity
+@inject IMeasurementService MeasurementService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavManager
+
+<PageHeaderTitle Title="@_pageHeaderTitle" />
+
+@if (_measurement is not null)
+{
+    <MudTable T="MeasurementDataDto" Items="@_measurement.MeasurementData" Hover Striped>
+        <HeaderContent>
+            <MudTh>Measurement</MudTh>
+            <MudTh>Date</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Measurement">@context.Amount @context.Unit</MudTd>
+            <MudTd DataLabel="Date">@context.Date.ToShortDateString()</MudTd>
+            <MudTd Class="d-flex justify-end">
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteMeasurementDataAsync(context.Id)"/>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    [Parameter]
+    public int MeasurementId { get; set; }
+
+    private MeasurementDto _measurement;
+    private ApplicationUser CurrentUser { get; set; }
+    private string _pageHeaderTitle { get; set; } = "";
+
+    protected async override Task OnInitializedAsync()
+    {
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        CurrentUser = await UserManager.GetUserAsync(authState.User);
+
+        if (CurrentUser is not null)
+        {
+            _measurement = await MeasurementService.GetMeasurementByIdAsync(MeasurementId, CurrentUser);
+            _pageHeaderTitle = $"{_measurement.Name} History";
+        }
+    }
+
+    private async Task DeleteMeasurementDataAsync(int measurementDataId)
+    {
+        await MeasurementService.RemoveMeasurementDataAsync(measurementDataId);
+        _measurement = await MeasurementService.GetMeasurementByIdAsync(MeasurementId, CurrentUser);
+    }
+}

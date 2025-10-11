@@ -17,7 +17,7 @@
         <MudForm @ref="@form" @bind-IsValid="@success">
             <MudNumericField @bind-Value="AddMeasurement.Amount" Label="Amount" Required Variant="Variant.Outlined" />
             <MudTextField @bind-Value="AddMeasurement.Unit" Label="Unit" Disabled Variant="Variant.Outlined"/>
-            <MudDatePicker @bind-Value="AddMeasurement.Date" Label="Date" Required="true" Variant="Variant.Outlined" RequiredError="Please select a date." />
+            <MudDatePicker @bind-Date="AddMeasurement.Date" Label="Date" Required="true" Variant="Variant.Outlined" RequiredError="Please select a date." />
         </MudForm>
     </DialogContent>
     <DialogActions>

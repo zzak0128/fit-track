@@ -7,6 +7,7 @@
 @inject IMeasurementService MeasurementService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject NavigationManager NavManager
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -28,18 +29,25 @@ else
         {
             <MudItem xs="12" sm="6">
                 <MudPaper Elevation="2">
-                    <MudStack Row Justify="Justify.FlexEnd">
-                        <MudIconButton Ripple Color="Color.Error" Icon="@Icons.Material.Filled.RemoveCircle" OnClick="() => RemoveMeasurementTypeAsync(measurement)" />
-                    </MudStack>
-                    <MudStack Spacing="3" Justify="Justify.Center" AlignItems="AlignItems.Center">
-                        <MudText Typo="Typo.h5" Color="Color.Primary">@measurement.Name</MudText>
-                        <MudChart Class="pa-6"
-                                  ChartType="ChartType.Line"
-                                  ChartSeries="@measurement.Series"
-                                  XAxisLabels="@measurement.Dates"
-                                  AxisChartOptions="_axisChartOptions" />
+                    <MudStack Spacing="2" Justify="Justify.Center" AlignItems="AlignItems.Center">
+                        <MudStack row Justify="Justify.Center">
+                            <MudText Typo="Typo.h4" Color="Color.Primary">@measurement.Name</MudText>
+                            <MudIconButton Edge="Edge.End" Color="Color.Error" Size=Size.Small Icon="@Icons.Material.Filled.RemoveCircle" OnClick="() => RemoveMeasurementTypeAsync(measurement)" />
+                        </MudStack>
+                        <MudPaper Elevation="3" Width="95%">
+                            <MudChart Class="pa-6"
+                                      Style="margin:auto"
+                                      Width="100%"
+                                      ChartType="ChartType.Line"
+                                      ChartSeries="@measurement.Series"
+                                      XAxisLabels="@measurement.Dates"
+                                      AxisChartOptions="_axisChartOptions" />
+                        </MudPaper>
 
-                        <MudButton Class="mb-6" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="() => AddNewMeasurementAsync(measurement.Name)">Add Measurement</MudButton>
+                        <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Center">
+                            <MudButton Class="mb-6" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="() => AddNewMeasurementAsync(measurement.Name)">Add Measurement</MudButton>
+                            <MudButton Class="mb-6" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ViewList" OnClick="() => NavigateToHistory(measurement.MeasurementId)">View History</MudButton>
+                        </MudStack>
                     </MudStack>
                 </MudPaper>
             </MudItem>
@@ -134,5 +142,10 @@ else
     {
         await MeasurementService.RemoveMeasurementTypeAsync(measurement.MeasurementId);
         MeasurementsList = await MeasurementService.GetMeasurementChartDataAsync(CurrentUser);
+    }
+
+    private void NavigateToHistory(int id)
+    {
+        NavManager.NavigateTo(@$"/measurements/history/{id}");
     }
 }

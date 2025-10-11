@@ -26,17 +26,44 @@ public class MeasurementService : IMeasurementService
         return measurements.Select(x => x.Name).ToList();
     }
 
+    public async Task<MeasurementDto> GetMeasurementByIdAsync(int measurementId, ApplicationUser user)
+    {
+        var context = await _contextFactory.CreateDbContextAsync();
+        var measurement = await context.Measurements
+            .Include(m => m.MeasurementData)
+            .Include(m => m.User)
+            .Where(x => x.Id == measurementId && x.User == user)
+            .FirstOrDefaultAsync(m => m.Id == measurementId) ?? throw new Exception("Measurement not found.");
+
+        return new MeasurementDto
+        {
+            Id = measurement.Id,
+            Name = measurement.Name,
+            User = measurement.User,
+            MeasurementData = [.. measurement.MeasurementData.Select(md => new MeasurementDataDto
+            {
+                Id = md.Id,
+                Amount = md.Amount,
+                Unit = md.Unit,
+                Date = md.Date
+            })
+            .OrderBy(x => x.Date)]
+        };
+    }
+
     public async Task<AddMeasurementDto> GetMeasurementByNameAsync(string measurementName, ApplicationUser user)
     {
         var context = await _contextFactory.CreateDbContextAsync();
         var measurement = await context.Measurements
             .Include(m => m.MeasurementData)
-            .FirstOrDefaultAsync(m => m.Name == measurementName && m.User == user);
+            .FirstOrDefaultAsync(m => m.Name == measurementName && m.User == user) ?? throw new Exception("Measurement not found.");
 
         return new AddMeasurementDto
         {
             Name = measurement.Name,
-            Unit = measurement.MeasurementData.Select(x => x.Unit).FirstOrDefault(),
+            Unit = measurement.MeasurementData
+            .Select(x => x.Unit)
+            .FirstOrDefault(),
         };
     }
 
@@ -54,7 +81,7 @@ public class MeasurementService : IMeasurementService
             {
                 Amount = measurement.Amount,
                 Unit = measurement.Unit,
-                Date = measurement.Date
+                Date = measurement.Date.Value
             });
         }
         else
@@ -69,7 +96,7 @@ public class MeasurementService : IMeasurementService
                     {
                         Amount = measurement.Amount,
                         Unit = measurement.Unit,
-                        Date = measurement.Date
+                        Date = measurement.Date.Value
                     }
                 ]
             });
@@ -97,7 +124,9 @@ public class MeasurementService : IMeasurementService
             List<ChartSeries> chartSeries = [];
             ChartSeries dataChart = new()
             {
-                Name = measurement.MeasurementData.Select(x => x.Unit).FirstOrDefault(),
+                Name = measurement.MeasurementData
+                    .Select(x => x.Unit)
+                    .FirstOrDefault(),
                 Data = measurement.MeasurementData
                     .OrderBy(x => x.Date)
                     .Select(x => x.Amount)
@@ -108,7 +137,7 @@ public class MeasurementService : IMeasurementService
             chartSeries.Add(dataChart);
             var measurementDates = measurements.SelectMany(x => x.MeasurementData)
                 .OrderBy(x => x.Date)
-                .Select(x => x.Date.ToShortDateString())
+                .Select(x => x.Date.ToString("M/d"))
                 .ToArray();
 
             output.Add(new MeasurementChartDto
@@ -129,6 +158,15 @@ public class MeasurementService : IMeasurementService
         var measurement = await context.Measurements.FindAsync(measurementId) ?? throw new Exception("Unable to delete the Measurement.");
 
         context.Measurements.Remove(measurement);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task RemoveMeasurementDataAsync(int measurementDataId)
+    {
+        var context = await _contextFactory.CreateDbContextAsync();
+        var measurementData = await context.MeasurementData.FindAsync(measurementDataId) ?? throw new Exception("Unable to delete the Measurement Data.");
+
+        context.MeasurementData.Remove(measurementData);
         await context.SaveChangesAsync();
     }
 }

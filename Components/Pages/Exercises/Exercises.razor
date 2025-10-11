@@ -1,11 +1,17 @@
 ﻿@page "/exercises"
+@using FitTrack.Data
 @using FitTrack.Data.DTOs.Exercises
 @using FitTrack.Services.Routines
 @inject IRoutineService RoutineService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-@if (!ExerciseList.Any())
+@if (_isLoading)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+}
+
+@if (!FullExerciseList.Any())
 {
     <MudPaper Elevation="2" Class="pa-3">
         <MudText Typo="Typo.h2" Color="Color.Primary">No exercises are available.</MudText>
@@ -16,17 +22,35 @@ else
 {
     <PageHeaderTitle title="Exercises" />
 
-    <MudGrid T="ExerciseDto" Items="ExerciseList" Spacing="6" Justify="Justify.FlexStart">
-        @foreach (var exercise in ExerciseList)
+    <MudToolBar Class="pt-6 mt-6" Gutters>
+        <MudChipSet T="MuscleGroup"
+                    @bind-SelectedValues="_selectedMuscleGroups"
+                    SelectionMode="SelectionMode.MultiSelection">
+            @foreach (var group in Enum.GetValues(typeof(MuscleGroup)).Cast<MuscleGroup>())
+            {
+                <MudChip T="MuscleGroup" Variant="Variant.Text" Color="Color.Primary" Value="@group" OnClick="FilterExercises" />
+            }
+        </MudChipSet>
+    </MudToolBar>
+
+    <MudGrid T="ExerciseDto" Items="ExerciseList" Spacing="2" Justify="Justify.FlexStart" Class="mt-3">
+        @foreach (var exercise in FilteredExerciseList)
         {
-            <MudItem>
+            <MudItem xs="12" sm="6" md="4" lg="3" xl="2" Style="display:flex">
                 <MudMenu ActivationEvent="MouseEvent.RightClick" PositionAtCursor>
                     <ActivatorContent>
                         <ExerciseGridItem Exercise="exercise" />
                     </ActivatorContent>
                     <ChildContent>
-                        <MudMenuItem Label="Edit" OnClick="() => EditExerciseAsync(exercise)" />
-                        <MudMenuItem Label="Delete" OnClick="() => DeleteExerciseAsync(exercise)" />
+                        <AuthorizeView>
+                            <Authorized>
+                                <MudMenuItem Label="Edit" OnClick="() => EditExerciseAsync(exercise)" />
+                                <MudMenuItem Label="Delete" OnClick="() => DeleteExerciseAsync(exercise)" />
+                            </Authorized>
+                            <NotAuthorized>
+                                <MudMenuItem Label="Sign in to manage" Href="Account/Login" />
+                            </NotAuthorized>
+                        </AuthorizeView>
                     </ChildContent>
                 </MudMenu>
             </MudItem>
@@ -34,14 +58,32 @@ else
     </MudGrid>
 }
 
-<MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateExerciseAsync" Style="position:fixed; bottom:25px; right:25px;" />
+<AuthorizeView>
+    <Authorized>
+        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateExerciseAsync" Style="position:fixed; bottom:25px; right:25px;" />
+    </Authorized>
+</AuthorizeView>
 
 @code {
-    public List<ExerciseDto> ExerciseList { get; set; } = [];
+
+    private List<ExerciseDto> FullExerciseList { get; set; } = [];
+    private List<ExerciseDto> FilteredExerciseList { get; set; } = [];
+    private bool _isLoading = false;
+
+    private IReadOnlyCollection<MuscleGroup> _selectedMuscleGroups = [];
 
     protected override async Task OnInitializedAsync()
     {
-        ExerciseList = await RoutineService.GetAllExercisesAsync();
+        _isLoading = true;
+        FullExerciseList = await RoutineService.GetAllExercisesAsync();
+        FilterExercises();
+    }
+
+    private void ClearFilters()
+    {
+        _selectedMuscleGroups = [];
+        FilterExercises();
+        _isLoading = false;
     }
 
     private async Task CreateExerciseAsync()
@@ -59,13 +101,28 @@ else
             if (success)
             {
                 createDialog.Close();
-                ExerciseList = await RoutineService.GetAllExercisesAsync();
+                FullExerciseList = await RoutineService.GetAllExercisesAsync();
+                FilterExercises();
             }
             else
             {
                 Snackbar.Add("Failed to save the Exercise", Severity.Error);
             }
         }
+    }
+
+    private void FilterExercises()
+    {
+        if (!_selectedMuscleGroups.Any())
+        {
+            FilteredExerciseList = FullExerciseList;
+            _isLoading = false;
+            return;
+        }
+
+        FilteredExerciseList = FullExerciseList.Where(x => _selectedMuscleGroups.Contains(x.MuscleGroup)).ToList();
+
+        _isLoading = false;
     }
 
     private async Task DeleteExerciseAsync(ExerciseDto exercise)
@@ -79,7 +136,8 @@ else
             Snackbar.Add("Failed to delete the Exercise", Severity.Error);
         }
 
-        ExerciseList = await RoutineService.GetAllExercisesAsync();
+        FullExerciseList = await RoutineService.GetAllExercisesAsync();
+        FilterExercises();
     }
 
     private async Task EditExerciseAsync(ExerciseDto exercise)
@@ -102,7 +160,8 @@ else
             if (success)
             {
                 updateDialog.Close();
-                ExerciseList = await RoutineService.GetAllExercisesAsync();
+                FullExerciseList = await RoutineService.GetAllExercisesAsync();
+                FilterExercises();
             }
             else
             {

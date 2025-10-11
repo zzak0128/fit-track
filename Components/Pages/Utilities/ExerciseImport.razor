@@ -1,0 +1,94 @@
+﻿@page "/exercises/import"
+@using CsvHelper
+@using System.Globalization
+@using FitTrack.Data.DTOs.Exercises
+@using FitTrack.Services.Routines
+@inject IRoutineService RoutineService
+@inject ISnackbar Snackbar
+
+<PageHeaderTitle Title="Exercise File Import" />
+
+<MudFileUpload T="IBrowserFile" Accept=".csv" FilesChanged="UploadFiles">
+    <ActivatorContent>
+        <MudButton Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.CloudUpload">
+            Upload Files
+        </MudButton>
+    </ActivatorContent>
+</MudFileUpload>
+
+@if (_files != null)
+{
+    <MudList T="string">
+        @foreach (var file in _files)
+        {
+            <MudListItem Icon="@Icons.Material.Filled.AttachFile">
+                @file.Name <code>@file.Size bytes</code>
+            </MudListItem>
+        }
+    </MudList>
+}
+
+@if (_isLoading)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+}
+
+@code {
+    IList<IBrowserFile> _files = new List<IBrowserFile>();
+
+    bool _isLoading = false;
+
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        _files.Add(file);
+
+        _isLoading = true;
+        try
+        {
+            await ImportExercises(file);
+            Snackbar.Add("The import was successful!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task ImportExercises(IBrowserFile file)
+    {
+        List<ExerciseCsvRecord> records = [];
+        List<ExerciseDto> exercises = [];
+        using (var stream = file.OpenReadStream(600000))
+        {
+            using (var reader = new StreamReader(stream))
+            {
+                using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    await foreach (var item in csv.GetRecordsAsync<ExerciseCsvRecord>())
+                    {
+                        records.Add(item);
+                    }
+                }
+            }
+        }
+
+        foreach (var record in records)
+        {
+            exercises.Add(new ExerciseDto
+            {
+                Name = record.Name,
+                Description = record.Description,
+                MuscleGroup = record.MuscleGroup
+            });
+        }
+
+
+        await RoutineService.CreateExerciseAsync(exercises);
+        Snackbar.Add("The import was successful!", Severity.Success);
+    }
+}

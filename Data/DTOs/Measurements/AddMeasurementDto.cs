@@ -8,7 +8,7 @@ public class AddMeasurementDto
 
     public string Unit { get; set; } = "";
 
-    public DateTime Date { get; set; } = DateTime.Now;
+    public DateTime? Date { get; set; }
 
     public ApplicationUser User { get; set; }
 }

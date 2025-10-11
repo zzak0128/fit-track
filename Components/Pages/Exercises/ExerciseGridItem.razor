@@ -2,11 +2,11 @@
 @using FitTrack.Data.DTOs.Exercises
 @inject IDialogService _dialogService
 
-<MudPaper Elevation="1" style="padding: 12px;" >
-    <MudStack>
-        <MudPaper Width="240px" Height="240px" Elevation="2" Style="background-color:deepskyblue;"></MudPaper>
-        <MudText Typo="Typo.h5">@Exercise.Name</MudText>
-        <MudStack AlignItems="AlignItems.Center" Row>
+<MudPaper Elevation="1" Class="pa-3" MinHeight="300px" Width="300px" >
+    <MudStack AlignItems="AlignItems.Center" Style="width:100%">
+        <MudImage ObjectFit="ObjectFit.Cover" Elevation="2" Style="background-color:lightgray; width:95%;height:240px;"></MudImage>
+        <MudText Typo="Typo.subtitle1" Inline="false">@Exercise.Name</MudText>
+        <MudStack AlignItems="AlignItems.Center" Row Style="width:100%">
             <MudChip T="string" Color="Color.Secondary" Variant="Variant.Filled">@Exercise.MuscleGroup</MudChip>
             <MudSpacer />
             <MudLink OnClick="OpenDialogAsync" Color="Color.Primary" Typo="Typo.button">Details</MudLink>
@@ -15,7 +15,7 @@
 </MudPaper>
 
 @code {
-    [Parameter] 
+    [Parameter]
     public required ExerciseDto Exercise { get; set; }
 
     private Task OpenDialogAsync()

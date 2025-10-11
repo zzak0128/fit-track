@@ -23,4 +23,5 @@ public interface IRoutineService
     Task UpdateExerciseSetAsync(UpdateExerciseSetDto updateExerciseSet);
     Task RemoveExerciseSetAsync(RemoveExerciseSetDto removeExerciseSet);
     Task RemoveWorkoutAsync(int workoutId);
+    Task CreateExerciseAsync(List<ExerciseDto> exercises);
 }

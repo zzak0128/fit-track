@@ -262,6 +262,21 @@ public class RoutineService : IRoutineService
         return workouts;
     }
 
+    public async Task<string> RenameWorkoutAsync(RenameWorkoutDto workout)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        var currentWorkout = await context.Workouts
+            .FirstOrDefaultAsync(x => x.Id == workout.WorkoutId) ?? throw new Exception("Workout not found, unable to rename.");
+
+        currentWorkout.Name = workout.NewName;
+
+        context.Workouts.Update(currentWorkout);
+        await context.SaveChangesAsync();
+
+        return workout.NewName;
+    }
+
+
     public async Task RemoveWorkoutAsync(int workoutId)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();

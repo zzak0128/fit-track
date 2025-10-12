@@ -1,0 +1,36 @@
+﻿@using FitTrack.Data
+@using FitTrack.Data.DTOs.Routines
+@using FitTrack.Data.DTOs.Workouts
+@using FitTrack.Services.Routines
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@inject IRoutineService RoutineService
+
+<MudDialog>
+    <TitleContent>
+        Rename the workout @updateWorkout.Name!
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="@form" @bind-IsValid="@success">
+            <MudTextField @bind-Value="NewWorkout" Label="Name" Required="true" Variant="Variant.Outlined" RequiredError="A name is required for a new Workout." />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="() => MudDialog.Cancel()" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="OK" Variant="Variant.Filled">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public BaseWorkoutDto updateWorkout { get; set; }
+
+    private string NewWorkout { get; set; } = "";
+    private MudForm form;
+    private bool success;
+
+    private void OK() => MudDialog.Close(DialogResult.Ok(NewWorkout));
+}

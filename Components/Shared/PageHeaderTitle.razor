@@ -1,8 +1,25 @@
-﻿<MudPaper Elevation="2" Class="pa-2 mt-3 mb-3">
-    <MudText Typo="Typo.h3" Color="Color.Primary">@Title</MudText>
+﻿@inject IJSRuntime jsRuntime
+
+<MudPaper Elevation="2" Class="pa-2 mt-3 mb-3">
+    <MudStack Row Justify="Justify.FlexStart">
+        @if (ShowBackButton)
+        {
+            <MudIconButton Icon="@Icons.Material.Outlined.KeyboardArrowLeft" Color="Color.Primary"  OnClick="NavigateBack"></MudIconButton>
+        }
+        <MudText Typo="Typo.h3" Color="Color.Primary">@Title</MudText>
+    </MudStack>
 </MudPaper>
 
 @code {
     [Parameter]
     public required string Title { get; set; }
+
+    [Parameter]
+    public bool ShowBackButton { get; set; } = false;
+
+    public async Task NavigateBack()
+    {
+        await jsRuntime.InvokeVoidAsync("history.back");
+    }
+
 }

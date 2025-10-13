@@ -7,4 +7,6 @@ public class ExerciseCsvRecord
     public string Description { get; set; } = "";
 
     public MuscleGroup MuscleGroup { get; set; } = MuscleGroup.General;
+
+    public string ImagePaths { get; set; }
 }

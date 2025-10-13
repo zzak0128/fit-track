@@ -1,6 +1,7 @@
 ﻿@page "/exercises/import"
 @using CsvHelper
 @using System.Globalization
+@using FitTrack.Data
 @using FitTrack.Data.DTOs.Exercises
 @using FitTrack.Services.Routines
 @inject IRoutineService RoutineService
@@ -63,32 +64,45 @@
     {
         List<ExerciseCsvRecord> records = [];
         List<ExerciseDto> exercises = [];
-        using (var stream = file.OpenReadStream(600000))
+        using (var stream = file.OpenReadStream(800000))
         {
             using (var reader = new StreamReader(stream))
             {
                 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                 {
-                    await foreach (var item in csv.GetRecordsAsync<ExerciseCsvRecord>())
+                    while (await csv.ReadAsync())
                     {
-                        records.Add(item);
+                        csv.ReadHeader();
+                        var record = new ExerciseDto
+                        {
+                            Name = csv.GetField(0),
+                            MuscleGroup = Enum.TryParse<MuscleGroup>(csv.GetField(1), true, out MuscleGroup muscleGroup) ? muscleGroup : MuscleGroup.General,
+                            Description = csv.GetField(2),
+                            ImagePaths = csv.GetField(3).Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => Path.Combine("/Exercises/", x)).ToList()
+                        };
+
+                        exercises.Add(record);
                     }
                 }
+                // await foreach (var item in csv.GetRecordsAsync<ExerciseCsvRecord>())
+                // {
+                //     records.Add(item);
+                // }
             }
         }
-
-        foreach (var record in records)
-        {
-            exercises.Add(new ExerciseDto
-            {
-                Name = record.Name,
-                Description = record.Description,
-                MuscleGroup = record.MuscleGroup
-            });
-        }
-
+        // foreach (var record in records)
+        // {
+        //     exercises.Add(new ExerciseDto
+        //     {
+        //         Name = record.Name,
+        //         Description = record.Description,
+        //         MuscleGroup = record.MuscleGroup,
+        //         ImagePaths = []
+        //     });
+        // }
 
         await RoutineService.CreateExerciseAsync(exercises);
         Snackbar.Add("The import was successful!", Severity.Success);
     }
 }
+

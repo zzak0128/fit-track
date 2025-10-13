@@ -24,6 +24,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<MeasurementData> MeasurementData { get; set; }
 
+    public DbSet<ExerciseImage> ExerciseImages { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,6 +50,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithOne(x => x.Exercise)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<Exercise>()
+            .HasMany(e => e.Thumbnails)
+            .WithOne(x => x.Exercise)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<Activity>()
             .HasOne(e => e.Workout)
             .WithMany()
@@ -57,6 +64,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasMany(e => e.MeasurementData)
             .WithOne(m => m.Measurement)
             .OnDelete(DeleteBehavior.Cascade);
-
     }
 }

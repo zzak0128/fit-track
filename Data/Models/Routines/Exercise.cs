@@ -10,5 +10,7 @@ public class Exercise
 
     public string? Description { get; set; }
 
+    public List<ExerciseImage> Thumbnails { get; set; } = [];
+
     public virtual List<ExerciseSet> ExerciseSet { get; set; } = [];
 }

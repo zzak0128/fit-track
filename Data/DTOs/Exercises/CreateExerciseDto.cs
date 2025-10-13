@@ -6,4 +6,6 @@ public class CreateExerciseDto()
     public string? Description { get; set; }
 
     public MuscleGroup MuscleGroup { get; set; }
+
+    public List<string> ImagePaths { get; set; } = [];
 }

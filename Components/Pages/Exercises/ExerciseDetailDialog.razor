@@ -2,15 +2,27 @@
 
 <MudDialog>
     <DialogContent>
-        <MudPaper Class="ma-4">
-            <MudImage Width="240" Height="240"></MudImage>
+        <MudPaper Class="mb-4">
+            <MudCarousel style="height:450px"
+                         TData="string"
+                         ShowArrows
+                         ShowBullets
+                         EnableSwipeGesture
+                         AutoCycle
+                         ItemsSource="Exercise.ImagePaths">
+                <ItemTemplate>
+                    <div class="d-flex justify-center" style="Height:100%">
+                        <MudImage ObjectFit="ObjectFit.Cover" Src="@context"></MudImage>
+                    </div>
+                </ItemTemplate>
+            </MudCarousel>
         </MudPaper>
         <MudText Typo="Typo.subtitle1">@Exercise.MuscleGroup</MudText>
         <MudText Typo="Typo.body1">@Exercise.Description</MudText>
     </DialogContent>
     <DialogActions>
         <MudStack Row>
-            <MudButton Color="Color.Primary" OnClick="Close"  Variant="Variant.Filled">OK</MudButton>
+            <MudButton Color="Color.Primary" OnClick="Close" Variant="Variant.Filled">OK</MudButton>
         </MudStack>
     </DialogActions>
 </MudDialog>
@@ -19,7 +31,7 @@
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = null!;
 
-    [Parameter] 
+    [Parameter]
     public required ExerciseDto Exercise { get; set; }
 
     private void Close() => MudDialog.Close(DialogResult.Ok(true));

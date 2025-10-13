@@ -227,6 +227,28 @@ namespace FitTrack.Migrations
                     b.ToTable("Exercises");
                 });
 
+            modelBuilder.Entity("FitTrack.Data.Models.Routines.ExerciseImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ExerciseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RelativePath")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExerciseId");
+
+                    b.ToTable("ExerciseImages");
+                });
+
             modelBuilder.Entity("FitTrack.Data.Models.Routines.ExerciseSet", b =>
                 {
                     b.Property<int>("Id")
@@ -497,6 +519,17 @@ namespace FitTrack.Migrations
                     b.Navigation("Measurement");
                 });
 
+            modelBuilder.Entity("FitTrack.Data.Models.Routines.ExerciseImage", b =>
+                {
+                    b.HasOne("FitTrack.Data.Models.Routines.Exercise", "Exercise")
+                        .WithMany("Thumbnails")
+                        .HasForeignKey("ExerciseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Exercise");
+                });
+
             modelBuilder.Entity("FitTrack.Data.Models.Routines.ExerciseSet", b =>
                 {
                     b.HasOne("FitTrack.Data.Models.Routines.Exercise", "Exercise")
@@ -595,6 +628,8 @@ namespace FitTrack.Migrations
             modelBuilder.Entity("FitTrack.Data.Models.Routines.Exercise", b =>
                 {
                     b.Navigation("ExerciseSet");
+
+                    b.Navigation("Thumbnails");
                 });
 
             modelBuilder.Entity("FitTrack.Data.Models.Routines.Routine", b =>

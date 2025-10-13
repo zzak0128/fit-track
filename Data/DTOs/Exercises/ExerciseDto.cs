@@ -9,4 +9,6 @@ public class ExerciseDto
     public MuscleGroup MuscleGroup { get; set; }
 
     public string? Description { get; set; }
+
+    public List<string> ImagePaths { get; set; } = [];
 }

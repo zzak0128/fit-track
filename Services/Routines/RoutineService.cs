@@ -26,7 +26,8 @@ public class RoutineService : IRoutineService
             Id = x.Id,
             Name = x.Name,
             MuscleGroup = x.MuscleGroup,
-            Description = x.Description
+            Description = x.Description,
+            ImagePaths = x.Thumbnails.Select(img => img.RelativePath).ToList()
         })
             .OrderBy(x => x.Name)
             .ToListAsync();
@@ -35,12 +36,21 @@ public class RoutineService : IRoutineService
     public async Task CreateExerciseAsync(CreateExerciseDto newExercise)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
+
+        List<ExerciseImage> images = newExercise.ImagePaths.Select(path => new ExerciseImage
+        {
+            RelativePath = path
+        }).ToList();
+
         context.Exercises.Add(new Exercise
         {
             Name = newExercise.Name,
             Description = newExercise.Description,
-            MuscleGroup = newExercise.MuscleGroup
+            MuscleGroup = newExercise.MuscleGroup,
+            Thumbnails = images
         });
+
+        context.AttachRange(images);
 
         try
         {
@@ -54,11 +64,17 @@ public class RoutineService : IRoutineService
 
     public async Task CreateExerciseAsync(List<ExerciseDto> exercises)
     {
+
         List<Exercise> newExercises = exercises.Select(exercise => new Exercise
         {
             Name = exercise.Name,
             Description = exercise.Description,
-            MuscleGroup = exercise.MuscleGroup
+            MuscleGroup = exercise.MuscleGroup,
+            Thumbnails = exercise.ImagePaths.Select(path => new ExerciseImage
+            {
+                RelativePath = path
+            }).ToList()
+
         }).ToList();
 
         await using var context = await _contextFactory.CreateDbContextAsync();

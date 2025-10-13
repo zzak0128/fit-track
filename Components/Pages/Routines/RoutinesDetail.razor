@@ -94,10 +94,6 @@ else
             </MudTabPanel>
         }
     </MudTabs>
-
-    <MudMenu @ref="mudMenu">
-        
-    </MudMenu>
 }
 
 @code {
@@ -238,7 +234,7 @@ else
             return;
         }
 
-        await RoutineService.AddExerciseSetToWorkoutAsync(workoutId, new CreateExerciseSetDto
+        await RoutineService.AddExerciseSetToWorkoutAsync(new CreateExerciseSetDto
         {
             WorkoutId = workoutId,
             Exercise = SelectedExercise

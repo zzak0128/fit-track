@@ -19,7 +19,7 @@ public interface IRoutineService
     Task<List<ExerciseSetDto>> GetAllExerciseSetsAsync(int WorkoutId);
     Task<DetailRoutineDto> GetDetailRoutineByIdAsync(int routineId, ApplicationUser user);
     Task AddWorkoutToRoutineAsync(int routineId, BaseWorkoutDto newWorkout);
-    Task AddExerciseSetToWorkoutAsync(int workoutId, CreateExerciseSetDto newSet);
+    Task AddExerciseSetToWorkoutAsync(CreateExerciseSetDto newSet);
     Task UpdateExerciseSetAsync(UpdateExerciseSetDto updateExerciseSet);
     Task RemoveExerciseSetAsync(RemoveExerciseSetDto removeExerciseSet);
     Task RemoveWorkoutAsync(int workoutId);

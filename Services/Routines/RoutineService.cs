@@ -303,10 +303,10 @@ public class RoutineService : IRoutineService
     }
 
     // EXERCISE SETS
-    public async Task AddExerciseSetToWorkoutAsync(int workoutId, CreateExerciseSetDto newSet)
+    public async Task AddExerciseSetToWorkoutAsync(CreateExerciseSetDto newSet)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
-        var workout = await context.Workouts.FindAsync(workoutId) ?? throw new Exception("Unable to find the Routine");
+        var workout = await context.Workouts.FindAsync(newSet.WorkoutId) ?? throw new Exception("Unable to find the Workout");
         var exercise = await context.Exercises.FindAsync(newSet.Exercise.Id) ?? throw new Exception("Unable to find the Exercise");
 
         workout.ExerciseSets.Add(new ExerciseSet

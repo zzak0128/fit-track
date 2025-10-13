@@ -1,0 +1,110 @@
+﻿@using FitTrack.Data.DTOs.ExerciseSets
+@using FitTrack.Data.DTOs.Exercises
+@using FitTrack.Data.DTOs.Routines
+@using FitTrack.Data.DTOs.Workouts
+@using FitTrack.Services.Routines
+@using FitTrack.Data
+@using Microsoft.AspNetCore.Identity
+@inject IRoutineService RoutineService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<MudDialog>
+    <TitleContent>
+        Add to an existing workout!
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="@form" @bind-IsValid="@success" @bind-Errors="@errors">
+            <MudTextField @bind-Value="_selectedExercise.Name" Label="Exercise" Disabled Variant="Variant.Filled" />
+            @if (_userRoutines.Any())
+            {
+                <MudSelect T="BaseRoutineDto"
+                           Value="_selectedRoutine"
+                           MultiSelection="false"
+                           Label="Select a Routine"
+                           Required="true"
+                           Variant="Variant.Outlined"
+                           ValueChanged="@GetRoutineWorkouts">
+                        @foreach (var routine in _userRoutines)
+                        {
+                            <MudSelectItem T="BaseRoutineDto" Value="routine">@routine.Name</MudSelectItem>
+                        }
+                </MudSelect>
+            }
+
+            @if (_userWorkouts.Any())
+            {
+                <MudSelect @bind-Value="_selectedWorkout" T="BaseWorkoutDto" Label="Select a Workout" Required="true" Variant="Variant.Outlined">
+                        @foreach (var workout in _userWorkouts)
+                        {
+                            <MudSelectItem T="BaseWorkoutDto" Value="workout">@workout.Name</MudSelectItem>
+                        }
+                </MudSelect>
+            }
+
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="() => MudDialog.Cancel()" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="AddExerciseAsync" Variant="Variant.Filled">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public required ExerciseDto _selectedExercise { get; set; }
+
+    private List<BaseRoutineDto> _userRoutines = [];
+    private BaseRoutineDto _selectedRoutine;
+
+    private List<BaseWorkoutDto> _userWorkouts = [];
+    private BaseWorkoutDto _selectedWorkout;
+
+    private ApplicationUser? _currentUser;
+
+    private CreateExerciseSetDto _addToWorkout = new();
+    private MudForm form;
+    private bool success;
+    private string[] errors = [];
+
+    protected async override Task OnInitializedAsync()
+    {
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        _currentUser = await UserManager.GetUserAsync(authState.User);
+
+        if (_currentUser is not null)
+        {
+            _userRoutines = await RoutineService.GetBaseRoutinesAsync(_currentUser);
+        }
+    }
+
+    private async Task GetRoutineWorkouts(BaseRoutineDto _selectedDto)
+    {
+        _selectedRoutine = _selectedDto;
+        _userWorkouts = await RoutineService.GetRoutineWorkoutsAsync(_selectedRoutine.Id);
+    }
+
+    private async Task AddExerciseAsync()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            _addToWorkout.WorkoutId = _selectedWorkout.Id;
+            _addToWorkout.Exercise = _selectedExercise;
+
+            try
+            {
+                await RoutineService.AddExerciseSetToWorkoutAsync(_addToWorkout);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            catch
+            {
+                MudDialog.Close(DialogResult.Ok(false));
+            }
+        }
+    }
+}

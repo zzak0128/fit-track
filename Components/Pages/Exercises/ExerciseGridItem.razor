@@ -9,6 +9,11 @@
         <MudStack AlignItems="AlignItems.Center" Row Style="width:100%">
             <MudChip T="string" Color="Color.Secondary" Variant="Variant.Filled">@Exercise.MuscleGroup</MudChip>
             <MudSpacer />
+            <AuthorizeView>
+                <Authorized>
+                    <MudButton StartIcon="@Icons.Material.Rounded.Add" Color="Color.Primary" OnClick="OnAddAsync">Add</MudButton>
+                </Authorized>
+            </AuthorizeView>
             <MudMenu>
                 <ActivatorContent>
                     <MudIconButton Icon="@Icons.Material.Rounded.MoreHoriz" />
@@ -37,6 +42,8 @@
     public EventCallback<ExerciseDto> OnEdit { get; set; }
     [Parameter]
     public EventCallback<int> OnRemove { get; set; }
+    [Parameter]
+    public EventCallback<ExerciseDto> OnAdd { get; set; }
 
     private Task OpenDialogAsync()
     {
@@ -50,11 +57,18 @@
 
     private async Task OnEditAsync()
     {
-       await OnEdit.InvokeAsync(Exercise);
+        await OnEdit.InvokeAsync(Exercise);
     }
 
     private async Task OnRemoveAsync()
     {
         await OnRemove.InvokeAsync(Exercise.Id);
     }
+
+    private async Task OnAddAsync()
+    {
+        await OnAdd.InvokeAsync(Exercise);
+    }
+
+
 }

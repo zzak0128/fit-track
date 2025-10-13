@@ -1,6 +1,7 @@
 ﻿@page "/exercises"
 @using FitTrack.Data
 @using FitTrack.Data.DTOs.Exercises
+@using FitTrack.Data.DTOs.Workouts
 @using FitTrack.Services.Routines
 @inject IRoutineService RoutineService
 @inject IDialogService DialogService
@@ -40,7 +41,7 @@ else
             @foreach (var exercise in FilteredExerciseList)
             {
                 <MudItem xs="12" sm="6" md="4" lg="3" xl="2" Style="display:flex">
-                    <ExerciseGridItem Exercise="exercise" OnEdit="OnEditHandler" OnRemove="OnRemoveHandler" />
+                    <ExerciseGridItem Exercise="exercise" OnEdit="OnEditHandler" OnRemove="OnRemoveHandler" OnAdd="OnAddHandler" />
                 </MudItem>
             }
         </MudGrid>
@@ -157,6 +158,30 @@ else
 
         FullExerciseList = await RoutineService.GetAllExercisesAsync();
         FilterExercises();
+    }
+
+    private async Task OnAddHandler(ExerciseDto exercise)
+    {
+        var dialogParameters = new DialogParameters<AddToWorkoutDialog>
+        {
+                { x => x._selectedExercise, exercise }
+        };
+
+        var addToWorkoutDialog = await DialogService.ShowAsync<AddToWorkoutDialog>("Add this Exercise to a Workout!", dialogParameters);
+        var result = await addToWorkoutDialog.Result;
+        if (!result.Canceled)
+        {
+            bool success = await addToWorkoutDialog.GetReturnValueAsync<bool>();
+            if (success)
+            {
+                Snackbar.Add("The exercise were added to the given workout.", Severity.Success);
+                addToWorkoutDialog.Close();
+            }
+            else
+            {
+                Snackbar.Add("Failed to Add the Exercise to a workout.", Severity.Error);
+            }
+        }
     }
 
     private void Search()

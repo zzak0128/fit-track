@@ -12,22 +12,60 @@
 <MudFileUpload T="IBrowserFile" Accept=".csv" FilesChanged="UploadFiles">
     <ActivatorContent>
         <MudButton Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.CloudUpload">
+                   Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.CloudUpload"
+                   Class="mb-3">
             Upload Files
         </MudButton>
     </ActivatorContent>
 </MudFileUpload>
 
-@if (_files != null)
+<MudAlert Severity="Severity.Normal" ContentAlignment="HorizontalAlignment.Start">
+    The import file must match formatting or it will fail.
+    Muscle Groups in the file also must match what is available in the app.
+
+    <br />
+    <MudText Typo="Typo.h6">Required Format</MudText>
+    <MudText Typo="Typo.body2" GutterBottom>
+        Format: CSV
+        <br />
+        Headers: Name, MuscleGroup, Description, ImagePath
+        <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Start">
+            File columns must follow this order.
+            The ImagePath column should have relative paths which will be saved to the database.
+            <br />
+            The folder path is as follows:
+            <br />
+            <code>/Exercises/{Exercise Name}/{Exercise Image}</code>
+            <br />
+            Example: <code>/Exercises/Air_Bike/0.jpg</code>
+        </MudAlert>
+        File Size Limit: 5 MB
+        <br />
+        Uploaded files will show below.
+    </MudText>
+        <MudText Typo="Typo.body1">
+            The current import does not check for duplicate exercise. This means you must be careful uploading multiple files as duplicates may be saved.
+</MudText>
+</MudAlert>
+
+
+@if (_files.Any())
 {
-    <MudList T="string">
-        @foreach (var file in _files)
-        {
-            <MudListItem Icon="@Icons.Material.Filled.AttachFile">
-                @file.Name <code>@file.Size bytes</code>
-            </MudListItem>
-        }
-    </MudList>
+    <MudText Typo="Typo.h5" Class="mt-6" GutterBottom>Uploaded Files</MudText>
+
+    <MudTable Items="_files">
+        <HeaderContent>
+            <MudTh>File Name</MudTh>
+            <MudTh>File Size</MudTh>
+            <MudTh>Content Type</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Name</MudTd>
+            <MudTd>@context.Size bytes</MudTd>
+            <MudTd>@context.ContentType</MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 
 @if (_isLoading)
@@ -64,7 +102,7 @@
     {
         List<ExerciseCsvRecord> records = [];
         List<ExerciseDto> exercises = [];
-        using (var stream = file.OpenReadStream(800000))
+        using (var stream = file.OpenReadStream(5242880))
         {
             using (var reader = new StreamReader(stream))
             {
@@ -101,7 +139,7 @@
         //     });
         // }
 
-        await RoutineService.CreateExerciseAsync(exercises);
+        //await RoutineService.CreateExerciseAsync(exercises);
         Snackbar.Add("The import was successful!", Severity.Success);
     }
 }

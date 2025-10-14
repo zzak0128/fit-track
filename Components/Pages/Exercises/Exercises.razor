@@ -19,12 +19,16 @@
 }
 else
 {
-
-    <MudMenu @ref="_headerMenu" PositionAtCursor>
-        <ChildContent>
-            <MudMenuItem Href="exercises/import">Import from File</MudMenuItem>
-        </ChildContent>
-    </MudMenu>
+    <AuthorizeView>
+        <Authorized>
+            <MudMenu @ref="_headerMenu" PositionAtCursor>
+                <ChildContent>
+                    <MudMenuItem Icon="@Icons.Material.Outlined.Add" OnClick="CreateExerciseAsync">Add an Exercise</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Outlined.FileUpload" Href="exercises/import">Import from File</MudMenuItem>
+                </ChildContent>
+            </MudMenu>
+        </Authorized>
+        </AuthorizeView>
 
     @if (_isGrid)
     {
@@ -91,11 +95,12 @@ else
     <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="mb-4 mt-4" />
 }
 
-<AuthorizeView>
-    <Authorized>
-        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateExerciseAsync" Style="position:fixed; bottom:25px; right:25px;" />
-    </Authorized>
-</AuthorizeView>
+<MudStack Row Spacing="6" Style="position:fixed; bottom:25px; right:25px;">
+    <MudScrollToTop>
+        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.KeyboardArrowUp" />
+    </MudScrollToTop>
+</MudStack>
+
 
 @code {
     private string _searchString = "";

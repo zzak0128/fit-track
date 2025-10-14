@@ -1,5 +1,27 @@
 ﻿@page "/"
 
+<AuthorizeView>
+    <Authorized>
+        <RedirectToRoutes />
+    </Authorized>
+    <NotAuthorized>
+        <PageHeaderTitle Title="Welcome to FitTrack!"></PageHeaderTitle>
+        <MudText Typo="Typo.subtitle1">
+            You must be registered and login to use FitTrack.
+            <br />
+            <MudStack Row Spacing="6">
+            <MudButton StartIcon="@Icons.Material.Filled.Login" Href="account/login" Color="Color.Primary">
+                Login
+            </MudButton>
+             <MudButton StartIcon="@Icons.Material.Filled.AppRegistration" Href="account/register" Typo="Typo.body1"  Color="Color.Primary">
+                Register
+            </MudButton>
+            </MudStack>
+        </MudText>
+    </NotAuthorized>
+</AuthorizeView>
+
+
 <PageTitle>Home</PageTitle>
 
 <MudText Typo="Typo.h3" GutterBottom="true">Hello, world!</MudText>

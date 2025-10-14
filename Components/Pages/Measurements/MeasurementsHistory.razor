@@ -3,6 +3,8 @@
 @using FitTrack.Data.DTOs.Measurements
 @using FitTrack.Services.Measurements
 @using Microsoft.AspNetCore.Identity
+@using FitTrack.Extensions
+@inject IDialogService DialogService
 @inject IMeasurementService MeasurementService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -51,7 +53,10 @@
 
     private async Task DeleteMeasurementDataAsync(int measurementDataId)
     {
-        await MeasurementService.RemoveMeasurementDataAsync(measurementDataId);
-        _measurement = await MeasurementService.GetMeasurementByIdAsync(MeasurementId, CurrentUser);
+        if (await DialogService.ConfirmDelete())
+        {
+            await MeasurementService.RemoveMeasurementDataAsync(measurementDataId);
+            _measurement = await MeasurementService.GetMeasurementByIdAsync(MeasurementId, CurrentUser);
+        }
     }
 }

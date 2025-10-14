@@ -1,6 +1,7 @@
 ﻿@page "/measurements"
 @using FitTrack.Data
 @using FitTrack.Data.DTOs.Measurements
+@using FitTrack.Extensions
 @using FitTrack.Services.Measurements
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -138,8 +139,11 @@ else
 
     private async Task RemoveMeasurementTypeAsync(MeasurementChartDto measurement)
     {
-        await MeasurementService.RemoveMeasurementTypeAsync(measurement.MeasurementId);
-        MeasurementsList = await MeasurementService.GetMeasurementChartDataAsync(CurrentUser);
+        if (await DialogService.ConfirmDelete())
+        {
+            await MeasurementService.RemoveMeasurementTypeAsync(measurement.MeasurementId);
+            MeasurementsList = await MeasurementService.GetMeasurementChartDataAsync(CurrentUser);
+        }
     }
 
     private void NavigateToHistory(int id)

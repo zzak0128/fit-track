@@ -2,6 +2,7 @@
 @using FitTrack.Data
 @using FitTrack.Data.DTOs.Exercises
 @using FitTrack.Data.DTOs.Workouts
+@using FitTrack.Extensions
 @using FitTrack.Services.Routines
 @inject IRoutineService RoutineService
 @inject IDialogService DialogService
@@ -28,7 +29,7 @@ else
                 </ChildContent>
             </MudMenu>
         </Authorized>
-        </AuthorizeView>
+    </AuthorizeView>
 
     @if (_isGrid)
     {
@@ -197,17 +198,20 @@ else
 
     private async Task OnRemoveHandler(int exerciseId)
     {
-        try
+        if (await DialogService.ConfirmDelete())
         {
-            await RoutineService.DeleteExerciseAsync(exerciseId);
-        }
-        catch
-        {
-            Snackbar.Add("Failed to delete the Exercise", Severity.Error);
-        }
+            try
+            {
+                await RoutineService.DeleteExerciseAsync(exerciseId);
+            }
+            catch
+            {
+                Snackbar.Add("Failed to delete the Exercise", Severity.Error);
+            }
 
-        FullExerciseList = await RoutineService.GetAllExercisesAsync();
-        FilterExercises();
+            FullExerciseList = await RoutineService.GetAllExercisesAsync();
+            FilterExercises();
+        }
     }
 
     private async Task OnAddHandler(ExerciseDto exercise)

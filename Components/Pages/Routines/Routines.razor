@@ -1,6 +1,7 @@
 ﻿@page "/routines"
 @using FitTrack.Data
 @using FitTrack.Data.DTOs.Routines
+@using FitTrack.Extensions
 @using FitTrack.Services.Routines
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -95,6 +96,7 @@ else
 
     private async Task DeleteRoutineAsync(int routineId)
     {
+        if(await DialogService.ConfirmDelete())
         try
         {
             await RoutineService.DeleteRoutineAsync(routineId);

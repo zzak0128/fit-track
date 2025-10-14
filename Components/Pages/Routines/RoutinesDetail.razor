@@ -4,6 +4,7 @@
 @using FitTrack.Data.DTOs.ExerciseSets
 @using FitTrack.Data.DTOs.Exercises
 @using FitTrack.Data.DTOs.Routines
+@using FitTrack.Extensions
 @using FitTrack.Services.Routines
 @using FitTrack.Data.DTOs.Workouts
 @using Microsoft.AspNetCore.Authorization
@@ -246,20 +247,26 @@ else
 
     private async Task RemoveExerciseSetAsync(DetailExerciseSetDto exercise)
     {
-        await RoutineService.RemoveExerciseSetAsync(new RemoveExerciseSetDto
+        if(await DialogService.ConfirmDelete())
         {
-            WorkoutId = exercise.WorkoutId,
-            ExerciseSetId = exercise.Id
-        });
+            await RoutineService.RemoveExerciseSetAsync(new RemoveExerciseSetDto
+            {
+                WorkoutId = exercise.WorkoutId,
+                ExerciseSetId = exercise.Id
+            });
 
-        await RefreshDetailRoutineAsync(exercise.WorkoutId);
+            await RefreshDetailRoutineAsync(exercise.WorkoutId);
+        }
     }
 
     private async Task RemoveWorkoutAsync(BaseWorkoutDto workout)
     {
-        await RoutineService.RemoveWorkoutAsync(workout.Id);
+        if (await DialogService.ConfirmDelete())
+        {
+            await RoutineService.RemoveWorkoutAsync(workout.Id);
 
-        await RefreshDetailRoutineAsync(workout.Id);
+            await RefreshDetailRoutineAsync(workout.Id);
+        }
     }
 
     // Data Grid Events

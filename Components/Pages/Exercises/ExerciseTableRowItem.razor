@@ -1,0 +1,72 @@
+﻿@using FitTrack;
+@using FitTrack.Data.DTOs.Exercises
+@inject IDialogService _dialogService
+
+<MudTd>
+    <MudImage ObjectFit="ObjectFit.ScaleDown" Style="height: 80px" Elevation="2" Src="@Exercise.ImagePaths.FirstOrDefault()"></MudImage>
+</MudTd>
+<MudTd>
+    <MudText Typo="Typo.subtitle1" Inline="false">@Exercise.Name</MudText>
+</MudTd>
+<MudTd>
+    <MudChip T="string" Color="Color.Secondary" Variant="Variant.Filled">@Exercise.MuscleGroup</MudChip>
+</MudTd>
+<MudTd>
+    <AuthorizeView>
+        <Authorized>
+            <MudButton StartIcon="@Icons.Material.Rounded.Add" Color="Color.Primary" OnClick="OnAddAsync">Add</MudButton>
+        </Authorized>
+    </AuthorizeView>
+</MudTd>
+<MudTd>
+    <MudStack Row>
+        <MudMenuItem Icon="@Icons.Material.Filled.Details" IconColor="Color.Primary" OnClick="OpenDialogAsync">Details</MudMenuItem>
+        <AuthorizeView>
+            <Authorized>
+                <MudMenuItem Icon="@Icons.Material.Filled.Edit" OnClick="OnEditAsync">Edit</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" OnClick="OnRemoveAsync">Delete</MudMenuItem>
+            </Authorized>
+            <NotAuthorized>
+                <MudMenuItem Label="Sign in to manage" Href="Account/Login" />
+            </NotAuthorized>
+        </AuthorizeView>
+    </MudStack>
+</MudTd>
+
+@code {
+    [Parameter]
+    public required ExerciseDto Exercise { get; set; }
+    [Parameter]
+    public EventCallback<ExerciseDto> OnEdit { get; set; }
+    [Parameter]
+    public EventCallback<int> OnRemove { get; set; }
+    [Parameter]
+    public EventCallback<ExerciseDto> OnAdd { get; set; }
+
+    private Task OpenDialogAsync()
+    {
+        var dialogParameters = new DialogParameters<ExerciseDetailDialog>
+        {
+            {x => x.Exercise, Exercise}
+        };
+
+        return _dialogService.ShowAsync<ExerciseDetailDialog>(Exercise.Name, dialogParameters);
+    }
+
+    private async Task OnEditAsync()
+    {
+        await OnEdit.InvokeAsync(Exercise);
+    }
+
+    private async Task OnRemoveAsync()
+    {
+        await OnRemove.InvokeAsync(Exercise.Id);
+    }
+
+    private async Task OnAddAsync()
+    {
+        await OnAdd.InvokeAsync(Exercise);
+    }
+
+
+}

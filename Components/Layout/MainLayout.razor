@@ -9,11 +9,10 @@
     CloseOnEscapeKey="true"/>
 <MudSnackbarProvider />
 <MudLayout>
-    <MudAppBar Elevation="1" Dense>
+    <MudAppBar Elevation="1">
         <MudIconButton Edge="Edge.Start" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" @onclick="ToggleDrawer" />
         <MudLink Typo="Typo.h5" Color="Color.Inherit" Underline="Underline.None" Href="/">Fit Track</MudLink>
         <MudSpacer />
-            <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" Href="exercises/import" />
     </MudAppBar>
     <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" Variant="DrawerVariant.Temporary" ClipMode="DrawerClipMode.Always" Overlay Elevation="2">
         <NavMenu />

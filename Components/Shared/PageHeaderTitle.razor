@@ -7,6 +7,12 @@
             <MudIconButton Icon="@Icons.Material.Outlined.KeyboardArrowLeft" Color="Color.Primary"  OnClick="NavigateBack"></MudIconButton>
         }
         <MudText Typo="Typo.h3" Color="Color.Primary">@Title</MudText>
+
+        @if (ActionMenu is not null)
+        {
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Filled.MoreVert" OnClick="ShowMenu"/>
+        }
     </MudStack>
 </MudPaper>
 
@@ -17,9 +23,16 @@
     [Parameter]
     public bool ShowBackButton { get; set; } = false;
 
+    [Parameter]
+    public MudMenu? ActionMenu { get; set; } = null;
+
     public async Task NavigateBack()
     {
         await jsRuntime.InvokeVoidAsync("history.back");
     }
 
+    private async Task ShowMenu(MouseEventArgs args)
+    {
+        await ActionMenu.OpenMenuAsync(args);
+    }
 }

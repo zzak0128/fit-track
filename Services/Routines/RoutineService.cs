@@ -306,12 +306,20 @@ public class RoutineService : IRoutineService
     public async Task AddExerciseSetToWorkoutAsync(CreateExerciseSetDto newSet)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
-        var workout = await context.Workouts.FindAsync(newSet.WorkoutId) ?? throw new Exception("Unable to find the Workout");
+        var workout = await context.Workouts.Include(x => x.ExerciseSets).FirstOrDefaultAsync(x => x.Id == newSet.WorkoutId) ?? throw new Exception("Unable to find the Workout");
         var exercise = await context.Exercises.FindAsync(newSet.Exercise.Id) ?? throw new Exception("Unable to find the Exercise");
+
+        int setMax = 1;
+        bool hasExerciseSet = workout.ExerciseSets.Count != 0;
+        if (hasExerciseSet)
+        {
+            setMax = workout.ExerciseSets.Max(x => x.Sequence);
+        }
 
         workout.ExerciseSets.Add(new ExerciseSet
         {
-            Exercise = exercise
+            Exercise = exercise,
+            Sequence = hasExerciseSet ? setMax + 1 : 1,
         });
 
         await context.SaveChangesAsync();

@@ -1,4 +1,5 @@
-﻿@if (!string.IsNullOrEmpty(DisplayMessage))
+﻿@using FitTrack.Components.Account
+@if (!string.IsNullOrEmpty(DisplayMessage))
 {
     var severity = DisplayMessage.StartsWith("Error") ? Severity.Error : Severity.Success;
 

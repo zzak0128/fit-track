@@ -1,0 +1,41 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using FitTrack.Data
+@inject NavigationManager NavigationManager
+
+<MudNavMenu>
+    <MudNavLink Href="Account/Manage" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person">Profile</MudNavLink>
+    <MudNavLink Href="Account/Manage/Email" Icon="@Icons.Material.Filled.Email">Email</MudNavLink>
+    <MudNavLink Href="Account/Manage/ChangePassword" Icon="@Icons.Material.Filled.Lock">Password</MudNavLink>
+    <MudNavLink Href="Account/Manage/PersonalData" Icon="@Icons.Material.Filled.PersonRemove">Personal data</MudNavLink>
+    <MudSpacer />
+    <form action="Account/Logout" method="post">
+        <AntiforgeryToken />
+        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+        <button type="submit" class="mud-nav-link mud-ripple">
+            <MudIcon Icon="@Icons.Material.Filled.Logout" Color="Color.Info" Class="mr-3"></MudIcon> Logout
+        </button>
+        </form>
+</MudNavMenu>
+
+
+@code {
+        private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}
+

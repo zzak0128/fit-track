@@ -30,39 +30,97 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.Entity<Workout>()
-            .HasMany(w => w.ExerciseSets)
+
+        modelBuilder.Entity<Workout>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasMany(w => w.ExerciseSets)
             .WithOne(e => e.Workout)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Routine>()
-            .HasMany(r => r.Workouts)
+            e.Property(x => x.Name)
+            .HasMaxLength(150)
+            .IsRequired();
+        });
+
+        modelBuilder.Entity<Routine>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasMany(r => r.Workouts)
             .WithOne(w => w.Routine)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<ExerciseSet>()
-            .HasOne(e => e.Exercise)
+            e.Property(x => x.Name)
+            .HasMaxLength(100)
+            .IsRequired();
+
+            e.Property(x => x.Description)
+            .HasMaxLength(300)
+            .IsRequired(false);
+        });
+
+        modelBuilder.Entity<ExerciseSet>(e =>
+        {
+            e.HasKey(e => e.Id);
+            e.HasOne(e => e.Exercise)
             .WithMany()
             .OnDelete(DeleteBehavior.SetNull);
 
-        modelBuilder.Entity<Exercise>()
-            .HasMany(e => e.ExerciseSet)
+            e.Property(x => x.Sequence)
+            .HasDefaultValue(1);
+        });
+
+        modelBuilder.Entity<Exercise>(e =>
+        {
+            e.HasKey(e => e.Id);
+            e.HasMany(e => e.ExerciseSet)
             .WithOne(x => x.Exercise)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Exercise>()
-            .HasMany(e => e.Thumbnails)
+            e.HasMany(e => e.Thumbnails)
             .WithOne(x => x.Exercise)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Activity>()
-            .HasOne(e => e.Workout)
+            e.Property(x => x.Name)
+            .HasMaxLength(100)
+            .IsRequired();
+
+            e.Property(x => x.Description)
+            .IsRequired(false);
+        });
+
+
+        modelBuilder.Entity<Activity>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasOne(e => e.Workout)
             .WithMany()
             .OnDelete(DeleteBehavior.NoAction);
+        });
 
-        modelBuilder.Entity<Measurement>()
-            .HasMany(e => e.MeasurementData)
+
+        modelBuilder.Entity<Measurement>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasMany(e => e.MeasurementData)
             .WithOne(m => m.Measurement)
             .OnDelete(DeleteBehavior.Cascade);
+
+            e.Property(x => x.Name)
+            .HasMaxLength(100)
+            .IsRequired();
+        });
+
+        modelBuilder.Entity<MeasurementData>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Unit)
+            .HasMaxLength(10)
+            .IsRequired();
+
+            e.Property(x => x.Amount)
+            .HasPrecision(5,2)
+            .IsRequired();
+        });
     }
 }

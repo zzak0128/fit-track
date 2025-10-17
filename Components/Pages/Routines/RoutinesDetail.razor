@@ -14,8 +14,10 @@
 @inject ISnackbar Snackbar
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
-
 @attribute [Authorize]
+
+<PageTitle>@DetailRoutine?.Routine?.Name Details</PageTitle>
+
 <PageHeaderTitle Title="Routine Overview" ShowBackButton />
 
 <MudStack row Justify="Justify.SpaceBetween">

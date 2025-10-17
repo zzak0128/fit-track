@@ -11,8 +11,9 @@
 @inject NavigationManager NavManager
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
-
 @attribute [Authorize]
+
+<PageTitle>Measurements</PageTitle>
 
 @if (!MeasurementsList.Any())
 {

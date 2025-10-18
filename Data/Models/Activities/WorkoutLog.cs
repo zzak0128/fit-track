@@ -6,7 +6,7 @@ public class WorkoutLog
 {
     public int Id { get; set; }
 
-    public Workout Workout { get; set; }
+    public Exercise Exercise { get; set; }
 
     public int SetCount { get; set; }
 
@@ -14,9 +14,7 @@ public class WorkoutLog
 
     public int Repetitions { get; set; }
 
-    public DateTime DateCompleted { get; set; }
+    public DateTime? DateCompleted { get; set; }
 
-    public int TimeElapsedSeconds { get; set; }
-
-    public ApplicationUser User { get; set; }
+    public virtual Activity Activity { get; set; } = null!;
 }

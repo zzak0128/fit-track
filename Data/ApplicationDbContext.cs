@@ -93,9 +93,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Activity>(e =>
         {
             e.HasKey(x => x.Id);
-            e.HasOne(e => e.Workout)
-            .WithMany()
-            .OnDelete(DeleteBehavior.NoAction);
+            e.HasMany(e => e.WorkoutLogs)
+            .WithOne(x => x.Activity)
+            .OnDelete(DeleteBehavior.Cascade);
         });
 
 

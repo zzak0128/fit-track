@@ -1,0 +1,104 @@
+﻿@page "/activity/history"
+@using FitTrack.Data
+@using FitTrack.Data.DTOs.Activities
+@using FitTrack.Extensions
+@using FitTrack.Services.Activities
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@inject IActivityService ActivityService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@attribute [Authorize]
+
+<PageHeaderTitle Title="Activity History" />
+
+<MudTable T="ActivityListDto" Items="@_activityList" Hover Striped OnRowClick="@OnRowClickHandler">
+    <HeaderContent>
+        <MudTh>Workout</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">@context.WorkoutName</MudTd>
+        <MudTd Class="d-flex justify-end">
+            <MudIconButton Icon="@Icons.Material.Filled.Check" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteActivityAsync(context.ActivityId)" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+<MudStack Row Justify="Justify.FlexEnd" AlignItems="AlignItems.End" Spacing="1" Style="position:fixed; bottom:25px; right:25px">
+    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" title="Log a Workout" OnClick="StartActivityAsync" />
+</MudStack>
+
+@code {
+    public ApplicationUser CurrentUser { get; set; }
+
+    private List<ActivityListDto> _activityList = [];
+
+    protected async override Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        CurrentUser = await UserManager.GetUserAsync(authState.User);
+
+        if (CurrentUser is not null)
+        {
+            _activityList = await ActivityService.GetActivityListAsync();
+        }
+    }
+
+    private void OnRowClickHandler(TableRowClickEventArgs<ActivityListDto> args)
+    {
+        var activityId = args.Item.ActivityId;
+        var uri = $"/activity/start/{activityId}";
+        Navigation.NavigateTo(uri);
+
+    }
+
+    private async Task DeleteActivityAsync(int activityId)
+    {
+        if (await DialogService.ConfirmDelete())
+            try
+            {
+                await ActivityService.DeleteActivityAsync(activityId);
+                _activityList = await ActivityService.GetActivityListAsync();
+
+            }
+            catch
+            {
+                Snackbar.Add("Failed to delete the Activity", Severity.Error);
+            }
+    }
+
+    private void NavigateToDetails(int activityId)
+    {
+        Navigation.NavigateTo($"/activity/start/{activityId}");
+    }
+
+    private async Task StartActivityAsync()
+    {
+        var dialogParams = new DialogParameters<CreateActivityDialog>
+        {
+            {x  => x.ApplicationUser, CurrentUser }
+        };
+
+        var createDialog = await DialogService.ShowAsync<CreateActivityDialog>("Create a new Activity!", dialogParams);
+        var result = await createDialog.Result;
+        if (!result.Canceled)
+        {
+            int newActivityId = await createDialog.GetReturnValueAsync<int>();
+            if (newActivityId > 0)
+            {
+                createDialog.Close();
+                Navigation.NavigateTo($"/activity/start/{newActivityId}", true);
+            }
+            else
+            {
+                Snackbar.Add("Failed to start the new workout", Severity.Error);
+            }
+        }
+    }
+}

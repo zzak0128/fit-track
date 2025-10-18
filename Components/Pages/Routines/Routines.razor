@@ -1,4 +1,5 @@
 ﻿@page "/routines"
+@using FitTrack.Components.Pages.Activities
 @using FitTrack.Data
 @using FitTrack.Data.DTOs.Routines
 @using FitTrack.Extensions
@@ -42,7 +43,10 @@ else
     </MudTable>
 }
 
-<MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateRoutineAsync" Style="position:fixed; bottom:25px; right:25px;" />
+<MudStack Row Justify="Justify.FlexEnd" AlignItems="AlignItems.End" Spacing="1" Style="position:fixed; bottom:25px; right:25px" >
+    <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="CreateRoutineAsync" title="Add a new Routine" />
+    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Leaderboard" title="Log a Workout" OnClick="StartActivityAsync" />
+</MudStack>
 
 @code {
     public List<BaseRoutineDto> RoutineList { get; set; } = [];
@@ -91,6 +95,30 @@ else
             else
             {
                 Snackbar.Add("Failed to Save the new Routine", Severity.Error);
+            }
+        }
+    }
+
+    private async Task StartActivityAsync()
+    {
+        var dialogParams = new DialogParameters<CreateActivityDialog>
+        {
+            {x  => x.ApplicationUser, CurrentUser }
+        };
+
+        var createDialog = await DialogService.ShowAsync<CreateActivityDialog>("Create a new Activity!", dialogParams);
+        var result = await createDialog.Result;
+        if (!result.Canceled)
+        {
+            int newActivityId = await createDialog.GetReturnValueAsync<int>();
+            if (newActivityId > 0)
+            {
+                createDialog.Close();
+                Navigation.NavigateTo($"/activity/start/{newActivityId}", true);
+            }
+            else
+            {
+                Snackbar.Add("Failed to start the new workout", Severity.Error);
             }
         }
     }

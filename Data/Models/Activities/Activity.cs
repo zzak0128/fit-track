@@ -1,16 +1,12 @@
-﻿using FitTrack.Data.Models.Routines;
-
-namespace FitTrack.Data.Models.Activities;
+﻿namespace FitTrack.Data.Models.Activities;
 
 public class Activity
 {
     public int Id { get; set; }
 
-    public Workout Workout { get; set; }
+    public string WorkoutName { get; set; }
 
-    public DateTime StartTime { get; set; }
-
-    public DateTime EndTime { get; set; }
+    public List<WorkoutLog> WorkoutLogs { get; set; }
 
     public ApplicationUser User { get; set; }
 }

@@ -1,0 +1,133 @@
+﻿@page "/activity/start/{ActivityId:int}"
+@using FitTrack.Data
+@using FitTrack.Data.DTOs.Activities
+@using FitTrack.Data.DTOs.ExerciseSets
+@using FitTrack.Services.Activities
+@using Microsoft.AspNetCore.Identity
+
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IActivityService ActivityService
+
+<PageTitle>Start @_activity?.WorkoutName</PageTitle>
+<PageHeaderTitle title="@_activity?.WorkoutName" />
+
+<MudTabs @ref="mudTabs" Elevation="1" Outlined ApplyEffectsToContainer Ripple PanelClass="pa-6">
+    @if (_activity is not null)
+    {
+        @foreach (var exercise in _activity.ExerciseList)
+        {
+            <MudTabPanel Text="@exercise.Exercise.Name" OnClick="() => SetActivitySets(exercise)">
+                <MudCarousel TData="string"
+                             ShowArrows
+                             ShowBullets
+                             EnableSwipeGesture
+                             AutoCycle
+                             ItemsSource="exercise.Exercise.ImagePaths"
+                             Style="height:450px">
+                    <ItemTemplate>
+                        <div class="d-flex justify-center" style="Height:100%">
+                            <MudImage ObjectFit="ObjectFit.Contain" Src="@context"></MudImage>
+                        </div>
+                    </ItemTemplate>
+                </MudCarousel>
+
+                <MudCard Class="ma-3">
+                    <MudCardContent>
+                        @exercise.Exercise.Description
+                    </MudCardContent>
+                </MudCard>
+
+                <MudDataGrid T="ActivitySet"
+                             Items="_activitySets"
+                             ReadOnly="false"
+                             Dense
+                             EditMode="DataGridEditMode.Cell"
+                             CommittedItemChanges="@CommittedItemChanges"
+                             EditTrigger="DataGridEditTrigger.OnRowClick"
+                             Class="ma-3">
+                    <Columns>
+                        <PropertyColumn Title="Weight" Property="x => x.Weight" />
+                        <PropertyColumn Title="Reps" Property="x => x.Repetitions" />
+                    </Columns>
+                </MudDataGrid>
+
+                <MudButton Variant="Variant.Filled" Color="Color.Success">Complete</MudButton>
+            </MudTabPanel>
+        }
+    }
+</MudTabs>
+@code {
+    [Parameter]
+    public int ActivityId { get; set; }
+
+    private MudTabs mudTabs;
+
+    private ActiveActivityDto _activity;
+    private ApplicationUser CurrentUser;
+
+    private List<ActivitySet> _activitySets = [];
+
+    protected async override Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        CurrentUser = await UserManager.GetUserAsync(authState.User);
+
+        if (CurrentUser is not null)
+        {
+            _activity = await ActivityService.GetActiveActivityByIdAsync(ActivityId, CurrentUser);
+        }
+    }
+
+    private void SetActivitySets(WorkoutLogDto workoutLog)
+    {
+        _activitySets.Clear();
+
+        for (int i = 0; i < workoutLog.SetCount; i++)
+        {
+            _activitySets.Add(new ActivitySet
+            {
+                Repetitions = workoutLog.Repetitions,
+                Weight = workoutLog.Weight
+            });
+        }
+    }
+
+    // Data Grid Events
+    // private void StartedEditingItem(DetailExerciseSetDto item)
+    // {
+    //     ExerciseSetBackup.Id = item.Id;
+    //     ExerciseSetBackup.Exercise = item.Exercise;
+    //     ExerciseSetBackup.Weight = item.Weight;
+    //     ExerciseSetBackup.Repetitions = item.Repetitions;
+    //     ExerciseSetBackup.SetCount = item.SetCount;
+    // }
+
+    // private void CanceledEditingItem(DetailExerciseSetDto item)
+    // {
+    //     item.Id = ExerciseSetBackup.Id;
+    //     item.Exercise = ExerciseSetBackup.Exercise;
+    //     item.Weight = ExerciseSetBackup.Weight;
+    //     item.Repetitions = ExerciseSetBackup.Repetitions;
+    //     item.SetCount = ExerciseSetBackup.SetCount;
+    // }
+
+    private async Task CommittedItemChanges(ActivitySet item)
+    {
+        // var exerciseToUpdate = ExerciseSets.Find(x => x.Id == item.Id);
+        // exerciseToUpdate = item;
+
+        // UpdateExerciseSetDto updateExerciseSet = new()
+        // {
+        //     Id = item.Id,
+        //     Weight = item.Weight,
+        //     Repetitions = item.Repetitions,
+        //     SetCount = item.SetCount,
+        //     Sequence = item.Sequence,
+        // };
+
+        // await RoutineService.UpdateExerciseSetAsync(updateExerciseSet);
+        // await RefreshDetailRoutineAsync(item.WorkoutId);
+        return;
+    }
+}

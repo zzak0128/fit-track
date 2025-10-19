@@ -5,7 +5,7 @@ namespace FitTrack.Services.Activities;
 
 public interface IActivityService
 {
-    Task CompleteActivityAsync(ActiveActivityDto completeActivity);
+    Task SaveActivityAsync(ActiveActivityDto completeActivity, bool isComplete = false);
     Task CompleteActivityByIdAsync(int activityId);
     Task<int> CreateActivityAsync(CreateActivityDto activityDto);
     Task DeleteActivityAsync(int activityId);

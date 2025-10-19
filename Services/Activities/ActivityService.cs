@@ -105,7 +105,7 @@ public class ActivityService : IActivityService
         return activityList;
     }
 
-    public async Task CompleteActivityAsync(ActiveActivityDto completeActivity)
+    public async Task SaveActivityAsync(ActiveActivityDto completeActivity, bool isCompleted = false)
     {
         var context = await _contextFactory.CreateDbContextAsync();
         Activity activity = await context.Activities
@@ -128,7 +128,11 @@ public class ActivityService : IActivityService
                 Exercise = activity.WorkoutLogs.Select(y => y.Exercise).FirstOrDefault(z => z.Id == x.Exercise.Id),
             }).ToList();
 
-        activity.DateCompleted = DateTime.Now;
+        if (isCompleted)
+        {
+            activity.DateCompleted = DateTime.Now;
+
+        }
 
         context.Activities.Update(activity);
         await context.SaveChangesAsync();

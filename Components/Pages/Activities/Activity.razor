@@ -9,6 +9,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IActivityService ActivityService
+@inject ISnackbar Snackbar
 
 <PageTitle>Start @_activity?.WorkoutName</PageTitle>
 <PageHeaderTitle title="@_activity?.WorkoutName" />
@@ -45,6 +46,7 @@
                              Dense
                              EditMode="DataGridEditMode.Cell"
                              EditTrigger="DataGridEditTrigger.OnRowClick"
+                             CommittedItemChanges="SaveWorkoutAsync"
                              Class="ma-3">
                     <Columns>
                         <PropertyColumn Title="Weight" Property="x => x.Weight" />
@@ -60,11 +62,16 @@
                 </MudDataGrid>
             </MudTabPanel>
         }
+        <MudStack Class="d-flex justify-end ma-3" Row>
+            <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.KeyboardDoubleArrowLeft" Color="Color.Primary" Disabled="@(CurrentTabIndex == 0)" OnClick="PreviousTab">Previous</MudButton>
+            <MudButton FullWidth Variant="Variant.Filled" Color="Color.Success" OnClick="SaveWorkoutAsync">Save</MudButton>
+            <MudButton FullWidth Variant="Variant.Filled" EndIcon="@Icons.Material.Outlined.KeyboardDoubleArrowRight"  Color="Color.Primary" Disabled="@(CurrentTabIndex == TabCount - 1)" OnClick="NextTab">Next</MudButton>
+        </MudStack>
     }
 </MudTabs>
 
 <MudStack Class="d-flex justify-end ma-3" Row>
-    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="CompleteWorkoutAsync">Complete</MudButton>
+    <MudButton FullWidth Variant="Variant.Filled" Color="Color.Success" OnClick="CompleteWorkoutAsync">Complete</MudButton>
 </MudStack>
 
 @code {
@@ -75,6 +82,21 @@
 
     private ActiveActivityDto _activity;
     private ApplicationUser CurrentUser;
+
+    private int tabCount;
+
+    public int TabCount
+    {
+        get { return  mudTabs.Panels.Count; }
+    }
+
+    private int currentTabIndex;
+
+    public int CurrentTabIndex
+    {
+        get { return mudTabs.ActivePanelIndex; }
+    }
+
 
     protected async override Task OnInitializedAsync()
     {
@@ -98,9 +120,38 @@
         log.ActivitySets.Add(newSet);
     }
 
-        private async Task CompleteWorkoutAsync()
+    private void NextTab()
+    {
+        if (CurrentTabIndex < TabCount - 1)
         {
-            await ActivityService.CompleteActivityAsync(_activity);
-            Navigation.NavigateTo("/activity/history", true);
+            mudTabs.ActivatePanel(CurrentTabIndex + 1);
         }
+    }
+
+    private void PreviousTab()
+    {
+        if (CurrentTabIndex > 0)
+        {
+            mudTabs.ActivatePanel(CurrentTabIndex - 1);
+        }
+    }
+
+    private async Task CompleteWorkoutAsync()
+    {
+        await ActivityService.SaveActivityAsync(_activity, true);
+        Navigation.NavigateTo("/activity/history", true);
+    }
+
+    private async Task SaveWorkoutAsync()
+    {
+        try
+        {
+            await ActivityService.SaveActivityAsync(_activity);
+            Snackbar.Add("Workout has been saved successfully!", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("Unable to save workout, try again later.", Severity.Error);
+        }
+    }
 }

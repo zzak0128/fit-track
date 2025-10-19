@@ -8,13 +8,7 @@ public class WorkoutLog
 
     public Exercise Exercise { get; set; }
 
-    public int SetCount { get; set; }
-
-    public double Weight { get; set; }
-
-    public int Repetitions { get; set; }
-
-    public DateTime? DateCompleted { get; set; }
+    public List<ActivitySet> ActivitySets { get; set; } = [];
 
     public virtual Activity Activity { get; set; } = null!;
 }

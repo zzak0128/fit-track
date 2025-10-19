@@ -4,6 +4,7 @@ using FitTrack.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FitTrack.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251018164933_AddDateCompletedActivity")]
+    partial class AddDateCompletedActivity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,30 +114,6 @@ namespace FitTrack.Migrations
                     b.ToTable("Activities");
                 });
 
-            modelBuilder.Entity("FitTrack.Data.Models.Activities.ActivitySet", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Repetitions")
-                        .HasColumnType("int");
-
-                    b.Property<double>("Weight")
-                        .HasColumnType("double");
-
-                    b.Property<int>("WorkoutLogId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WorkoutLogId");
-
-                    b.ToTable("ActivitySets");
-                });
-
             modelBuilder.Entity("FitTrack.Data.Models.Activities.WorkoutLog", b =>
                 {
                     b.Property<int>("Id")
@@ -148,6 +127,15 @@ namespace FitTrack.Migrations
 
                     b.Property<int>("ExerciseId")
                         .HasColumnType("int");
+
+                    b.Property<int>("Repetitions")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SetCount")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Weight")
+                        .HasColumnType("double");
 
                     b.HasKey("Id");
 
@@ -485,17 +473,6 @@ namespace FitTrack.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("FitTrack.Data.Models.Activities.ActivitySet", b =>
-                {
-                    b.HasOne("FitTrack.Data.Models.Activities.WorkoutLog", "WorkoutLog")
-                        .WithMany("ActivitySets")
-                        .HasForeignKey("WorkoutLogId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("WorkoutLog");
-                });
-
             modelBuilder.Entity("FitTrack.Data.Models.Activities.WorkoutLog", b =>
                 {
                     b.HasOne("FitTrack.Data.Models.Activities.Activity", "Activity")
@@ -639,11 +616,6 @@ namespace FitTrack.Migrations
             modelBuilder.Entity("FitTrack.Data.Models.Activities.Activity", b =>
                 {
                     b.Navigation("WorkoutLogs");
-                });
-
-            modelBuilder.Entity("FitTrack.Data.Models.Activities.WorkoutLog", b =>
-                {
-                    b.Navigation("ActivitySets");
                 });
 
             modelBuilder.Entity("FitTrack.Data.Models.Measurements.Measurement", b =>

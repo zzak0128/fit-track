@@ -8,11 +8,7 @@ public class WorkoutLogDto
 
     public ExerciseDto Exercise { get; set; }
 
+    public List<ActivitySetDto> ActivitySets { get; set; } = [];
+
     public int SetCount { get; set; }
-
-    public double Weight { get; set; }
-
-    public int Repetitions { get; set; }
-
-    public DateTime? DateCompleted { get; set; }
 }

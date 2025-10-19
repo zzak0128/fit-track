@@ -24,10 +24,14 @@ public class ActivityService : IActivityService
         List<WorkoutLog> workoutLogs = workout.ExerciseSets.Select(x => new WorkoutLog
         {
             Exercise = x.Exercise,
-            SetCount = x.SetCount,
-            Weight = x.Weight,
-            Repetitions = x.Repetitions,
-            DateCompleted = null
+            ActivitySets = new List<ActivitySet>
+            {
+                new ActivitySet
+                {
+                    Repetitions = x.Repetitions,
+                    Weight = x.Weight,
+                }
+            }
         }).ToList();
 
         context.Attach(activityDto.User);
@@ -36,6 +40,7 @@ public class ActivityService : IActivityService
         {
             WorkoutLogs = workoutLogs,
             WorkoutName = workout.Name,
+            DateCompleted = null,
             User = activityDto.User
         };
 
@@ -50,16 +55,19 @@ public class ActivityService : IActivityService
     {
         var context = await _contextFactory.CreateDbContextAsync();
         Activity activity = await context.Activities
-            .Include(x => x.WorkoutLogs)
-            .ThenInclude(y => y.Exercise)
-            .ThenInclude(z => z.Thumbnails)
-            .FirstOrDefaultAsync(x => x.Id == activityId && x.User == CurrentUser)
-            ?? throw new Exception("Unable to find the given activity");
+                        .Include(x => x.WorkoutLogs)
+                        .ThenInclude(x => x.ActivitySets)
+                        .Include(x => x.WorkoutLogs)
+                        .ThenInclude(y => y.Exercise)
+                        .ThenInclude(z => z.Thumbnails)
+                        .FirstOrDefaultAsync(x => x.Id == activityId && x.User == CurrentUser)
+                        ?? throw new Exception("Unable to find the given activity");
 
         ActiveActivityDto activityDto = new()
         {
             ActivityId = activity.Id,
             WorkoutName = activity.WorkoutName,
+            DateCompleted = activity.DateCompleted,
             ExerciseList = activity.WorkoutLogs.Select(x => new WorkoutLogDto
             {
                 WorkoutLogId = x.Id,
@@ -71,10 +79,11 @@ public class ActivityService : IActivityService
                     MuscleGroup = x.Exercise.MuscleGroup,
                     ImagePaths = x.Exercise.Thumbnails.Select(x => x.RelativePath).ToList()
                 },
-                SetCount = x.SetCount,
-                Weight = x.Weight,
-                Repetitions = x.Repetitions,
-                DateCompleted = x.DateCompleted
+                ActivitySets = x.ActivitySets.Select(x => new ActivitySetDto
+                {
+                    Repetitions = x.Repetitions,
+                    Weight = x.Weight
+                }).ToList()
             }).ToList(),
             User = CurrentUser
         };
@@ -88,12 +97,54 @@ public class ActivityService : IActivityService
         List<ActivityListDto> activityList = await context.Activities.Select(x => new ActivityListDto
         {
             ActivityId = x.Id,
-            WorkoutName= x.WorkoutName,
+            WorkoutName = x.WorkoutName,
+            DateCompleted = x.DateCompleted,
             User = x.User
         }).ToListAsync();
 
         return activityList;
     }
+
+    public async Task CompleteActivityAsync(ActiveActivityDto completeActivity)
+    {
+        var context = await _contextFactory.CreateDbContextAsync();
+        Activity activity = await context.Activities
+            .Include(x => x.WorkoutLogs)
+            .ThenInclude(x => x.ActivitySets)
+            .Include(x => x.WorkoutLogs)
+            .ThenInclude(x => x.Exercise)
+            .FirstOrDefaultAsync(x => x.Id == completeActivity.ActivityId)
+            ?? throw new Exception("Unable to find active activity.");
+
+        activity.WorkoutLogs = completeActivity.ExerciseList
+            .Select(x => new WorkoutLog
+            {
+                Id = x.WorkoutLogId,
+                ActivitySets = x.ActivitySets.Select(x => new ActivitySet
+                {
+                    Weight = x.Weight,
+                    Repetitions = x.Repetitions
+                }).ToList(),
+                Exercise = activity.WorkoutLogs.Select(y => y.Exercise).FirstOrDefault(z => z.Id == x.Exercise.Id),
+            }).ToList();
+
+        activity.DateCompleted = DateTime.Now;
+
+        context.Activities.Update(activity);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task CompleteActivityByIdAsync(int activityId)
+    {
+        var context = await _contextFactory.CreateDbContextAsync();
+        Activity activity = await context.Activities.FindAsync(activityId) ?? throw new Exception("Unable to find this activity");
+
+        activity.DateCompleted = DateTime.Now;
+
+        context.Update(activity);
+        await context.SaveChangesAsync();
+    }
+
 
     public async Task DeleteActivityAsync(int activityId)
     {
@@ -103,4 +154,5 @@ public class ActivityService : IActivityService
         context.Activities.Remove(activity);
         await context.SaveChangesAsync();
     }
+
 }

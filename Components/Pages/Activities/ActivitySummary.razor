@@ -1,0 +1,64 @@
+﻿@page "/activity/summary/{ActivityId:int}"
+@using FitTrack.Data
+@using FitTrack.Data.DTOs.Activities
+@using FitTrack.Services.Activities
+@using Microsoft.AspNetCore.Identity
+
+@inject IActivityService ActivityService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>WorkoutSummary</PageTitle>
+<PageHeaderTitle Title="Workout Summary" ShowBackButton />
+
+@if (_activity is not null && _activity.ExerciseList.Any())
+{
+    <MudGrid Spacing="3" Justify="Justify.Center">
+        @foreach (var exercise in _activity.ExerciseList)
+        {
+            <MudItem>
+                <MudPaper Elevation="1" Class="mb-6">
+                    <MudStack Spacing="0" Row Breakpoint="Breakpoint.Xs">
+                        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+                            <MudText Class="ml-3 mt-2" Typo="Typo.h5">@exercise.Exercise.Name</MudText>
+                                <MudImage Style="border-radius:8px" Class="ml-2 mb-2 mr-2" Elevation="3" Src="@exercise.Exercise.ImagePaths[0]" Height="250" ObjectFit="ObjectFit.Cover" />
+                        </MudStack>
+                        <MudStack StretchItems="StretchItems.All">
+                            <MudTable Items="exercise.ActivitySets" Style="width:100%">
+                                <HeaderContent>
+                                    <MudTh>Set #</MudTh>
+                                    <MudTh>Weight</MudTh>
+                                    <MudTh>Reps</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Set #">@(exercise.ActivitySets.IndexOf(context) + 1)</MudTd>
+                                    <MudTd DataLabel="Weight">@context.Weight</MudTd>
+                                    <MudTd DataLabel="Reps">@context.Repetitions</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </MudStack>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+@code {
+    [Parameter]
+    public int ActivityId { get; set; }
+
+    private ActiveActivityDto _activity;
+    private ApplicationUser CurrentUser;
+
+    protected async override Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        CurrentUser = await UserManager.GetUserAsync(authState.User);
+
+        if (CurrentUser is not null)
+        {
+            _activity = await ActivityService.GetActiveActivityByIdAsync(ActivityId, CurrentUser);
+        }
+    }
+}

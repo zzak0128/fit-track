@@ -20,6 +20,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<WorkoutLog> WorkoutLogs { get; set; }
 
+    public DbSet<ActivitySet> ActivitySets { get; set; }
+
     public DbSet<Measurement> Measurements { get; set; }
 
     public DbSet<MeasurementData> MeasurementData { get; set; }
@@ -98,6 +100,18 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .OnDelete(DeleteBehavior.Cascade);
         });
 
+        modelBuilder.Entity<WorkoutLog>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasMany(x => x.ActivitySets)
+            .WithOne(x => x.WorkoutLog)
+            .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ActivitySet>(e =>
+        {
+            e.HasKey(x => x.Id);
+        });
 
         modelBuilder.Entity<Measurement>(e =>
         {

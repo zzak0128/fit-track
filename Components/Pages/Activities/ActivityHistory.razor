@@ -19,12 +19,16 @@
 <MudTable T="ActivityListDto" Items="@_activityList" Hover Striped OnRowClick="@OnRowClickHandler">
     <HeaderContent>
         <MudTh>Workout</MudTh>
-        <MudTh></MudTh>
+        <MudTh>Date Completed</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Name">@context.WorkoutName</MudTd>
+        <MudTd DataLabel="Date Completed">@ShowCompletedStatus(context.DateCompleted)</MudTd>
         <MudTd Class="d-flex justify-end">
-            <MudIconButton Icon="@Icons.Material.Filled.Check" />
+            @if (context.DateCompleted is null)
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Check" OnClick="() => CompleteWorkoutAsync(context.ActivityId)" />
+            }
             <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteActivityAsync(context.ActivityId)" />
         </MudTd>
     </RowTemplate>
@@ -50,12 +54,38 @@
         }
     }
 
+    private string ShowCompletedStatus(DateTime? date)
+    {
+        if (date.HasValue)
+        {
+            return date.GetValueOrDefault().ToShortDateString();
+        }
+        else
+        {
+            return "In Progress";
+        }
+    }
+
     private void OnRowClickHandler(TableRowClickEventArgs<ActivityListDto> args)
     {
         var activityId = args.Item.ActivityId;
-        var uri = $"/activity/start/{activityId}";
-        Navigation.NavigateTo(uri);
 
+        if (args.Item.DateCompleted is null)
+        {
+            var uri = $"/activity/start/{activityId}";
+            Navigation.NavigateTo(uri);
+        }
+        else
+        {
+            var uri = $"/activity/summary/{activityId}";
+            Navigation.NavigateTo(uri);
+        }
+    }
+
+    private async Task CompleteWorkoutAsync(int activityId)
+    {
+        await ActivityService.CompleteActivityByIdAsync(activityId);
+        _activityList = await ActivityService.GetActivityListAsync();
     }
 
     private async Task DeleteActivityAsync(int activityId)

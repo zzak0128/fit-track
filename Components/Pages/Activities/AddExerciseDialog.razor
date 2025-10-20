@@ -1,0 +1,90 @@
+﻿@using FitTrack.Data.DTOs.ExerciseSets
+@using FitTrack.Data.DTOs.Exercises
+@using FitTrack.Data.DTOs.Routines
+@using FitTrack.Data.DTOs.Workouts
+@using FitTrack.Services.Routines
+@using FitTrack.Data
+@using Microsoft.AspNetCore.Identity
+@inject IRoutineService RoutineService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<MudDialog>
+    <TitleContent>
+        Add to an existing workout!
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="@form" @bind-IsValid="@success">
+            <MudAutocomplete @bind-Value="_selectedExercise"
+                             SearchFunc="Search"
+                             Variant="Variant.Outlined"
+                             Label="Select an Exercise"
+                             Dense
+                             Placeholder="Search"
+                             Clearable
+                             ToStringFunc="(e) => e?.Name">
+                <ItemTemplate>
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText>@context?.Name</MudText>
+                        <MudChip T="MuscleGroup" Color="Color.Secondary" Variant="Variant.Filled">@context?.MuscleGroup</MudChip>
+                    </MudStack>
+                </ItemTemplate>
+            </MudAutocomplete>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="() => MudDialog.Cancel()" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="AddExerciseAsync" Variant="Variant.Filled">Add</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private List<ExerciseDto> _exerciseList;
+    private ExerciseDto? _selectedExercise;
+    private ApplicationUser? _currentUser;
+
+    private CreateExerciseSetDto _addToWorkout = new();
+    private MudForm form;
+    private bool success;
+
+    protected async override Task OnInitializedAsync()
+    {
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        _currentUser = await UserManager.GetUserAsync(authState.User);
+
+        if (_currentUser is not null)
+        {
+            _exerciseList = await RoutineService.GetAllExercisesAsync();
+        }
+    }
+
+    private async Task<IEnumerable<ExerciseDto>> Search(string value, CancellationToken token)
+    {
+        _exerciseList = await RoutineService.GetAllExercisesAsync();
+
+        // if text is null or empty, show complete list
+        if (string.IsNullOrEmpty(value))
+        {
+            return _exerciseList;
+        }
+
+        return _exerciseList.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase) || x.MuscleGroup.ToString().Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private async Task AddExerciseAsync()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+          MudDialog.Close(DialogResult.Ok(_selectedExercise));
+        }
+        else
+        {
+            MudDialog.Close(DialogResult.Ok(false));
+        }
+    }
+}

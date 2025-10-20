@@ -2,6 +2,7 @@
 @using FitTrack.Data
 @using FitTrack.Data.DTOs.Activities
 @using FitTrack.Data.DTOs.ExerciseSets
+@using FitTrack.Data.DTOs.Exercises
 @using FitTrack.Services.Activities
 @using Microsoft.AspNetCore.Identity
 
@@ -10,9 +11,14 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IActivityService ActivityService
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <PageTitle>Start @_activity?.WorkoutName</PageTitle>
-<PageHeaderTitle title="@_activity?.WorkoutName" />
+<PageHeaderTitle title="@_activity?.WorkoutName" ActionMenu="mudMenu" />
+
+<MudMenu @ref="mudMenu" PositionAtCursor>
+    <MudMenuItem OnClick="AddExerciseAsync">Add a Workout</MudMenuItem>
+</MudMenu>
 
 <MudTabs @ref="mudTabs" Elevation="1" Outlined ApplyEffectsToContainer Ripple PanelClass="pa-6">
     @if (_activity is not null)
@@ -20,13 +26,16 @@
         @foreach (var exercise in _activity.ExerciseList)
         {
             <MudTabPanel Text="@exercise.Exercise.Name">
+                <MudStack Justify="Justify.FlexEnd" Row>
+                    <MudButton StartIcon="@Icons.Material.Outlined.Remove" Color="Color.Error" onclick="() => RemoveWorkout(exercise)">Remove</MudButton>
+                </MudStack>
                 <MudCarousel TData="string"
                              ShowArrows
                              ShowBullets
                              EnableSwipeGesture
                              AutoCycle
                              ItemsSource="exercise.Exercise.ImagePaths"
-                             Style="height:450px">
+                             Style="height:400px">
                     <ItemTemplate>
                         <div class="d-flex justify-center" style="Height:100%">
                             <MudImage ObjectFit="ObjectFit.Contain" Src="@context"></MudImage>
@@ -40,6 +49,7 @@
                     </MudCardContent>
                 </MudCard>
 
+                <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Recommended Sets: @exercise.SetCount</MudText>
                 <MudDataGrid T="ActivitySetDto"
                              Items="exercise.ActivitySets"
                              ReadOnly="false"
@@ -53,7 +63,8 @@
                         <PropertyColumn Title="Reps" Property="x => x.Repetitions" />
                         <TemplateColumn>
                             <EditTemplate>
-                                <MudStack>
+                                <MudStack Row Justify="Justify.FlexEnd">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Remove" OnClick="() => RemoveSet(exercise, context.Item)"></MudIconButton>
                                     <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" OnClick="() => AddSet(exercise, context.Item)"></MudIconButton>
                                 </MudStack>
                             </EditTemplate>
@@ -65,13 +76,14 @@
         <MudStack Class="d-flex justify-end ma-3" Row>
             <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.KeyboardDoubleArrowLeft" Color="Color.Primary" Disabled="@(CurrentTabIndex == 0)" OnClick="PreviousTab">Previous</MudButton>
             <MudButton FullWidth Variant="Variant.Filled" Color="Color.Success" OnClick="SaveWorkoutAsync">Save</MudButton>
-            <MudButton FullWidth Variant="Variant.Filled" EndIcon="@Icons.Material.Outlined.KeyboardDoubleArrowRight"  Color="Color.Primary" Disabled="@(CurrentTabIndex == TabCount - 1)" OnClick="NextTab">Next</MudButton>
+            <MudButton FullWidth Variant="Variant.Filled" EndIcon="@Icons.Material.Outlined.KeyboardDoubleArrowRight" Color="Color.Primary" Disabled="@(CurrentTabIndex == TabCount - 1)" OnClick="NextTab">Next</MudButton>
         </MudStack>
     }
 </MudTabs>
 
-<MudStack Class="d-flex justify-end ma-3" Row>
-    <MudButton FullWidth Variant="Variant.Filled" Color="Color.Success" OnClick="CompleteWorkoutAsync">Complete</MudButton>
+<MudStack Class="d-flex justify-end ma-3">
+    <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Pause" Color="Color.Default" OnClick="PauseActivity">Pause</MudButton>
+    <MudButton FullWidth Variant="Variant.Filled" EndIcon="@Icons.Material.Outlined.Check" Color="Color.Success" OnClick="CompleteWorkoutAsync">Complete</MudButton>
 </MudStack>
 
 @code {
@@ -79,6 +91,9 @@
     public int ActivityId { get; set; }
 
     private MudTabs mudTabs;
+    private bool _shouldLoadLastTab = false;
+
+    private MudMenu mudMenu;
 
     private ActiveActivityDto _activity;
     private ApplicationUser CurrentUser;
@@ -87,7 +102,7 @@
 
     public int TabCount
     {
-        get { return  mudTabs.Panels.Count; }
+        get { return mudTabs.Panels.Count; }
     }
 
     private int currentTabIndex;
@@ -109,6 +124,41 @@
         }
     }
 
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender && _shouldLoadLastTab)
+        {
+            mudTabs.ActivatePanel(mudTabs.Panels.Last());
+            _shouldLoadLastTab = false;
+        }
+
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task AddExerciseAsync()
+    {
+        var addExerciseDialog = await DialogService.ShowAsync<AddExerciseDialog>("Add a Workout!");
+        var result = await addExerciseDialog.Result;
+        if (!result.Canceled)
+        {
+            ExerciseDto? newExercise = await addExerciseDialog.GetReturnValueAsync<ExerciseDto>();
+            if (newExercise is not null)
+            {
+                _activity.ExerciseList.Add(new WorkoutLogDto
+                {
+                    Exercise = newExercise,
+                    ActivitySets = [new ActivitySetDto() { Weight = 0, Repetitions = 0 }]
+                });
+
+                _shouldLoadLastTab = true;
+            }
+            else
+            {
+                Snackbar.Add("Failed to add the new exercise", Severity.Error);
+            }
+        }
+    }
+
     private void AddSet(WorkoutLogDto log, ActivitySetDto set)
     {
         var newSet = new ActivitySetDto
@@ -118,6 +168,24 @@
         };
 
         log.ActivitySets.Add(newSet);
+    }
+
+    private void RemoveSet(WorkoutLogDto log, ActivitySetDto set)
+    {
+        int setCount = log.ActivitySets.Count;
+        if (setCount > 1)
+        {
+            log.ActivitySets.Remove(set);
+        }
+        else if (setCount == 1)
+        {
+            _activity.ExerciseList.Remove(log);
+        }
+    }
+
+    private void RemoveWorkout(WorkoutLogDto log)
+    {
+        _activity.ExerciseList.Remove(log);
     }
 
     private void NextTab()
@@ -153,5 +221,18 @@
         {
             Snackbar.Add("Unable to save workout, try again later.", Severity.Error);
         }
+    }
+
+    private async Task PauseActivity()
+    {
+        try
+        {
+            await ActivityService.SaveActivityAsync(_activity);
+            Navigation.NavigateTo("/activity/history", true);
+        }
+        catch
+        {
+            Snackbar.Add("Unable to save workout, you will lose all progress if you leave the page.", Severity.Error);
+        }        
     }
 }

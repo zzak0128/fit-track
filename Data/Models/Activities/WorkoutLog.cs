@@ -10,5 +10,7 @@ public class WorkoutLog
 
     public List<ActivitySet> ActivitySets { get; set; } = [];
 
+    public int SetCount { get; set; }
+
     public virtual Activity Activity { get; set; } = null!;
 }

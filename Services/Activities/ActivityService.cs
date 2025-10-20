@@ -24,14 +24,8 @@ public class ActivityService : IActivityService
         List<WorkoutLog> workoutLogs = workout.ExerciseSets.Select(x => new WorkoutLog
         {
             Exercise = x.Exercise,
-            ActivitySets = new List<ActivitySet>
-            {
-                new ActivitySet
-                {
-                    Repetitions = x.Repetitions,
-                    Weight = x.Weight,
-                }
-            }
+            ActivitySets = SetSetsCount(x.SetCount, x.Repetitions, x.Weight),
+            SetCount = x.SetCount
         }).ToList();
 
         context.Attach(activityDto.User);
@@ -48,6 +42,20 @@ public class ActivityService : IActivityService
         await context.SaveChangesAsync();
 
         return newActivity.Id;
+    }
+
+    private List<ActivitySet> SetSetsCount(int setCount, int reps, double weight)
+    {
+        List<ActivitySet> activitySets = [];
+        for (int i = 0; i < setCount; i++) {
+            activitySets.Add(new ActivitySet
+            {
+                Repetitions = reps,
+                Weight= weight
+            });
+        }
+
+        return activitySets;
     }
 
 
@@ -83,7 +91,8 @@ public class ActivityService : IActivityService
                 {
                     Repetitions = x.Repetitions,
                     Weight = x.Weight
-                }).ToList()
+                }).ToList(),
+                SetCount = x.SetCount
             }).ToList(),
             User = CurrentUser
         };
@@ -125,13 +134,15 @@ public class ActivityService : IActivityService
                     Weight = x.Weight,
                     Repetitions = x.Repetitions
                 }).ToList(),
-                Exercise = activity.WorkoutLogs.Select(y => y.Exercise).FirstOrDefault(z => z.Id == x.Exercise.Id),
+                SetCount = x.SetCount,
+                Exercise = activity.WorkoutLogs.Select(y => y.Exercise).FirstOrDefault(z => z.Id == x.Exercise.Id)
+                ?? context.Exercises.Find(x.Exercise.Id) 
+                ?? throw new Exception("Unable to find an exercise to save to this workout."),
             }).ToList();
 
         if (isCompleted)
         {
             activity.DateCompleted = DateTime.Now;
-
         }
 
         context.Activities.Update(activity);
@@ -149,7 +160,6 @@ public class ActivityService : IActivityService
         await context.SaveChangesAsync();
     }
 
-
     public async Task DeleteActivityAsync(int activityId)
     {
         var context = await _contextFactory.CreateDbContextAsync();
@@ -158,5 +168,4 @@ public class ActivityService : IActivityService
         context.Activities.Remove(activity);
         await context.SaveChangesAsync();
     }
-
 }

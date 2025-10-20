@@ -4,7 +4,7 @@
 
 <AuthorizeView>
     <Authorized>
-        <RedirectToRoutines />
+        <RedirectToDashboard />
     </Authorized>
     <NotAuthorized>
         <PageHeaderTitle Title="Welcome to FitTrack!"></PageHeaderTitle>
@@ -15,7 +15,7 @@
             <MudButton StartIcon="@Icons.Material.Filled.Login" Href="account/login" Color="Color.Primary">
                 Login
             </MudButton>
-             <MudButton StartIcon="@Icons.Material.Filled.AppRegistration" Href="account/register" Typo="Typo.body1"  Color="Color.Primary">
+             <MudButton StartIcon="@Icons.Material.Filled.AppRegistration" Href="account/register" Typo="Typo.body1"  Color="Color.Default">
                 Register
             </MudButton>
             </MudStack>

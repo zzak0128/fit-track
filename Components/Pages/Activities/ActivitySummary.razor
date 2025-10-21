@@ -21,7 +21,14 @@
                     <MudStack Spacing="0" Row Breakpoint="Breakpoint.Xs">
                         <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
                             <MudText Class="ml-3 mt-2" Typo="Typo.h5">@exercise.Exercise.Name</MudText>
-                                <MudImage Style="border-radius:8px" Class="ml-2 mb-2 mr-2" Elevation="3" Src="@exercise.Exercise.ImagePaths[0]" Height="250" ObjectFit="ObjectFit.Cover" />
+                            @if (exercise.Exercise.ImagePaths.Any())
+                            {
+                                <MudImage Style="border-radius:8px" Class="ml-2 mb-2 mr-2" Elevation="3" Src="@exercise.Exercise.ImagePaths.FirstOrDefault()" Height="250" ObjectFit="ObjectFit.Cover" />
+                            }
+                            else
+                            {
+                                <MudImage Style="border-radius:8px" Class="ml-2 mb-2 mr-2" Elevation="3" Height="250" Src="no-image-icon.png" ObjectFit="ObjectFit.Cover" />
+                            }
                         </MudStack>
                         <MudStack StretchItems="StretchItems.All">
                             <MudTable Items="exercise.ActivitySets" Style="width:100%">

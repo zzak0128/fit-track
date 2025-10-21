@@ -20,7 +20,7 @@
     <MudMenuItem OnClick="AddExerciseAsync">Add a Workout</MudMenuItem>
 </MudMenu>
 
-<MudTabs @ref="mudTabs" Elevation="1" Outlined ApplyEffectsToContainer Ripple PanelClass="pa-6">
+<MudTabs id="tabs" @ref="mudTabs" Elevation="1" Outlined ApplyEffectsToContainer Ripple PanelClass="pa-6">
     @if (_activity is not null)
     {
         @foreach (var exercise in _activity.ExerciseList)
@@ -74,7 +74,7 @@
             </MudTabPanel>
         }
         <MudStack Class="d-flex justify-end ma-3" Row>
-            <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.KeyboardDoubleArrowLeft" Color="Color.Primary" Disabled="@(CurrentTabIndex == 0)" OnClick="PreviousTab">Previous</MudButton>
+            <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.KeyboardDoubleArrowLeft" Color="Color.Primary" Disabled="@(CurrentTabIndex == 0)" OnClick="PreviousTab">Prev</MudButton>
             <MudButton FullWidth Variant="Variant.Filled" Color="Color.Success" OnClick="SaveWorkoutAsync">Save</MudButton>
             <MudButton FullWidth Variant="Variant.Filled" EndIcon="@Icons.Material.Outlined.KeyboardDoubleArrowRight" Color="Color.Primary" Disabled="@(CurrentTabIndex == TabCount - 1)" OnClick="NextTab">Next</MudButton>
         </MudStack>
@@ -89,6 +89,8 @@
 @code {
     [Parameter]
     public int ActivityId { get; set; }
+
+    [Inject] IJSRuntime JsRuntime { get; set; }
 
     private MudTabs mudTabs;
     private bool _shouldLoadLastTab = false;
@@ -188,12 +190,13 @@
         _activity.ExerciseList.Remove(log);
     }
 
-    private void NextTab()
+    private async Task NextTab()
     {
         if (CurrentTabIndex < TabCount - 1)
         {
             mudTabs.ActivatePanel(CurrentTabIndex + 1);
         }
+        
     }
 
     private void PreviousTab()

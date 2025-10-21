@@ -4,7 +4,7 @@
 
 <MudPaper Elevation="1" Class="pa-3" MinHeight="300px" Width="300px">
     <MudStack AlignItems="AlignItems.Center" Style="width:100%">
-        <MudImage ObjectFit="ObjectFit.Cover" Elevation="2" Style="width:95%;height:240px" Src="@Exercise.ImagePaths.FirstOrDefault()"></MudImage>
+        <MudImage ObjectFit="ObjectFit.Cover" Elevation="2" Style="width:95%;height:240px" Src="@Exercise.ImagePaths.FirstOrDefault()" FallbackSrc="no-image-icon.png"></MudImage>
         <MudText Typo="Typo.subtitle1" Inline="false">@Exercise.Name</MudText>
         <MudStack AlignItems="AlignItems.Center" Row Style="width:100%">
             <MudChip T="string" Color="Color.Secondary" Variant="Variant.Filled">@Exercise.MuscleGroup</MudChip>

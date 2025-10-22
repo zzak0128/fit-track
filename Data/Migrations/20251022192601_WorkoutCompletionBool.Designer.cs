@@ -4,6 +4,7 @@ using FitTrack.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FitTrack.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251022192601_WorkoutCompletionBool")]
+    partial class WorkoutCompletionBool
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -152,9 +155,6 @@ namespace FitTrack.Migrations
 
                     b.Property<int>("ExerciseId")
                         .HasColumnType("int");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("tinyint(1)");
 
                     b.Property<int>("SetCount")
                         .HasColumnType("int");

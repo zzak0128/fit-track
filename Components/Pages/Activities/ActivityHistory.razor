@@ -16,13 +16,21 @@
 
 <PageHeaderTitle Title="Activity History" />
 
-<MudTable T="ActivityListDto" Items="@_activityList" Hover Striped OnRowClick="@OnRowClickHandler">
+<MudTable T="ActivityListDto" Items="@_activityList" Dense Hover Striped OnRowClick="@OnRowClickHandler">
     <HeaderContent>
+        <MudTh>Progress</MudTh>
         <MudTh>Routine</MudTh>
         <MudTh>Workout</MudTh>
         <MudTh>Date Completed</MudTh>
     </HeaderContent>
     <RowTemplate>
+        <MudTd DataLabel="Progress">
+            <MudProgressCircular Min="0" Max="@context.TotalExercises" Value="@context.CompletedExercises" Rounded Color="@(context.CompletedExercises == context.TotalExercises ? Color.Success : Color.Secondary)">
+                <ChildContent>
+                    <MudText Color="Color.Dark">@(context.CompletedExercises)/@(context.TotalExercises)</MudText>
+                </ChildContent>
+            </MudProgressCircular>
+        </MudTd>
         <MudTd DataLabel="Routine">@context.RoutineName</MudTd>
         <MudTd DataLabel="Workout">@context.WorkoutName</MudTd>
         <MudTd DataLabel="Date Completed">@ShowCompletedStatus(context.DateCompleted)</MudTd>
@@ -52,7 +60,7 @@
 
         if (CurrentUser is not null)
         {
-            _activityList = await ActivityService.GetActivityListAsync();
+            _activityList = await ActivityService.GetActivityListAsync(CurrentUser);
         }
     }
 
@@ -87,7 +95,7 @@
     private async Task CompleteWorkoutAsync(int activityId)
     {
         await ActivityService.CompleteActivityByIdAsync(activityId);
-        _activityList = await ActivityService.GetActivityListAsync();
+        _activityList = await ActivityService.GetActivityListAsync(CurrentUser);
     }
 
     private async Task DeleteActivityAsync(int activityId)
@@ -96,7 +104,7 @@
             try
             {
                 await ActivityService.DeleteActivityAsync(activityId);
-                _activityList = await ActivityService.GetActivityListAsync();
+                _activityList = await ActivityService.GetActivityListAsync(CurrentUser);
 
             }
             catch

@@ -38,17 +38,17 @@
         </MudTabPanel>
         @foreach (var exercise in _activity.ExerciseList)
         {
-            <MudTabPanel Text="@exercise.Exercise.Name" Disabled="_notStarted" OnClick="()=>SetSelectedWorkout(exercise)">
+            <MudTabPanel Text="@exercise.Exercise.Name" Disabled="@(_notStarted || exercise.IsCompleted)" Icon="@(exercise.IsCompleted ? Icons.Material.Rounded.Check : null)" OnClick="() => SetSelectedWorkout(exercise)">
                 <MudCarousel TData="string"
                              ShowArrows
                              ShowBullets
                              EnableSwipeGesture
                              AutoCycle
                              ItemsSource="exercise.Exercise.ImagePaths"
-                             Style="height:400px">
+                             Style="height:350px">
                     <ItemTemplate>
                         <div class="d-flex justify-center" style="Height:100%">
-                            <MudImage ObjectFit="ObjectFit.Contain" Src="@context"></MudImage>
+                            <MudImage ObjectFit="ObjectFit.Contain" Src="@context" FallbackSrc="no-image-icon.png"></MudImage>
                         </div>
                     </ItemTemplate>
                 </MudCarousel>
@@ -81,19 +81,20 @@
                         </TemplateColumn>
                     </Columns>
                 </MudDataGrid>
+                <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.CheckCircle" Color="Color.Success" OnClick="() => CompleteWorkoutAsync(exercise)">Complete this Exercise!</MudButton>
             </MudTabPanel>
         }
         <MudStack Class="d-flex justify-end ma-3" Row>
             <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.KeyboardDoubleArrowLeft" Color="Color.Primary" Disabled="@(CurrentTabIndex == 0)" OnClick="PreviousTab">Prev</MudButton>
-            <MudButton FullWidth Variant="Variant.Filled" Color="Color.Success" OnClick="SaveWorkoutAsync" Disabled="_notStarted">Save</MudButton>
+            @*             <MudButton FullWidth Variant="Variant.Filled" Color="Color.Success" OnClick="SaveWorkoutAsync" Disabled="_notStarted">Save</MudButton> *@
+            <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Pause" Color="Color.Default" OnClick="PauseActivity">Pause</MudButton>
+            <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.CheckCircle" Color="Color.Success" Disabled="@(_notStarted || !WorkoutCompleted)" OnClick="CompleteActivityAsync">Complete Activity</MudButton>
             <MudButton FullWidth Variant="Variant.Filled" EndIcon="@Icons.Material.Outlined.KeyboardDoubleArrowRight" Color="Color.Primary" Disabled="@((CurrentTabIndex == TabCount - 1) || _notStarted)" OnClick="NextTab">Next</MudButton>
         </MudStack>
     }
 </MudTabs>
 
 <MudStack Class="d-flex justify-end ma-3">
-    <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Pause" Color="Color.Default" OnClick="PauseActivity">Pause</MudButton>
-    <MudButton FullWidth Variant="Variant.Filled" EndIcon="@Icons.Material.Outlined.Check" Color="Color.Success" Disabled="_notStarted" OnClick="CompleteWorkoutAsync">Complete</MudButton>
 </MudStack>
 
 @code {
@@ -107,6 +108,25 @@
     private bool _shouldLoadLastTab = false;
 
     private bool _notStarted = true;
+
+    private int completedExercises;
+    public int CompletedExercises
+    {
+        get { return _activity.ExerciseList.Count(x => x.IsCompleted); }
+    }
+
+    private int totalExercises;
+    public int TotalExercises
+    {
+        get { return _activity.ExerciseList.Count(); }
+    }
+
+    private bool workoutCompleted;
+    public bool WorkoutCompleted
+    {
+        get { return CompletedExercises == TotalExercises; }
+    }
+
 
     private MudMenu mudMenu;
 
@@ -175,10 +195,21 @@
         }
     }
 
+    private async Task CompleteWorkoutAsync(WorkoutLogDto log)
+    {
+        log.IsCompleted = true;
+        await ActivityService.CompleteWorkoutAsync(log.WorkoutLogId);
+        await SaveWorkoutAsync();
+    }
+
     private void StartWorkout()
     {
         _notStarted = false;
-        mudTabs.ActivatePanel(mudTabs.ActivePanelIndex + 1, true);
+        var activePanels = mudTabs.Panels.Where(x => x.Disabled == false && x.Visible);
+        if (activePanels.Any())
+        {
+            mudTabs.ActivatePanel(activePanels.First());
+        }
     }
 
     private void AddSet(WorkoutLogDto log, ActivitySetDto set)
@@ -212,16 +243,25 @@
 
     private void RemoveWorkout()
     {
-        _activity.ExerciseList.Remove(_selectedWorkout);
+        _activity.ExerciseList.Remove(_selectedWorkout!);
     }
 
     private async Task NextTab()
     {
+        _notStarted = false;
+        var activePanels = mudTabs.Panels.Where(x => x.Disabled == false && x.Visible);
+        if (activePanels.Any())
+        {
+            foreach (var tab in activePanels)
+            {
+            }
+        }
+
+
         if (CurrentTabIndex < TabCount - 1)
         {
             mudTabs.ActivatePanel(CurrentTabIndex + 1);
         }
-
     }
 
     private void PreviousTab()
@@ -232,7 +272,7 @@
         }
     }
 
-    private async Task CompleteWorkoutAsync()
+    private async Task CompleteActivityAsync()
     {
         await ActivityService.SaveActivityAsync(_activity, true);
         Navigation.NavigateTo("/activity/history", true);

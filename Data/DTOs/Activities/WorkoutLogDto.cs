@@ -11,4 +11,6 @@ public class WorkoutLogDto
     public List<ActivitySetDto> ActivitySets { get; set; } = [];
 
     public int SetCount { get; set; }
+
+    public bool IsCompleted { get; set; }
 }

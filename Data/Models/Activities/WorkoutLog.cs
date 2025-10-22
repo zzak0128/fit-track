@@ -12,5 +12,7 @@ public class WorkoutLog
 
     public int SetCount { get; set; }
 
+    public bool IsCompleted { get; set; }
+
     public virtual Activity Activity { get; set; } = null!;
 }

@@ -10,5 +10,6 @@ public interface IActivityService
     Task<int> CreateActivityAsync(CreateActivityDto activityDto);
     Task DeleteActivityAsync(int activityId);
     Task<ActiveActivityDto> GetActiveActivityByIdAsync(int ActivityId, ApplicationUser CurrentUser);
-    Task<List<ActivityListDto>> GetActivityListAsync();
+    Task<List<ActivityListDto>> GetActivityListAsync(ApplicationUser currentUser);
+    Task CompleteWorkoutAsync(int logId);
 }

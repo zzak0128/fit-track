@@ -19,7 +19,7 @@ public class ActivityService : IActivityService
     public async Task<int> CreateActivityAsync(CreateActivityDto activityDto)
     {
         var context = await _contextFactory.CreateDbContextAsync();
-        Workout workout = await context.Workouts.FindAsync(activityDto.WorkoutId) ?? throw new Exception("Unable to find the given workout.");
+        Workout workout = await context.Workouts.Include(x => x.Routine).FirstOrDefaultAsync(x => x.Id == activityDto.WorkoutId) ?? throw new Exception("Unable to find the given workout.");
         var exerciseSets = await context.ExerciseSets.Include(x => x.Exercise).Where(x => x.Workout == workout).ToListAsync();
         List<WorkoutLog> workoutLogs = workout.ExerciseSets.Select(x => new WorkoutLog
         {
@@ -33,6 +33,7 @@ public class ActivityService : IActivityService
         Activity newActivity = new()
         {
             WorkoutLogs = workoutLogs,
+            RoutineName = workout.Routine.Name,
             WorkoutName = workout.Name,
             DateCompleted = null,
             User = activityDto.User
@@ -74,6 +75,7 @@ public class ActivityService : IActivityService
         ActiveActivityDto activityDto = new()
         {
             ActivityId = activity.Id,
+            RoutineName = activity.RoutineName,
             WorkoutName = activity.WorkoutName,
             DateCompleted = activity.DateCompleted,
             ExerciseList = activity.WorkoutLogs.Select(x => new WorkoutLogDto
@@ -106,6 +108,7 @@ public class ActivityService : IActivityService
         List<ActivityListDto> activityList = await context.Activities.Select(x => new ActivityListDto
         {
             ActivityId = x.Id,
+            RoutineName = x.RoutineName,
             WorkoutName = x.WorkoutName,
             DateCompleted = x.DateCompleted,
             User = x.User

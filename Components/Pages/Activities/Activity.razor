@@ -14,21 +14,31 @@
 @inject IDialogService DialogService
 
 <PageTitle>Start @_activity?.WorkoutName</PageTitle>
-<PageHeaderTitle title="@_activity?.WorkoutName" ActionMenu="mudMenu" />
+<PageHeaderTitle ActionMenu="mudMenu">
+    <CustomContent>
+        @_activity?.RoutineName -- @_activity?.WorkoutName
+    </CustomContent>
+</PageHeaderTitle>
 
 <MudMenu @ref="mudMenu" PositionAtCursor>
     <MudMenuItem OnClick="AddExerciseAsync">Add a Workout</MudMenuItem>
+    <MudMenuItem OnClick="RemoveWorkout" Disabled="@(_selectedWorkout is null)">Remove this Workout</MudMenuItem>
 </MudMenu>
 
-<MudTabs id="tabs" @ref="mudTabs" Elevation="1" Outlined ApplyEffectsToContainer Ripple PanelClass="pa-6">
+<MudTabs @ref="mudTabs" Elevation="1" Outlined ApplyEffectsToContainer Ripple PanelClass="pa-6">
     @if (_activity is not null)
     {
+        <MudTabPanel @ref="startPanel" Text="Time to get started!" Visible="@(_notStarted)">
+            <MudStack Justify="Justify.Center" Class="ma-6" Style="height:400px">
+                <MudText Align="Align.Center" Color="Color.Primary" GutterBottom Typo="Typo.h5">Start your workout!</MudText>
+                <MudStack Justify="Justify.Center" Row>
+                    <MudButton OnClick="StartWorkout" Variant="Variant.Filled" IconSize="Size.Large" Style="height:100px; width:100px; border-radius:50%" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large">Start</MudButton>
+                </MudStack>
+            </MudStack>
+        </MudTabPanel>
         @foreach (var exercise in _activity.ExerciseList)
         {
-            <MudTabPanel Text="@exercise.Exercise.Name">
-                <MudStack Justify="Justify.FlexEnd" Row>
-                    <MudButton StartIcon="@Icons.Material.Outlined.Remove" Color="Color.Error" onclick="() => RemoveWorkout(exercise)">Remove</MudButton>
-                </MudStack>
+            <MudTabPanel Text="@exercise.Exercise.Name" Disabled="_notStarted" OnClick="()=>SetSelectedWorkout(exercise)">
                 <MudCarousel TData="string"
                              ShowArrows
                              ShowBullets
@@ -75,15 +85,15 @@
         }
         <MudStack Class="d-flex justify-end ma-3" Row>
             <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.KeyboardDoubleArrowLeft" Color="Color.Primary" Disabled="@(CurrentTabIndex == 0)" OnClick="PreviousTab">Prev</MudButton>
-            <MudButton FullWidth Variant="Variant.Filled" Color="Color.Success" OnClick="SaveWorkoutAsync">Save</MudButton>
-            <MudButton FullWidth Variant="Variant.Filled" EndIcon="@Icons.Material.Outlined.KeyboardDoubleArrowRight" Color="Color.Primary" Disabled="@(CurrentTabIndex == TabCount - 1)" OnClick="NextTab">Next</MudButton>
+            <MudButton FullWidth Variant="Variant.Filled" Color="Color.Success" OnClick="SaveWorkoutAsync" Disabled="_notStarted">Save</MudButton>
+            <MudButton FullWidth Variant="Variant.Filled" EndIcon="@Icons.Material.Outlined.KeyboardDoubleArrowRight" Color="Color.Primary" Disabled="@((CurrentTabIndex == TabCount - 1) || _notStarted)" OnClick="NextTab">Next</MudButton>
         </MudStack>
     }
 </MudTabs>
 
 <MudStack Class="d-flex justify-end ma-3">
     <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Pause" Color="Color.Default" OnClick="PauseActivity">Pause</MudButton>
-    <MudButton FullWidth Variant="Variant.Filled" EndIcon="@Icons.Material.Outlined.Check" Color="Color.Success" OnClick="CompleteWorkoutAsync">Complete</MudButton>
+    <MudButton FullWidth Variant="Variant.Filled" EndIcon="@Icons.Material.Outlined.Check" Color="Color.Success" Disabled="_notStarted" OnClick="CompleteWorkoutAsync">Complete</MudButton>
 </MudStack>
 
 @code {
@@ -93,12 +103,16 @@
     [Inject] IJSRuntime JsRuntime { get; set; }
 
     private MudTabs mudTabs;
+    private MudTabPanel startPanel;
     private bool _shouldLoadLastTab = false;
+
+    private bool _notStarted = true;
 
     private MudMenu mudMenu;
 
     private ActiveActivityDto _activity;
     private ApplicationUser CurrentUser;
+    private WorkoutLogDto? _selectedWorkout;
 
     private int tabCount;
 
@@ -161,6 +175,12 @@
         }
     }
 
+    private void StartWorkout()
+    {
+        _notStarted = false;
+        mudTabs.ActivatePanel(mudTabs.ActivePanelIndex + 1, true);
+    }
+
     private void AddSet(WorkoutLogDto log, ActivitySetDto set)
     {
         var newSet = new ActivitySetDto
@@ -185,9 +205,14 @@
         }
     }
 
-    private void RemoveWorkout(WorkoutLogDto log)
+    private void SetSelectedWorkout(WorkoutLogDto log)
     {
-        _activity.ExerciseList.Remove(log);
+        _selectedWorkout = log;
+    }
+
+    private void RemoveWorkout()
+    {
+        _activity.ExerciseList.Remove(_selectedWorkout);
     }
 
     private async Task NextTab()
@@ -196,7 +221,7 @@
         {
             mudTabs.ActivatePanel(CurrentTabIndex + 1);
         }
-        
+
     }
 
     private void PreviousTab()
@@ -236,6 +261,6 @@
         catch
         {
             Snackbar.Add("Unable to save workout, you will lose all progress if you leave the page.", Severity.Error);
-        }        
+        }
     }
 }

@@ -4,27 +4,30 @@
     <MudStack Row Justify="Justify.FlexStart">
         @if (ShowBackButton)
         {
-            <MudIconButton Icon="@Icons.Material.Outlined.KeyboardArrowLeft" Color="Color.Primary"  OnClick="NavigateBack"></MudIconButton>
+            <MudIconButton Icon="@Icons.Material.Outlined.KeyboardArrowLeft" Color="Color.Primary" OnClick="NavigateBack"></MudIconButton>
         }
-        <MudText Typo="Typo.h4" Color="Color.Primary">@Title</MudText>
+        <MudText Typo="Typo.h4" Color="Color.Primary">@(CustomContent)@Title</MudText>
 
         @if (ActionMenu is not null)
         {
             <MudSpacer />
-            <MudIconButton Icon="@Icons.Material.Filled.MoreVert" OnClick="ShowMenu"/>
+            <MudIconButton Icon="@Icons.Material.Filled.MoreVert" OnClick="ShowMenu" />
         }
     </MudStack>
 </MudPaper>
 
 @code {
     [Parameter]
-    public required string Title { get; set; }
+    public string? Title { get; set; }
 
     [Parameter]
     public bool ShowBackButton { get; set; } = false;
 
     [Parameter]
     public MudMenu? ActionMenu { get; set; } = null;
+
+    [Parameter]
+    public RenderFragment? CustomContent { get; set; }
 
     public async Task NavigateBack()
     {

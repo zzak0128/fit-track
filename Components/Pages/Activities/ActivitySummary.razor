@@ -8,11 +8,21 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<PageTitle>WorkoutSummary</PageTitle>
+<PageTitle>Workout Summary</PageTitle>
 <PageHeaderTitle Title="Workout Summary" ShowBackButton />
 
 @if (_activity is not null && _activity.ExerciseList.Any())
 {
+    <MudPaper Elevation="2" Class="mb-6">
+        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4">@_activity.RoutineName -- @_activity.WorkoutName</MudText>
+            <MudStack Justify="Justify.SpaceEvenly" Class="ma-3" Spacing="12" Row>
+                <MudText Color="Color.Primary" Typo="Typo.h6">@_totalReps Reps</MudText>
+                <MudText Color="Color.Primary" Typo="Typo.h6">@_totalWeight lbs</MudText>
+            </MudStack>
+        </MudStack>
+    </MudPaper>
+
     <MudGrid Spacing="3" Justify="Justify.Center">
         @foreach (var exercise in _activity.ExerciseList)
         {
@@ -31,7 +41,7 @@
                             }
                         </MudStack>
                         <MudStack StretchItems="StretchItems.All">
-                            <MudTable Items="exercise.ActivitySets" Style="width:100%">
+                            <MudTable Items="exercise.ActivitySets" Style="width:100%" Breakpoint="Breakpoint.None">
                                 <HeaderContent>
                                     <MudTh>Set #</MudTh>
                                     <MudTh>Weight</MudTh>
@@ -43,6 +53,11 @@
                                     <MudTd DataLabel="Reps">@context.Repetitions</MudTd>
                                 </RowTemplate>
                             </MudTable>
+                            <MudStack Class="mx-3" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Row>
+                                <MudText Typo="Typo.subtitle1">Totals:</MudText>
+                                <MudText Typo="Typo.subtitle2">Weight: @(exercise.ActivitySets.Sum(x => x.Weight) * exercise.ActivitySets.Sum(x => x.Repetitions)) lbs</MudText>
+                                <MudText Typo="Typo.subtitle2">Reps: @exercise.ActivitySets.Sum(x => x.Repetitions)</MudText>
+                            </MudStack>
                         </MudStack>
                     </MudStack>
                 </MudPaper>
@@ -58,6 +73,9 @@
     private ActiveActivityDto _activity;
     private ApplicationUser CurrentUser;
 
+    private int _totalReps;
+    private double _totalWeight;
+
     protected async override Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -66,6 +84,19 @@
         if (CurrentUser is not null)
         {
             _activity = await ActivityService.GetActiveActivityByIdAsync(ActivityId, CurrentUser);
+            GetRepWeightTotals();
         }
+    }
+
+    private void GetRepWeightTotals()
+    {
+        _activity.ExerciseList.ForEach(x =>
+        {
+            foreach (var set in x.ActivitySets)
+            {
+                _totalReps += set.Repetitions;
+                _totalWeight += set.Weight * set.Repetitions;
+            }
+        });
     }
 }

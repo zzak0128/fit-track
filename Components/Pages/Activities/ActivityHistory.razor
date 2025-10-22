@@ -18,11 +18,13 @@
 
 <MudTable T="ActivityListDto" Items="@_activityList" Hover Striped OnRowClick="@OnRowClickHandler">
     <HeaderContent>
+        <MudTh>Routine</MudTh>
         <MudTh>Workout</MudTh>
         <MudTh>Date Completed</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Name">@context.WorkoutName</MudTd>
+        <MudTd DataLabel="Routine">@context.RoutineName</MudTd>
+        <MudTd DataLabel="Workout">@context.WorkoutName</MudTd>
         <MudTd DataLabel="Date Completed">@ShowCompletedStatus(context.DateCompleted)</MudTd>
         <MudTd Class="d-flex justify-end">
             @if (context.DateCompleted is null)

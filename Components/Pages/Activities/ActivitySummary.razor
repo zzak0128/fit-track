@@ -9,7 +9,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Workout Summary</PageTitle>
-<PageHeaderTitle Title="Workout Summary" ShowBackButton />
+<PageHeaderTitle Title="Workout Summary" CustomBackUrl="/activity/history" ShowBackButton />
 
 @if (_activity is not null && _activity.ExerciseList.Any())
 {

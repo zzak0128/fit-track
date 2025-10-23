@@ -24,84 +24,82 @@
     <MudMenuItem OnClick="AddExerciseAsync">Add a Workout</MudMenuItem>
     <MudMenuItem OnClick="RemoveWorkout" Disabled="@(_selectedWorkout is null)">Remove this Workout</MudMenuItem>
 </MudMenu>
-
-<MudTabs @ref="mudTabs" Elevation="1" Outlined ApplyEffectsToContainer Ripple PanelClass="pa-6">
-    @if (_activity is not null)
-    {
-        <MudTabPanel @ref="startPanel" Text="Time to get started!" Visible="@(_notStarted)">
-            <MudStack Justify="Justify.Center" Class="ma-6" Style="height:400px">
-                <MudText Align="Align.Center" Color="Color.Primary" GutterBottom Typo="Typo.h5">Start your workout!</MudText>
-                <MudStack Justify="Justify.Center" Row>
-                    <MudButton OnClick="StartWorkout" Variant="Variant.Filled" IconSize="Size.Large" Style="height:100px; width:100px; border-radius:50%" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large">Start</MudButton>
-                </MudStack>
-            </MudStack>
-        </MudTabPanel>
-        @foreach (var exercise in _activity.ExerciseList)
+<MudStack spacing="0" Justify="Justify.SpaceBetween">
+    <MudTabs @ref="mudTabs" Elevation="1" Outlined ApplyEffectsToContainer Ripple PanelClass="pa-6">
+        @if (_activity is not null)
         {
-            <MudTabPanel Text="@exercise.Exercise.Name" Disabled="@(_notStarted || exercise.IsCompleted)" Icon="@(exercise.IsCompleted ? Icons.Material.Rounded.Check : null)" OnClick="() => SetSelectedWorkout(exercise)">
-                <MudCarousel TData="string"
-                             ShowArrows
-                             ShowBullets
-                             EnableSwipeGesture
-                             AutoCycle
-                             ItemsSource="exercise.Exercise.ImagePaths"
-                             Style="height:350px">
-                    <ItemTemplate>
-                        <div class="d-flex justify-center" style="Height:100%">
-                            <MudImage ObjectFit="ObjectFit.Contain" Src="@context" FallbackSrc="no-image-icon.png"></MudImage>
-                        </div>
-                    </ItemTemplate>
-                </MudCarousel>
+            <MudContainer Gutters="false" Style="overflow:scroll">
 
-                <MudCard Class="ma-3">
-                    <MudCardContent>
-                        @exercise.Exercise.Description
-                    </MudCardContent>
-                </MudCard>
+                <MudTabPanel @ref ="startPanel" Text="Time to get started!" Visible="@(_notStarted)">
+                    <MudStack Justify="Justify.Center" Class="ma-6" Style="height:400px;max-height:65vh">
+                        <MudText Align="Align.Center" Color="Color.Primary" GutterBottom Typo="Typo.h5">Start your workout!</MudText>
+                        <MudStack Justify="Justify.Center" Row>
+                            <MudButton OnClick="StartWorkout" Variant="Variant.Filled" IconSize="Size.Large" Style="height:100px; width:100px; border-radius:50%" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large">Start</MudButton>
+                        </MudStack>
+                    </MudStack>
+                </MudTabPanel>
+                @foreach (var exercise in _activity.ExerciseList)
+                {
+                    <MudTabPanel Style="max-height:65vh" Text="@exercise.Exercise.Name" Disabled="@(_notStarted || exercise.IsCompleted)" Icon="@(exercise.IsCompleted? Icons.Material.Rounded.Check : null)" OnClick="() => SetSelectedWorkout(exercise)">
+                        <MudCarousel TData="string"
+                                     ShowArrows
+                                     ShowBullets
+                                     EnableSwipeGesture
+                                     AutoCycle
+                                     ItemsSource="exercise.Exercise.ImagePaths"
+                                     Style="height:350px">
+                            <ItemTemplate>
+                                <div class="d-flex justify-center" style="Height:100%">
+                                    <MudImage ObjectFit="ObjectFit.Contain" Src="@context" FallbackSrc="no-image-icon.png"></MudImage>
+                                </div>
+                            </ItemTemplate>
+                        </MudCarousel>
 
-                <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Recommended Sets: @exercise.SetCount</MudText>
-                <MudDataGrid T="ActivitySetDto"
-                             Items="exercise.ActivitySets"
-                             ReadOnly="false"
-                             Dense
-                             EditMode="DataGridEditMode.Cell"
-                             EditTrigger="DataGridEditTrigger.OnRowClick"
-                             CommittedItemChanges="SaveWorkoutAsync"
-                             Class="ma-3">
-                    <Columns>
-                        <PropertyColumn Title="Weight" Property="x => x.Weight" />
-                        <PropertyColumn Title="Reps" Property="x => x.Repetitions" />
-                        <TemplateColumn>
-                            <EditTemplate>
-                                <MudStack Row Justify="Justify.FlexEnd">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Remove" OnClick="() => RemoveSet(exercise, context.Item)"></MudIconButton>
-                                    <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" OnClick="() => AddSet(exercise, context.Item)"></MudIconButton>
-                                </MudStack>
-                            </EditTemplate>
-                        </TemplateColumn>
-                    </Columns>
-                </MudDataGrid>
-                <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.CheckCircle" Color="Color.Success" OnClick="() => CompleteWorkoutAsync(exercise)">Complete this Exercise!</MudButton>
-            </MudTabPanel>
+                        <MudCard Class="ma-3">
+                            <MudCardContent>
+                                @exercise.Exercise.Description
+                            </MudCardContent>
+                        </MudCard>
+
+                        <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Recommended Sets: @exercise.SetCount</MudText>
+                        <MudDataGrid T="ActivitySetDto"
+                                     Items="exercise.ActivitySets"
+                                     ReadOnly="false"
+                                     Dense
+                                     EditMode="DataGridEditMode.Cell"
+                                     EditTrigger="DataGridEditTrigger.OnRowClick"
+                                     CommittedItemChanges="SaveWorkoutAsync"
+                                     Class="ma-3">
+                            <Columns>
+                                <PropertyColumn Title="Weight" Property="x => x.Weight" />
+                                <PropertyColumn Title="Reps" Property="x => x.Repetitions" />
+                                <TemplateColumn>
+                                    <EditTemplate>
+                                        <MudStack Row Justify="Justify.FlexEnd">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Remove" OnClick="() => RemoveSet(exercise, context.Item)"></MudIconButton>
+                                            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" OnClick="() => AddSet(exercise, context.Item)"></MudIconButton>
+                                        </MudStack>
+                                    </EditTemplate>
+                                </TemplateColumn>
+                            </Columns>
+                        </MudDataGrid>
+                        <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.CheckCircle" Color="Color.Success" Disabled="exercise.IsCompleted" OnClick="() => CompleteWorkoutAsync(exercise)">Complete this Exercise!</MudButton>
+                    </MudTabPanel>
+                }
+            </MudContainer>
         }
-        <MudStack Class="d-flex justify-end ma-3" Row>
-            <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.KeyboardDoubleArrowLeft" Color="Color.Primary" Disabled="@(CurrentTabIndex == 0)" OnClick="PreviousTab">Prev</MudButton>
-            @*             <MudButton FullWidth Variant="Variant.Filled" Color="Color.Success" OnClick="SaveWorkoutAsync" Disabled="_notStarted">Save</MudButton> *@
-            <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Pause" Color="Color.Default" OnClick="PauseActivity">Pause</MudButton>
-            <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.CheckCircle" Color="Color.Success" Disabled="@(_notStarted || !WorkoutCompleted)" OnClick="CompleteActivityAsync">Complete Activity</MudButton>
-            <MudButton FullWidth Variant="Variant.Filled" EndIcon="@Icons.Material.Outlined.KeyboardDoubleArrowRight" Color="Color.Primary" Disabled="@((CurrentTabIndex == TabCount - 1) || _notStarted)" OnClick="NextTab">Next</MudButton>
-        </MudStack>
-    }
-</MudTabs>
+    </MudTabs>
 
-<MudStack Class="d-flex justify-end ma-3">
+    <MudStack Class="d-flex justify-end ma-3" Row>
+        <MudButton FullWidth Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Pause" Color="Color.Default" OnClick="PauseActivity">Pause</MudButton>
+        <MudButton FullWidth Variant="Variant.Filled" EndIcon="@Icons.Material.Outlined.CheckCircle" Color="Color.Success" Disabled="@(_notStarted || !WorkoutCompleted)" OnClick="CompleteActivityAsync">Finish</MudButton>
+    </MudStack>
 </MudStack>
+
 
 @code {
     [Parameter]
     public int ActivityId { get; set; }
-
-    [Inject] IJSRuntime JsRuntime { get; set; }
 
     private MudTabs mudTabs;
     private MudTabPanel startPanel;
@@ -246,36 +244,10 @@
         _activity.ExerciseList.Remove(_selectedWorkout!);
     }
 
-    private async Task NextTab()
-    {
-        _notStarted = false;
-        var activePanels = mudTabs.Panels.Where(x => x.Disabled == false && x.Visible);
-        if (activePanels.Any())
-        {
-            foreach (var tab in activePanels)
-            {
-            }
-        }
-
-
-        if (CurrentTabIndex < TabCount - 1)
-        {
-            mudTabs.ActivatePanel(CurrentTabIndex + 1);
-        }
-    }
-
-    private void PreviousTab()
-    {
-        if (CurrentTabIndex > 0)
-        {
-            mudTabs.ActivatePanel(CurrentTabIndex - 1);
-        }
-    }
-
     private async Task CompleteActivityAsync()
     {
         await ActivityService.SaveActivityAsync(_activity, true);
-        Navigation.NavigateTo("/activity/history", true);
+        Navigation.NavigateTo(@$"/activity/summary/{_activity.ActivityId}", true);
     }
 
     private async Task SaveWorkoutAsync()

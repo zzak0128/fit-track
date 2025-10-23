@@ -19,7 +19,6 @@
 <MudTable T="ActivityListDto" Items="@_activityList" Dense Hover Striped OnRowClick="@OnRowClickHandler">
     <HeaderContent>
         <MudTh>Progress</MudTh>
-        <MudTh>Routine</MudTh>
         <MudTh>Workout</MudTh>
         <MudTh>Date Completed</MudTh>
     </HeaderContent>
@@ -31,8 +30,12 @@
                 </ChildContent>
             </MudProgressCircular>
         </MudTd>
-        <MudTd DataLabel="Routine">@context.RoutineName</MudTd>
-        <MudTd DataLabel="Workout">@context.WorkoutName</MudTd>
+        <MudTd DataLabel="Workout">
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.body1" Color="Color.Primary">@context.WorkoutName</MudText>
+                <MudText Typo="Typo.caption">@context.RoutineName</MudText>
+            </MudStack>
+        </MudTd>
         <MudTd DataLabel="Date Completed">@ShowCompletedStatus(context.DateCompleted)</MudTd>
         <MudTd Class="d-flex justify-end">
             @if (context.DateCompleted is null)

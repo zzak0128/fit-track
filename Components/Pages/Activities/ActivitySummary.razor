@@ -14,16 +14,19 @@
 @if (_activity is not null && _activity.ExerciseList.Any())
 {
     <MudPaper Elevation="2" Class="mb-6">
-        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
-            <MudText Typo="Typo.h4">@_activity.RoutineName -- @_activity.WorkoutName</MudText>
-            <MudStack Justify="Justify.SpaceEvenly" Class="ma-3" Spacing="12" Row>
+        <MudStack Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start" Row Class="mt-3 ml-3">
+            <MudStack>
+                <MudText Typo="Typo.h4">@_activity.WorkoutName</MudText>
+                <MudText Typo="Typo.subtitle2">@_activity.RoutineName</MudText>
+            </MudStack>
+            <MudStack Justify="Justify.FlexEnd" Class="ma-3">
                 <MudText Color="Color.Primary" Typo="Typo.h6">@_totalReps Reps</MudText>
-                <MudText Color="Color.Primary" Typo="Typo.h6">@_totalWeight lbs</MudText>
+                <MudText Color="Color.Primary" Typo="Typo.h6">@(_totalWeight.ToString("n")) lbs</MudText>
             </MudStack>
         </MudStack>
     </MudPaper>
 
-    <MudGrid Spacing="3" Justify="Justify.Center">
+    <MudGrid Spacing="6" Justify="Justify.SpaceAround">
         @foreach (var exercise in _activity.ExerciseList)
         {
             <MudItem>
@@ -54,8 +57,7 @@
                                 </RowTemplate>
                             </MudTable>
                             <MudStack Class="mx-3" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Row>
-                                <MudText Typo="Typo.subtitle1">Totals:</MudText>
-                                <MudText Typo="Typo.subtitle2">Weight: @(exercise.ActivitySets.Sum(x => x.Weight) * exercise.ActivitySets.Sum(x => x.Repetitions)) lbs</MudText>
+                                <MudText Typo="Typo.subtitle2">Weight: @CalculateWeightTotal(exercise.ActivitySets)lbs</MudText>
                                 <MudText Typo="Typo.subtitle2">Reps: @exercise.ActivitySets.Sum(x => x.Repetitions)</MudText>
                             </MudStack>
                         </MudStack>
@@ -98,5 +100,17 @@
                 _totalWeight += set.Weight * set.Repetitions;
             }
         });
+    }
+
+    private string CalculateWeightTotal(List<ActivitySetDto> sets)
+    {
+        double weight = 0.00;
+
+        foreach (var set in sets)
+        {
+            weight += set.Repetitions * set.Weight;
+        }
+
+        return weight.ToString("n");
     }
 }

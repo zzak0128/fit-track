@@ -107,7 +107,7 @@ public class ActivityService : IActivityService
     public async Task<List<ActivityListDto>> GetActivityListAsync(ApplicationUser currentUser)
     {
         var context = await _contextFactory.CreateDbContextAsync();
-        List<ActivityListDto> activityList = await context.Activities.Include(x => x.WorkoutLogs).Where(x => x.User == currentUser).Select(x => new ActivityListDto
+        List<ActivityListDto> activityList = await context.Activities.Include(x => x.WorkoutLogs).ThenInclude(x => x.ActivitySets).Where(x => x.User == currentUser).Select(x => new ActivityListDto
         {
             ActivityId = x.Id,
             RoutineName = x.RoutineName,

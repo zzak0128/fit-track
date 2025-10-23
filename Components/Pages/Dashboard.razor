@@ -1,9 +1,15 @@
 ﻿@page "/dashboard"
 @using FitTrack.Data
+@using FitTrack.Data.DTOs.Activities
+@using FitTrack.Data.DTOs.Measurements
+@using FitTrack.Services.Activities
+@using FitTrack.Services.Measurements
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IActivityService ActivityService
+@inject IMeasurementService MeasurementService
 @attribute [Authorize]
 
 <PageTitle>Dashboard</PageTitle>
@@ -12,13 +18,76 @@
 <MudContainer Class="mt-16 px-8" MaxWidth="MaxWidth.False">
     <MudGrid>
         <MudItem xs="12" sm="6" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+            <MudPaper Elevation="2" Class="pa-4" Style="height: fit-content;">
+                <MudPaper Elevation="3" Outlined>
+                    <MudText Align="Align.Center" Typo="Typo.h6">Most Recent Workout</MudText>
+                </MudPaper>
+                @if (_recentActivity is not null)
+                {
+                    <MudText Align="Align.Center" Typo="Typo.subtitle2">@_recentActivity.DateCompleted</MudText>
+
+                    <MudStack Spacing="0" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.subtitle1" Color="Color.Primary">@_recentActivity.WorkoutName</MudText>
+                        <MudText Typo="Typo.subtitle2">@_recentActivity.RoutineName</MudText>
+                    </MudStack>
+                    <MudStack Justify="Justify.SpaceEvenly" Row Spacing="0">
+                        <MudText Typo="Typo.body2">@_recentActivity.TotalReps reps</MudText>
+                        <MudText Typo="Typo.body2">@_recentActivity.TotalWeight.ToString("n") lbs</MudText>
+                    </MudStack>
+
+                    <MudExpansionPanels Elevation="3" Class="mt-3">
+                        <MudExpansionPanel Dense="true" Text="Completed Exercises">
+                            <MudList T="string" Dense>
+                                @foreach (var exercise in _recentActivity.ExerciseList)
+                                {
+                                    <MudListItem Dense="true" Text="@exercise" />
+                                }
+                            </MudList>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+                }
+                else
+                {
+                    <MudText Typo="Typo.subtitle1" Color="Color.Secondary">No Recent Activity</MudText>
+                }
+            </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="4">
             <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
         </MudItem>
         <MudItem xs="12" sm="12" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+            <MudPaper Elevation="2" Class="pa-4" Style="height: fit-content;">
+                <MudPaper Elevation="3" Outlined>
+                    <MudText Align="Align.Center" Typo="Typo.h6">Workout Records</MudText>
+                </MudPaper>
+                @if (_recordActivity is not null)
+                {
+                    <MudStack Spacing="6" AlignItems="AlignItems.Center">
+                        <MudStack Spacing="0" AlignItems="AlignItems.Center">
+                            <MudText Typo="Typo.subtitle1" Color="Color.Primary">@_recordActivity.BestReps.Exercise</MudText>
+                            <MudText Typo="Typo.subtitle2">@_recordActivity.BestReps.Routine</MudText>
+                            <MudText Typo="Typo.body1">@_recordActivity.BestReps.Reps Reps</MudText>
+                        </MudStack>
+                        <MudStack Spacing="0" AlignItems="AlignItems.Center">
+                            @if (!_recordActivity.BestWeight.Exercise.Equals(_recordActivity.BestReps.Exercise))
+                            {
+                                <MudText Typo="Typo.subtitle1" Color="Color.Primary">@_recordActivity.BestWeight.Exercise</MudText>
+                            }
+
+                            @if (!_recordActivity.BestWeight.Routine.Equals(_recordActivity.BestReps.Routine))
+                            {
+                                <MudText Typo="Typo.subtitle2">@_recordActivity.BestWeight.Routine</MudText>
+                            }
+
+                            <MudText Typo="Typo.body1">@_recordActivity.BestWeight.Weight.ToString("n") lbs</MudText>
+                        </MudStack>
+                    </MudStack>
+                }
+                else
+                {
+                    <MudText Typo="Typo.subtitle1" Color="Color.Secondary">No Recent Activity</MudText>
+                }
+            </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6">
             <MudGrid>
@@ -31,7 +100,37 @@
             </MudGrid>
         </MudItem>
         <MudItem xs="12" sm="6">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%"></MudPaper>
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
+                <MudPaper Elevation="3" Outlined>
+                    <MudText Align="Align.Center" Typo="Typo.h6">Measurements</MudText>
+                </MudPaper>
+                @if (_measurementNames.Any())
+                {
+                    <MudSelect T="string" @bind-Value="_selectedMeasurement" Clearable Placeholder="Select a Metric" OnClearButtonClick="ClearMeasurement" Class="mb-3 mt-3" Variant="Variant.Outlined" Dense FullWidth SelectedValuesChanged="GetMeasurementChartDataAsync">
+                        @foreach (var measurement in _measurementNames)
+                        {
+                            <MudSelectItem Value="measurement">@measurement</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    @if (_measurementChartData is not null)
+                    {
+                        <MudPaper Elevation="3" Width="100%">
+                            <MudChart Class="pa-6"
+                                      Style="margin:auto"
+                                      Width="100%"
+                                      ChartType="ChartType.Line"
+                                      ChartSeries="@_measurementChartData.Series"
+                                      XAxisLabels="@_measurementChartData.Dates"
+                                      AxisChartOptions="_axisChartOptions" />
+                        </MudPaper>
+                    }
+                }
+                else
+                {
+                    <MudText Typo="Typo.subtitle1" Color="Color.Secondary">No Selected Measurement</MudText>
+                }
+            </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="4">
             <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
@@ -45,18 +144,45 @@
     </MudGrid>
 </MudContainer>
 
-
-
 @code {
     private ApplicationUser CurrentUser;
+    private RecentActivityDto? _recentActivity;
+    private List<string> _measurementNames = [];
+    private string _selectedMeasurement = "";
+    private MeasurementChartDto? _measurementChartData { get; set; } = null!;
+
+    private RecordActivityDto? _recordActivity;
+
+    private AxisChartOptions _axisChartOptions = new();
+    private ChartOptions _chartOptions = new();
 
     protected async override Task OnInitializedAsync()
     {
+        _chartOptions.ShowLabels = true;
+        _chartOptions.ShowLegend = true;
+        _axisChartOptions.MatchBoundsToSize = true;
+
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         CurrentUser = await UserManager.GetUserAsync(authState.User);
 
         if (CurrentUser is not null)
         {
+            _recentActivity = await ActivityService.GetMostRecentCompletedActivityAsync(CurrentUser);
+            _recordActivity = await ActivityService.GetRecordActivityAsync(CurrentUser);
+            _measurementNames = await MeasurementService.GetMeasurementNamesAsync(CurrentUser);
+            _selectedMeasurement = _measurementNames.FirstOrDefault() ?? "";
+            await GetMeasurementChartDataAsync();
         }
     }
+
+    private void ClearMeasurement() => _measurementChartData = null!;
+
+    private async Task GetMeasurementChartDataAsync()
+    {
+        if (!string.IsNullOrEmpty(_selectedMeasurement))
+        {
+            _measurementChartData = await MeasurementService.GetMeasurementChartDataAsync(_selectedMeasurement, CurrentUser);
+        }
+    }
+
 }

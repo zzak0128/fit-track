@@ -12,4 +12,6 @@ public interface IActivityService
     Task<ActiveActivityDto> GetActiveActivityByIdAsync(int ActivityId, ApplicationUser CurrentUser);
     Task<List<ActivityListDto>> GetActivityListAsync(ApplicationUser currentUser);
     Task CompleteWorkoutAsync(int logId);
+    Task<RecentActivityDto?> GetMostRecentCompletedActivityAsync(ApplicationUser currentUser);
+    Task<RecordActivityDto> GetRecordActivityAsync(ApplicationUser currentUser);
 }

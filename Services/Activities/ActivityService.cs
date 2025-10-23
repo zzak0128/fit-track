@@ -60,7 +60,6 @@ public class ActivityService : IActivityService
         return activitySets;
     }
 
-
     public async Task<ActiveActivityDto> GetActiveActivityByIdAsync(int activityId, ApplicationUser CurrentUser)
     {
         var context = await _contextFactory.CreateDbContextAsync();
@@ -119,6 +118,102 @@ public class ActivityService : IActivityService
         }).ToListAsync();
 
         return activityList;
+    }
+
+    public async Task<RecentActivityDto?> GetMostRecentCompletedActivityAsync(ApplicationUser currentUser)
+    {
+        var context = await _contextFactory.CreateDbContextAsync();
+        var recentActivity = await context.Activities
+            .Include(x => x.WorkoutLogs)
+            .ThenInclude(x => x.ActivitySets)
+            .Include(x => x.WorkoutLogs)
+            .ThenInclude(x => x.Exercise)
+            .OrderByDescending(x => x.DateCompleted)
+            .FirstOrDefaultAsync(x => x.User == currentUser && x.DateCompleted.HasValue);
+
+        if (recentActivity is null)
+        {
+            return null;
+        }
+
+        RecentActivityDto output = new()
+        {
+            RoutineName = recentActivity.RoutineName ?? "",
+            WorkoutName = recentActivity.WorkoutName ?? "",
+            DateCompleted = recentActivity.DateCompleted
+        };
+
+        foreach (var log in recentActivity.WorkoutLogs)
+        {
+            output.ExerciseList.Add(log.Exercise.Name);
+            foreach (var set in log.ActivitySets)
+            {
+                output.TotalReps += set.Repetitions;
+                output.TotalWeight += set.Weight * set.Repetitions;
+            }
+        }
+
+        return output;
+    }
+
+    public async Task<RecordActivityDto> GetRecordActivityAsync(ApplicationUser currentUser)
+    {
+        var context = await _contextFactory.CreateDbContextAsync();
+        var activities = await context.Activities
+            .Include(x => x.WorkoutLogs)
+            .ThenInclude(x => x.ActivitySets)
+            .OrderByDescending(x => x.DateCompleted)
+            .Where(x => x.User == currentUser && x.DateCompleted.HasValue)
+            .ToListAsync();
+
+        List<(string routine, string exercise, int reps, double weight)> activityTotals = [];
+
+        foreach (var activity in activities)
+        {
+            string routine = activity.RoutineName;
+            string name = activity.WorkoutName;
+            int repTotal = 0;
+            double weightTotal = 0.00;
+
+            foreach (var logs in activity.WorkoutLogs)
+            {
+                foreach (var set in logs.ActivitySets)
+                {
+                    repTotal += set.Repetitions;
+                    weightTotal += set.Weight * set.Repetitions;
+                }
+            }
+
+            activityTotals.Add((routine, name, repTotal, weightTotal));
+        }
+
+
+        BestRepsActivityDto bestRep = new();
+        BestWeightActivityDto bestWeight = new();
+
+        // Add logic here to find best set totals
+        foreach (var activity in activityTotals)
+        {
+            if (activity.reps > bestRep.Reps)
+            {
+                bestRep.Routine = activity.routine;
+                bestRep.Reps = activity.reps;
+                bestRep.Exercise = activity.exercise;
+            }
+
+            if (activity.weight > bestWeight.Weight)
+            {
+                bestWeight.Routine = activity.routine;
+                bestWeight.Weight = activity.weight;
+                bestWeight.Exercise = activity.exercise;
+            }
+        }
+
+        return new RecordActivityDto
+        {
+            BestReps = bestRep,
+            BestWeight = bestWeight,
+        };
     }
 
     public async Task SaveActivityAsync(ActiveActivityDto completeActivity, bool isCompleted = false)

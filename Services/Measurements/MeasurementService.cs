@@ -1,4 +1,5 @@
-﻿using FitTrack.Data;
+﻿using FitTrack.Components.Pages.Measurements;
+using FitTrack.Data;
 using FitTrack.Data.DTOs.Measurements;
 using FitTrack.Data.Models.Measurements;
 using Microsoft.EntityFrameworkCore;
@@ -106,6 +107,46 @@ public class MeasurementService : IMeasurementService
 
         await context.SaveChangesAsync();
     }
+
+    public async Task<MeasurementChartDto> GetMeasurementChartDataAsync(string measurementName, ApplicationUser currentUser)
+    {
+        var context = await _contextFactory.CreateDbContextAsync();
+        var measurement = await context.Measurements
+            .Include(m => m.MeasurementData)
+            .FirstOrDefaultAsync(m => m.Name == measurementName && m.User == currentUser) ?? throw new Exception("Measurement not found.");
+
+        MeasurementChartDto output = new();
+        var name = measurement.Name;
+
+        List<ChartSeries> chartSeries = [];
+        ChartSeries dataChart = new()
+        {
+            Name = measurement.MeasurementData.Select(x => x.Unit)
+                .FirstOrDefault(),
+            Data = measurement.MeasurementData
+                .OrderBy(x => x.Date)
+                .Select(x => x.Amount)
+                .ToArray(),
+            ShowDataMarkers = true
+        };
+
+        chartSeries.Add(dataChart);
+        var measurementDates = measurement.MeasurementData
+            .OrderBy(x => x.Date)
+            .Select(x => x.Date.ToString("M/d"))
+            .ToArray();
+
+        output = new MeasurementChartDto
+        {
+            MeasurementId = measurement.Id,
+            Name = name,
+            Series = chartSeries,
+            Dates = measurementDates
+        };
+
+        return output;
+    }
+
 
     public async Task<List<MeasurementChartDto>> GetMeasurementChartDataAsync(ApplicationUser currentUser)
     {

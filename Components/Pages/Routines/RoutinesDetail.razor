@@ -22,7 +22,10 @@
 
 <MudStack row Justify="Justify.SpaceBetween">
     <MudText Class="mb-3" Typo="Typo.h3">@DetailRoutine?.Routine.Name</MudText>
-    <MudIconButton Size="Size.Large" Color="Color.Primary" Icon="@Icons.Material.Rounded.AddCircle" OnClick="CreateWorkoutAsync" />
+    <MudStack Row>
+        <MudIconButton Size="Size.Medium" Color="Color.Default" Icon="@Icons.Material.Rounded.Edit" OnClick="EditRoutineAsync" />
+        <MudIconButton Size="Size.Large" Color="Color.Primary" Icon="@Icons.Material.Rounded.AddCircle" OnClick="CreateWorkoutAsync" />
+    </MudStack>
 </MudStack>
 
 @if (DetailRoutine is null || !DetailRoutine.Workouts.Any())
@@ -179,6 +182,48 @@ else
             else
             {
                 Snackbar.Add("Failed to Save the new Workout", Severity.Error);
+            }
+        }
+    }
+    private async Task EditRoutineAsync()
+    {
+        var editRoutine = (new EditRoutineDto
+        {
+            Id = DetailRoutine.Routine.Id,
+            NewName = DetailRoutine.Routine.Name,
+            Description = DetailRoutine.Routine.Description
+        });
+        var dialogParams = new DialogParameters<EditRoutineDialog>
+        {
+            { x => x.EditRoutine, editRoutine}
+        };
+
+
+        var editDialog = await DialogService.ShowAsync<EditRoutineDialog>($"Edit {DetailRoutine.Routine.Name}", dialogParams);
+
+        var result = await editDialog.Result;
+        if (!result.Canceled)
+        {
+            EditRoutineDto newRoutine = await editDialog.GetReturnValueAsync<EditRoutineDto>();
+            if (newRoutine is not null)
+            {
+                editDialog.Close();
+
+                try
+                {
+                    await RoutineService.EditRoutineAsync(newRoutine);
+                    DetailRoutine.Routine.Name = newRoutine.NewName;
+                    DetailRoutine.Routine.Description = newRoutine.Description;
+                }
+                catch
+                {
+                    Snackbar.Add("Failed update the routine", Severity.Error);
+                }
+
+            }
+            else
+            {
+                Snackbar.Add("Failed to update the routine", Severity.Error);
             }
         }
     }

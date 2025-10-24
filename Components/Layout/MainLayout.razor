@@ -10,7 +10,14 @@
 <MudSnackbarProvider />
 <MudLayout>
     <MudAppBar Elevation="1">
-        <MudIconButton Edge="Edge.Start" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" @onclick="ToggleDrawer" />
+        @if(RendererInfo.IsInteractive)
+        {
+            <MudIconButton Edge="Edge.Start" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" @onclick="ToggleDrawer" />
+        }
+        else
+        {
+            <MudIconButton Edge="Edge.Start" Icon="@Icons.Material.Filled.House" Color="Color.Inherit" Href="/" />
+        }
         <MudLink Typo="Typo.h5" Color="Color.Inherit" Underline="Underline.None" Href="/">Fit Track</MudLink>
         <MudSpacer />
     </MudAppBar>

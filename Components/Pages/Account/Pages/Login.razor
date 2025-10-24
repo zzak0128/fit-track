@@ -12,11 +12,12 @@
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Log in</PageTitle>
+<PageHeaderTitle Title="Log In" />
 
-<MudText Typo="Typo.h3" GutterBottom="true">Log in</MudText>
-
-<MudGrid>
-    <MudItem md="6">
+@* <MudText Typo="Typo.h3" GutterBottom="true">Log in</MudText>
+ *@
+<MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+    <MudPaper Elevation="2" Class="pa-6 mt-12" MaxWidth="450px">
         <StatusMessage Message="@errorMessage" />
         <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
             <DataAnnotationsValidator />
@@ -25,12 +26,12 @@
 
             <MudGrid>
                 <MudItem md="12">
-                    <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email" 
+                    <MudStaticTextField Variant="Variant.Outlined" For="@(() => Input.Email)" @bind-Value="Input.Email" 
                         Label="Email" Placeholder="name@example.com" 
                         UserAttributes="@(new() { { "autocomplete", "username" }, { "aria-required", "true" } } )" />
                 </MudItem>
                 <MudItem md="12">
-                    <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password" 
+                    <MudStaticTextField Variant="Variant.Outlined" For="@(() => Input.Password)" @bind-Value="Input.Password" 
                         Label="Password" InputType="InputType.Password" Placeholder="password" 
                         UserAttributes="@(new() { { "autocomplete", "current-password" }, { "aria-required", "true" } } )" />
                 </MudItem>
@@ -47,16 +48,11 @@
             <MudItem md="12">
                 <MudLink Href="Account/ForgotPassword">Forgot your password?</MudLink><br />
                 <MudLink Href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</MudLink><br />
-                <MudLink Href="Account/ResendEmailConfirmation">Resend email confirmation</MudLink>
-            </MudItem>
+@*                 <MudLink Href="Account/ResendEmailConfirmation">Resend email confirmation</MudLink>
+ *@            </MudItem>
         </MudGrid>
-    </MudItem>
-    <MudItem md="6">
-        <MudText GutterBottom="true" Typo="Typo.body1">Use another service to log in.</MudText>
-
-        <ExternalLoginPicker />
-    </MudItem>
-</MudGrid>
+    </MudPaper>
+</MudStack>
 
 @code {
     private string? errorMessage;
@@ -89,12 +85,12 @@
             Logger.LogInformation("User logged in.");
             RedirectManager.RedirectTo(ReturnUrl);
         }
-        else if (result.RequiresTwoFactor)
-        {
-            RedirectManager.RedirectTo(
-                "Account/LoginWith2fa",
-                new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
-        }
+        // else if (result.RequiresTwoFactor)
+        // {
+        //     RedirectManager.RedirectTo(
+        //         "Account/LoginWith2fa",
+        //         new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+        // }
         else if (result.IsLockedOut)
         {
             Logger.LogWarning("User account locked out.");

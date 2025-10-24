@@ -245,6 +245,33 @@ public class RoutineService : IRoutineService
         }
     }
 
+    public async Task EditRoutineAsync(EditRoutineDto renameRoutine)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        var routine = await context.Routines.FindAsync(renameRoutine.Id);
+
+        if (routine is not null)
+        {
+            routine.Name = renameRoutine.NewName;
+            routine.Description = renameRoutine.Description;
+
+            context.Routines.Update(routine);
+
+            try
+            {
+                await context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to rename this routine", ex);
+            }
+        }
+        else
+        {
+            throw new Exception("Failed to rename this routine");
+        }
+    }
+
     public async Task DeleteRoutineAsync(int routineId)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();

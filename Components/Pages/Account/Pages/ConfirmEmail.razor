@@ -10,9 +10,21 @@
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Confirm email</PageTitle>
-
-<h1>Confirm email</h1>
+<PageHeaderTitle Title="Confirm Email" />
 <StatusMessage Message="@statusMessage" />
+
+<MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+    <MudPaper Elevation="2" Class="pa-6 mt-12">
+        <MudText Typo="Typo.h4" GutterBottom>
+            @statusMessage
+        </MudText>
+            <MudLink Href="/Account/Login">
+                <MudStaticButton Variant="Variant.Filled" Color="Color.Primary">
+                    Return to Login
+                </MudStaticButton>
+            </MudLink>
+    </MudPaper>
+</MudStack>
 
 @code {
     private string? statusMessage;

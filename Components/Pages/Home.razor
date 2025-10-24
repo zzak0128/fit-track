@@ -8,17 +8,21 @@
     </Authorized>
     <NotAuthorized>
         <PageHeaderTitle Title="Welcome to FitTrack!"></PageHeaderTitle>
-        <MudText Typo="Typo.subtitle1">
-            You must be registered and login to use FitTrack.
-            <br />
-            <MudStack Row Spacing="6">
-            <MudButton StartIcon="@Icons.Material.Filled.Login" Href="account/login" Color="Color.Primary">
-                Login
-            </MudButton>
-             <MudButton StartIcon="@Icons.Material.Filled.AppRegistration" Href="account/register" Typo="Typo.body1"  Color="Color.Default">
-                Register
-            </MudButton>
-            </MudStack>
-        </MudText>
+        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+            <MudPaper Elevation="2" Class="pa-6 mt-12">
+                <MudText Typo="Typo.h5" GutterBottom>
+                    You must be registered and login to use FitTrack.
+                </MudText>
+
+                    <MudStack Row Justify="Justify.SpaceAround">
+                        <MudButton StartIcon="@Icons.Material.Filled.Login" Href="account/login" Color="Color.Primary">
+                            Login
+                        </MudButton>
+                        <MudButton StartIcon="@Icons.Material.Filled.AppRegistration" Href="account/register" Typo="Typo.body1" Color="Color.Default">
+                            Register
+                        </MudButton>
+                    </MudStack>
+            </MudPaper>
+        </MudStack>
     </NotAuthorized>
 </AuthorizeView>

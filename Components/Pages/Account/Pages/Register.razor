@@ -17,11 +17,10 @@
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Register</PageTitle>
+<PageHeaderTitle Title="Register" />
 
-<MudText Typo="Typo.h3" GutterBottom="true">Register</MudText>
-
-<MudGrid>
-    <MudItem md="6">
+<MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+    <MudPaper Elevation="2" Class="pa-6 mt-12" MaxWidth="450px">
         <StatusMessage Message="@Message" />
         <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
             <DataAnnotationsValidator />
@@ -32,16 +31,19 @@
                 <MudItem md="12">
                     <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
                                         Label="Email" Placeholder="name@example.com"
+                                        Variant="Variant.Outlined"
                                         UserAttributes="@(new() { { "autocomplete", "username" }, { "aria-required", "true" } } )" />
                 </MudItem>
                 <MudItem md="12">
                     <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
                                         Label="Password" InputType="InputType.Password" Placeholder="password"
+                                        Variant="Variant.Outlined"
                                         UserAttributes="@(new() { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
                 </MudItem>
                 <MudItem md="12">
                     <MudStaticTextField For="@(() => Input.ConfirmPassword)" @bind-Value="Input.ConfirmPassword"
                                         Label="Confirm Password" InputType="InputType.Password" Placeholder="confirm password"
+                                        Variant="Variant.Outlined"
                                         UserAttributes="@(new() { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
                 </MudItem>
                 <MudItem md="12">
@@ -49,12 +51,12 @@
                 </MudItem>
             </MudGrid>
         </EditForm>
-    </MudItem>
-    <MudItem md="6">
+    </MudPaper>
+@*     <MudItem md="6">
         <MudText Typo="Typo.body1" GutterBottom="true">Use another service to register.</MudText>
         <ExternalLoginPicker />
-    </MudItem>
-</MudGrid>
+    </MudItem> *@
+</MudStack>
 
 @code {
     private IEnumerable<IdentityError>? identityErrors;

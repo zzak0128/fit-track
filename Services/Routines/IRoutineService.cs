@@ -25,4 +25,5 @@ public interface IRoutineService
     Task RemoveWorkoutAsync(int workoutId);
     Task CreateExerciseAsync(List<ExerciseDto> exercises);
     Task<string> RenameWorkoutAsync(RenameWorkoutDto workout);
+    Task EditRoutineAsync(EditRoutineDto renameRoutine);
 }

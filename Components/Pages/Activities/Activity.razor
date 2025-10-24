@@ -29,8 +29,7 @@
         @if (_activity is not null)
         {
             <MudContainer Gutters="false" Style="overflow:scroll">
-
-                <MudTabPanel @ref ="startPanel" Text="Time to get started!" Visible="@(_notStarted)">
+                <MudTabPanel @ref ="startPanel" Text="Time to get started!" Visible="@(_notStarted)" Disabled="@(!_notStarted)">
                     <MudStack Justify="Justify.Center" Class="ma-6" Style="height:400px;max-height:65vh">
                         <MudText Align="Align.Center" Color="Color.Primary" GutterBottom Typo="Typo.h5">Start your workout!</MudText>
                         <MudStack Justify="Justify.Center" Row>
@@ -164,6 +163,15 @@
         {
             mudTabs.ActivatePanel(mudTabs.Panels.Last());
             _shouldLoadLastTab = false;
+        }
+
+        if (!_notStarted)
+        {
+            var activePanels = mudTabs.Panels.Where(x => x.Disabled == false && x.Visible);
+            if (activePanels.Any())
+            {
+                mudTabs.ActivatePanel(activePanels.First());
+            }
         }
 
         return base.OnAfterRenderAsync(firstRender);

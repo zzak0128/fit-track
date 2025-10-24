@@ -159,19 +159,20 @@
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            _notStarted = true;
+
+        }
+        else
+        {
+            _notStarted = false;
+        }
+
         if (!firstRender && _shouldLoadLastTab)
         {
             mudTabs.ActivatePanel(mudTabs.Panels.Last());
             _shouldLoadLastTab = false;
-        }
-
-        if (!_notStarted)
-        {
-            var activePanels = mudTabs.Panels.Where(x => x.Disabled == false && x.Visible);
-            if (activePanels.Any())
-            {
-                mudTabs.ActivatePanel(activePanels.First());
-            }
         }
 
         return base.OnAfterRenderAsync(firstRender);

@@ -36,7 +36,7 @@
                     </MudStack>
 
                     <MudExpansionPanels Elevation="3" Class="mt-3">
-                        <MudExpansionPanel Dense="true" Text="Completed Exercises">
+                        <MudExpansionPanel Expanded Dense="true" Text="Completed Exercises">
                             <MudList T="string" Dense>
                                 @foreach (var exercise in _recentActivity.ExerciseList)
                                 {
@@ -53,9 +53,6 @@
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="12" md="4">
             <MudPaper Elevation="2" Class="pa-4" Style="height: fit-content;">
                 <MudPaper Elevation="3" Outlined>
                     <MudText Align="Align.Center" Typo="Typo.h6">Workout Records</MudText>
@@ -89,17 +86,7 @@
                 }
             </MudPaper>
         </MudItem>
-        <MudItem xs="12" sm="6">
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
-                </MudItem>
-            </MudGrid>
-        </MudItem>
-        <MudItem xs="12" sm="6">
+        <MudItem xs="12" sm="6" md="4">
             <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
                 <MudPaper Elevation="3" Outlined>
                     <MudText Align="Align.Center" Typo="Typo.h6">Measurements</MudText>
@@ -131,15 +118,6 @@
                     <MudText Typo="Typo.subtitle1" Color="Color.Secondary">No Selected Measurement</MudText>
                 }
             </MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="12" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
         </MudItem>
     </MudGrid>
 </MudContainer>

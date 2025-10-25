@@ -8,5 +8,5 @@ public class ExerciseCsvRecord
 
     public MuscleGroup MuscleGroup { get; set; } = MuscleGroup.General;
 
-    public string ImagePaths { get; set; }
+    public string ImagePaths { get; set; } = null!;
 }

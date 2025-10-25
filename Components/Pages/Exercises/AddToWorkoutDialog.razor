@@ -58,15 +58,15 @@
     public required ExerciseDto _selectedExercise { get; set; }
 
     private List<BaseRoutineDto> _userRoutines = [];
-    private BaseRoutineDto _selectedRoutine;
+    private BaseRoutineDto? _selectedRoutine;
 
     private List<BaseWorkoutDto> _userWorkouts = [];
-    private BaseWorkoutDto _selectedWorkout;
+    private BaseWorkoutDto? _selectedWorkout;
 
     private ApplicationUser? _currentUser;
 
     private CreateExerciseSetDto _addToWorkout = new();
-    private MudForm form;
+    private MudForm form = null!;
     private bool success;
     private string[] errors = [];
 
@@ -93,8 +93,15 @@
         await form.Validate();
         if (form.IsValid)
         {
-            _addToWorkout.WorkoutId = _selectedWorkout.Id;
-            _addToWorkout.Exercise = _selectedExercise;
+            if (_selectedWorkout is null)
+            {
+                MudDialog.Close(DialogResult.Ok(false));
+            }
+            else
+            {
+                _addToWorkout.WorkoutId = _selectedWorkout.Id;
+                _addToWorkout.Exercise = _selectedExercise;
+            }
 
             try
             {

@@ -51,6 +51,9 @@
 
     private async Task ShowMenu(MouseEventArgs args)
     {
-        await ActionMenu.OpenMenuAsync(args);
+        if (ActionMenu is not null)
+        {
+            await ActionMenu.OpenMenuAsync(args);
+        }
     }
 }

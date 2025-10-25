@@ -123,7 +123,7 @@
 </MudContainer>
 
 @code {
-    private ApplicationUser CurrentUser;
+    private ApplicationUser? CurrentUser;
     private RecentActivityDto? _recentActivity;
     private List<string> _measurementNames = [];
     private string _selectedMeasurement = "";
@@ -157,7 +157,7 @@
 
     private async Task GetMeasurementChartDataAsync()
     {
-        if (!string.IsNullOrEmpty(_selectedMeasurement))
+        if (!string.IsNullOrEmpty(_selectedMeasurement) && CurrentUser is not null)
         {
             _measurementChartData = await MeasurementService.GetMeasurementChartDataAsync(_selectedMeasurement, CurrentUser);
         }

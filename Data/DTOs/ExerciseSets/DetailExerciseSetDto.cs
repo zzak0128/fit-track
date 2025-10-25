@@ -8,7 +8,7 @@ public class DetailExerciseSetDto
 
     public int Sequence { get; set; }
 
-    public ExerciseDto Exercise { get; set; }
+    public ExerciseDto Exercise { get; set; } = null!;
 
     public double Weight { get; set; }
 

@@ -6,7 +6,7 @@ public class WorkoutLogDto
 {
     public int WorkoutLogId { get; set; }
 
-    public ExerciseDto Exercise { get; set; }
+    public ExerciseDto Exercise { get; set; } = null!;
 
     public List<ActivitySetDto> ActivitySets { get; set; } = [];
 

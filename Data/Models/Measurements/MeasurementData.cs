@@ -6,7 +6,7 @@ public class MeasurementData
 
     public double Amount { get; set; }
 
-    public string Unit { get; set; } = "";
+    public required string Unit { get; set; }
 
     public DateTime Date { get; set; } = DateTime.Now;
 

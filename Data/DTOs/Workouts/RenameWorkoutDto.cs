@@ -4,5 +4,5 @@ public class RenameWorkoutDto
 {
     public int WorkoutId { get; set; }
 
-    public string NewName { get; set; }
+    public string NewName { get; set; } = "";
 }

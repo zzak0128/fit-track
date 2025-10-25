@@ -6,7 +6,7 @@ public class ExerciseSet
 
     public int Sequence { get; set; }
 
-    public Exercise Exercise { get; set; }
+    public Exercise Exercise { get; set; } = null!;
 
     public double Weight { get; set; }
 
@@ -14,5 +14,5 @@ public class ExerciseSet
 
     public int SetCount { get; set; }
 
-    public virtual Workout Workout { get; set; }
+    public virtual Workout Workout { get; set; } = null!;
 }

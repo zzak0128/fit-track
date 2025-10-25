@@ -6,7 +6,7 @@ public class WorkoutLog
 {
     public int Id { get; set; }
 
-    public Exercise Exercise { get; set; }
+    public Exercise Exercise { get; set; } = null!;
 
     public List<ActivitySet> ActivitySets { get; set; } = [];
 

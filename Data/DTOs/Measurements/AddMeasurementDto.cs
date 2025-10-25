@@ -2,7 +2,7 @@
 
 public class AddMeasurementDto
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = "";
 
     public double Amount { get; set; }
 
@@ -10,5 +10,5 @@ public class AddMeasurementDto
 
     public DateTime? Date { get; set; }
 
-    public ApplicationUser User { get; set; }
+    public ApplicationUser User { get; set; } = null!;
 }

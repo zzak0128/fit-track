@@ -6,6 +6,7 @@
 @using FitTrack.Extensions
 @inject IDialogService DialogService
 @inject IMeasurementService MeasurementService
+@inject ISnackbar Snackbar
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavManager
@@ -26,7 +27,7 @@
             <MudTd DataLabel="Measurement">@context.Amount @context.Unit</MudTd>
             <MudTd DataLabel="Date">@context.Date.ToShortDateString()</MudTd>
             <MudTd Class="d-flex justify-end">
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteMeasurementDataAsync(context.Id)"/>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteMeasurementDataAsync(context.Id)" />
             </MudTd>
         </RowTemplate>
     </MudTable>
@@ -36,8 +37,8 @@
     [Parameter]
     public int MeasurementId { get; set; }
 
-    private MeasurementDto _measurement;
-    private ApplicationUser CurrentUser { get; set; }
+    private MeasurementDto? _measurement;
+    private ApplicationUser? CurrentUser { get; set; }
     private string _pageHeaderTitle { get; set; } = "";
 
     protected async override Task OnInitializedAsync()
@@ -58,6 +59,12 @@
         if (await DialogService.ConfirmDelete())
         {
             await MeasurementService.RemoveMeasurementDataAsync(measurementDataId);
+            if (CurrentUser is null)
+            {
+                Snackbar.Add("Unable to find logged in user to get your list of Measurements.", Severity.Error);
+                return;
+            }
+
             _measurement = await MeasurementService.GetMeasurementByIdAsync(MeasurementId, CurrentUser);
         }
     }

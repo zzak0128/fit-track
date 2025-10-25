@@ -5,11 +5,11 @@ namespace FitTrack.Data.DTOs.Routines;
 
 public class DetailRoutineDto
 {
-    public BaseRoutineDto Routine { get; set; }
+    public BaseRoutineDto Routine { get; set; } = null!;
 
     public List<BaseWorkoutDto> Workouts { get; set; } = [];
 
     public List<DetailExerciseSetDto> ExerciseSets { get; set; } = [];
 
-    public ApplicationUser User { get; set; }
+    public ApplicationUser User { get; set; } = null!;
 }

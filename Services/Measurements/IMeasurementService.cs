@@ -9,7 +9,7 @@ public interface IMeasurementService
     Task<MeasurementDto> GetMeasurementByIdAsync(int measurementId, ApplicationUser user);
     Task<AddMeasurementDto> GetMeasurementByNameAsync(string measurementName, ApplicationUser user);
     Task<List<MeasurementChartDto>> GetMeasurementChartDataAsync(ApplicationUser currentUser);
-    Task<MeasurementChartDto> GetMeasurementChartDataAsync(string measurementName, ApplicationUser currentUser);
+    Task<MeasurementChartDto?> GetMeasurementChartDataAsync(string measurementName, ApplicationUser currentUser);
     Task<List<string>> GetMeasurementNamesAsync(ApplicationUser currentUser);
     Task RemoveMeasurementDataAsync(int measurementDataId);
     Task RemoveMeasurementTypeAsync(int measurementId);

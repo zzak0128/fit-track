@@ -42,12 +42,12 @@
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = null!;
 
-    private List<ExerciseDto> _exerciseList;
+    private List<ExerciseDto> _exerciseList = [];
     private ExerciseDto? _selectedExercise;
     private ApplicationUser? _currentUser;
 
     private CreateExerciseSetDto _addToWorkout = new();
-    private MudForm form;
+    private MudForm form = null!;
     private bool success;
 
     protected async override Task OnInitializedAsync()
@@ -62,7 +62,7 @@
         }
     }
 
-    private async Task<IEnumerable<ExerciseDto>> Search(string value, CancellationToken token)
+    private async Task<IEnumerable<ExerciseDto?>> Search(string value, CancellationToken token)
     {
         _exerciseList = await RoutineService.GetAllExercisesAsync();
 

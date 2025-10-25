@@ -100,51 +100,37 @@
     [Parameter]
     public int ActivityId { get; set; }
 
-    private MudTabs mudTabs;
-    private MudTabPanel startPanel;
+    private MudTabs mudTabs = null!;
+    private MudTabPanel startPanel = null!;
     private bool _shouldLoadLastTab = false;
 
     private bool _notStarted = true;
 
-    private int completedExercises;
     public int CompletedExercises
     {
         get { return _activity.ExerciseList.Count(x => x.IsCompleted); }
     }
 
-    private int totalExercises;
     public int TotalExercises
     {
         get { return _activity.ExerciseList.Count(); }
     }
 
-    private bool workoutCompleted;
     public bool WorkoutCompleted
     {
         get { return CompletedExercises == TotalExercises; }
     }
 
+    private MudMenu mudMenu = null!;
 
-    private MudMenu mudMenu;
-
-    private ActiveActivityDto _activity;
-    private ApplicationUser CurrentUser;
+    private ActiveActivityDto _activity = null!;
+    private ApplicationUser? CurrentUser;
     private WorkoutLogDto? _selectedWorkout;
-
-    private int tabCount;
 
     public int TabCount
     {
         get { return mudTabs.Panels.Count; }
     }
-
-    private int currentTabIndex;
-
-    public int CurrentTabIndex
-    {
-        get { return mudTabs.ActivePanelIndex; }
-    }
-
 
     protected async override Task OnInitializedAsync()
     {
@@ -182,7 +168,7 @@
     {
         var addExerciseDialog = await DialogService.ShowAsync<AddExerciseDialog>("Add a Workout!");
         var result = await addExerciseDialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
             ExerciseDto? newExercise = await addExerciseDialog.GetReturnValueAsync<ExerciseDto>();
             if (newExercise is not null)

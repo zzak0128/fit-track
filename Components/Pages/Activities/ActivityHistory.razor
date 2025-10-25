@@ -1,4 +1,5 @@
 ﻿@page "/activity/history"
+@using FitTrack.Components.Pages.Account.Shared
 @using FitTrack.Data
 @using FitTrack.Data.DTOs.Activities
 @using FitTrack.Extensions
@@ -52,7 +53,7 @@
 </MudStack>
 
 @code {
-    public ApplicationUser CurrentUser { get; set; }
+    public ApplicationUser? CurrentUser { get; set; }
 
     private List<ActivityListDto> _activityList = [];
 
@@ -81,9 +82,9 @@
 
     private void OnRowClickHandler(TableRowClickEventArgs<ActivityListDto> args)
     {
-        var activityId = args.Item.ActivityId;
+        var activityId = args.Item?.ActivityId;
 
-        if (args.Item.DateCompleted is null)
+        if (args.Item?.DateCompleted is null)
         {
             var uri = $"/activity/start/{activityId}";
             Navigation.NavigateTo(uri);
@@ -98,7 +99,20 @@
     private async Task CompleteWorkoutAsync(int activityId)
     {
         await ActivityService.CompleteActivityByIdAsync(activityId);
-        _activityList = await ActivityService.GetActivityListAsync(CurrentUser);
+
+        try
+        {
+            if (CurrentUser is null)
+            {
+                throw new Exception("Failed to load the current list of activities. Unable to find the current user.");
+            }
+
+            _activityList = await ActivityService.GetActivityListAsync(CurrentUser);
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
 
     private async Task DeleteActivityAsync(int activityId)
@@ -107,8 +121,12 @@
             try
             {
                 await ActivityService.DeleteActivityAsync(activityId);
-                _activityList = await ActivityService.GetActivityListAsync(CurrentUser);
+                if (CurrentUser is null)
+                {
+                    throw new Exception("Failed to load the current list of activities. Unable to find the current user.");
+                }
 
+                _activityList = await ActivityService.GetActivityListAsync(CurrentUser);
             }
             catch
             {
@@ -130,7 +148,7 @@
 
         var createDialog = await DialogService.ShowAsync<CreateActivityDialog>("Create a new Activity!", dialogParams);
         var result = await createDialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
             int newActivityId = await createDialog.GetReturnValueAsync<int>();
             if (newActivityId > 0)

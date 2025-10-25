@@ -62,9 +62,7 @@ public class MeasurementService : IMeasurementService
         return new AddMeasurementDto
         {
             Name = measurement.Name,
-            Unit = measurement.MeasurementData
-            .Select(x => x.Unit)
-            .FirstOrDefault(),
+            Unit = measurement.MeasurementData.Select(x => x.Unit).FirstOrDefault()!,
         };
     }
 
@@ -82,7 +80,7 @@ public class MeasurementService : IMeasurementService
             {
                 Amount = measurement.Amount,
                 Unit = measurement.Unit,
-                Date = measurement.Date.Value
+                Date = measurement.Date.GetValueOrDefault()
             });
         }
         else
@@ -97,7 +95,7 @@ public class MeasurementService : IMeasurementService
                     {
                         Amount = measurement.Amount,
                         Unit = measurement.Unit,
-                        Date = measurement.Date.Value
+                        Date = measurement.Date.GetValueOrDefault()
                     }
                 ]
             });
@@ -108,12 +106,17 @@ public class MeasurementService : IMeasurementService
         await context.SaveChangesAsync();
     }
 
-    public async Task<MeasurementChartDto> GetMeasurementChartDataAsync(string measurementName, ApplicationUser currentUser)
+    public async Task<MeasurementChartDto?> GetMeasurementChartDataAsync(string measurementName, ApplicationUser currentUser)
     {
         var context = await _contextFactory.CreateDbContextAsync();
         var measurement = await context.Measurements
             .Include(m => m.MeasurementData)
             .FirstOrDefaultAsync(m => m.Name == measurementName && m.User == currentUser) ?? throw new Exception("Measurement not found.");
+
+        if (measurement.MeasurementData is null)
+        {
+            return null;
+        }
 
         MeasurementChartDto output = new();
         var name = measurement.Name;
@@ -122,7 +125,7 @@ public class MeasurementService : IMeasurementService
         ChartSeries dataChart = new()
         {
             Name = measurement.MeasurementData.Select(x => x.Unit)
-                .FirstOrDefault(),
+                .FirstOrDefault()!,
             Data = measurement.MeasurementData
                 .OrderBy(x => x.Date)
                 .Select(x => x.Amount)
@@ -163,11 +166,17 @@ public class MeasurementService : IMeasurementService
             var name = measurement.Name;
 
             List<ChartSeries> chartSeries = [];
+
+            if (measurement.MeasurementData is null)
+            {
+                continue;
+            }
+
             ChartSeries dataChart = new()
             {
                 Name = measurement.MeasurementData
                     .Select(x => x.Unit)
-                    .FirstOrDefault(),
+                    .FirstOrDefault()!,
                 Data = measurement.MeasurementData
                     .OrderBy(x => x.Date)
                     .Select(x => x.Amount)

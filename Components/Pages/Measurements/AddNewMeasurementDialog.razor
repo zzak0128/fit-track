@@ -6,8 +6,6 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @inject IMeasurementService MeasurementService
-@inject UserManager<ApplicationUser> UserManager
-@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <MudDialog>
     <TitleContent>
@@ -31,20 +29,27 @@
     private IMudDialogInstance MudDialog { get; set; } = null!;
 
     [Parameter]
-    public ApplicationUser User { get; set; } = null!;
+    public required ApplicationUser User { get; set; }
 
     [Parameter]
-    public string MeasurementName { get; set; }
+    public required string MeasurementName { get; set; }
 
     private AddMeasurementDto AddMeasurement { get; set; } = new();
-    private MudForm form;
+    private MudForm form = null!;
     private bool success;
 
 
     protected override async Task OnInitializedAsync()
     {
         AddMeasurement = await MeasurementService.GetMeasurementByNameAsync(MeasurementName, User);
-        AddMeasurement.User = User;
+        if (AddMeasurement is null)
+        {
+            MudDialog.Close(DialogResult.Ok(false));
+        }
+        else
+        {
+            AddMeasurement.User = User;
+        }
     }
 
     private async Task AddMeasurementAsync()

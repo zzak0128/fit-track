@@ -30,7 +30,7 @@
     [Parameter]
     public EditRoutineDto EditRoutine { get; set; } = null!;
 
-    private MudForm form;
+    private MudForm form = null!;
     private bool success;
 
     private void OK() => MudDialog.Close(DialogResult.Ok(EditRoutine));

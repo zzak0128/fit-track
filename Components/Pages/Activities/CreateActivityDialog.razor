@@ -57,13 +57,13 @@
     public ApplicationUser ApplicationUser { get; set; } = null!;
 
     private List<BaseRoutineDto> _userRoutines = [];
-    private BaseRoutineDto _selectedRoutine;
+    private BaseRoutineDto? _selectedRoutine;
 
     private List<BaseWorkoutDto> _userWorkouts = [];
-    private BaseWorkoutDto _selectedWorkout;
+    private BaseWorkoutDto? _selectedWorkout;
 
     private CreateActivityDto NewActivity { get; set; } = new();
-    private MudForm form;
+    private MudForm form = null!;
     private bool success;
     private string[] errors = [];
 
@@ -78,7 +78,10 @@
         await form.Validate();
         if (form.IsValid)
         {
-            NewActivity.WorkoutId = _selectedWorkout.Id;
+            if (_selectedWorkout is not null)
+            {
+                NewActivity.WorkoutId = _selectedWorkout.Id;
+            }
 
             try
             {

@@ -190,8 +190,13 @@
 
     private async Task CompleteWorkoutAsync(WorkoutLogDto log)
     {
+
         log.IsCompleted = true;
-        await ActivityService.CompleteWorkoutAsync(log.WorkoutLogId);
+        if (log.WorkoutLogId > 0)
+        {
+            await ActivityService.CompleteWorkoutAsync(log.WorkoutLogId);
+        }
+
         await SaveWorkoutAsync();
     }
 

@@ -6,5 +6,5 @@ public class CreateActivityDto
 {
     public int WorkoutId { get; set; }
 
-    public ApplicationUser User { get; set; }
+    public ApplicationUser User { get; set; } = null!;
 }

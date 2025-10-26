@@ -6,5 +6,5 @@ public class CreateExerciseSetDto
 {
     public int WorkoutId { get; set; }
 
-    public ExerciseDto Exercise { get; set; }
+    public ExerciseDto Exercise { get; set; } = null!;
 }

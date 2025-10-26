@@ -32,7 +32,7 @@
     public ApplicationUser ApplicationUser { get; set; } = null!;
 
     private CreateRoutineDto NewRoutine { get; set; } = new();
-    private MudForm form;
+    private MudForm form = null!;
     private bool success;
     private string[] errors = [];
 

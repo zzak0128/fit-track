@@ -26,10 +26,10 @@
     private IMudDialogInstance MudDialog { get; set; } = null!;
 
     [Parameter]
-    public BaseWorkoutDto updateWorkout { get; set; }
+    public required BaseWorkoutDto updateWorkout { get; set; }
 
     private string NewWorkout { get; set; } = "";
-    private MudForm form;
+    private MudForm form = null!;
     private bool success;
 
     private void OK() => MudDialog.Close(DialogResult.Ok(NewWorkout));

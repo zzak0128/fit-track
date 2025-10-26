@@ -72,8 +72,8 @@
     [Parameter]
     public int ActivityId { get; set; }
 
-    private ActiveActivityDto _activity;
-    private ApplicationUser CurrentUser;
+    private ActiveActivityDto _activity = null!;
+    private ApplicationUser? CurrentUser;
 
     private int _totalReps;
     private double _totalWeight;

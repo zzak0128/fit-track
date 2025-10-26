@@ -25,7 +25,7 @@
 }
 else
 {
-    <PageHeaderTitle title="Routines"/>
+    <PageHeaderTitle title="Routines" />
 
     <MudTable T="BaseRoutineDto" Items="@RoutineList" Hover Striped OnRowClick="@OnRowClickHandler">
         <HeaderContent>
@@ -37,13 +37,13 @@ else
             <MudTd DataLabel="Name">@context.Name</MudTd>
             <MudTd DataLabel="Description">@context.Description</MudTd>
             <MudTd Class="d-flex justify-end">
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteRoutineAsync(context.Id)"/>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteRoutineAsync(context.Id)" />
             </MudTd>
         </RowTemplate>
     </MudTable>
 }
 
-<MudStack Row Justify="Justify.FlexEnd" AlignItems="AlignItems.End" Spacing="1" Style="position:fixed; bottom:25px; right:25px" >
+<MudStack Row Justify="Justify.FlexEnd" AlignItems="AlignItems.End" Spacing="1" Style="position:fixed; bottom:25px; right:25px">
     <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="CreateRoutineAsync" title="Add a new Routine" />
     <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Leaderboard" title="Log a Workout" OnClick="StartActivityAsync" />
 </MudStack>
@@ -65,7 +65,7 @@ else
 
     private void OnRowClickHandler(TableRowClickEventArgs<BaseRoutineDto> args)
     {
-        var routineId = args.Item.Id;
+        var routineId = args.Item!.Id;
         var uri = $"/routines/detail/{routineId}";
         Navigation.NavigateTo(uri);
     }
@@ -84,7 +84,7 @@ else
 
         var createDialog = await DialogService.ShowAsync<CreateRoutineDialog>("Create a new Routine!", dialogParams, dialogOptions);
         var result = await createDialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
             bool success = await createDialog.GetReturnValueAsync<bool>();
             if (success)
@@ -108,7 +108,7 @@ else
 
         var createDialog = await DialogService.ShowAsync<CreateActivityDialog>("Create a new Activity!", dialogParams);
         var result = await createDialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
             int newActivityId = await createDialog.GetReturnValueAsync<int>();
             if (newActivityId > 0)
@@ -125,16 +125,24 @@ else
 
     private async Task DeleteRoutineAsync(int routineId)
     {
-        if(await DialogService.ConfirmDelete())
-        try
+        if (await DialogService.ConfirmDelete())
         {
-            await RoutineService.DeleteRoutineAsync(routineId);
+            try
+            {
+                await RoutineService.DeleteRoutineAsync(routineId);
+            }
+            catch
+            {
+                Snackbar.Add("Failed to delete the routine", Severity.Error);
+            }
+            if (CurrentUser is null)
+            {
+                Snackbar.Add("Unable to get the current user and refresh the pate", Severity.Error);
+            }
+            else
+            {
+                RoutineList = await RoutineService.GetBaseRoutinesAsync(CurrentUser);
+            }
         }
-        catch
-        {
-            Snackbar.Add("Failed to delete the routine", Severity.Error);
-        }
-
-        RoutineList = await RoutineService.GetBaseRoutinesAsync(CurrentUser);
     }
 }

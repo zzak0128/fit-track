@@ -137,7 +137,7 @@ else
 
         var createDialog = await DialogService.ShowAsync<CreateExerciseDialog>("Create an Exercise!", dialogOptions);
         var result = await createDialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
             bool success = await createDialog.GetReturnValueAsync<bool>();
             if (success)
@@ -181,7 +181,7 @@ else
 
         var updateDialog = await DialogService.ShowAsync<UpdateExerciseDialog>("Update this Exercise!", dialogParameters, dialogOptions);
         var result = await updateDialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
             bool success = await updateDialog.GetReturnValueAsync<bool>();
             if (success)
@@ -224,7 +224,7 @@ else
 
         var addToWorkoutDialog = await DialogService.ShowAsync<AddToWorkoutDialog>("Add this Exercise to a Workout!", dialogParameters);
         var result = await addToWorkoutDialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
             bool success = await addToWorkoutDialog.GetReturnValueAsync<bool>();
             if (success)

@@ -106,10 +106,8 @@ else
     [Parameter]
     public int RoutineId { get; set; }
 
-    private MudTabs mudTabs;
+    private MudTabs mudTabs = null!;
     private bool _shouldLoadLastTab = false;
-
-    private MudMenu mudMenu;
 
     private ExerciseDto? SelectedExercise;
     private List<ExerciseDto> ExerciseList { get; set; } = [];
@@ -117,8 +115,8 @@ else
 
     private DetailExerciseSetDto ExerciseSetBackup = new();
 
-    private DetailRoutineDto DetailRoutine;
-    private ApplicationUser CurrentUser;
+    private DetailRoutineDto DetailRoutine = null!;
+    private ApplicationUser? CurrentUser;
     private List<DetailExerciseSetDto> CurrentSets = [];
 
     protected async override Task OnInitializedAsync()
@@ -146,6 +144,12 @@ else
 
     private async Task RefreshDetailRoutineAsync(int workoutId)
     {
+        if (CurrentUser is null)
+        {
+            Snackbar.Add("Failed to load the current Routine. Unable to find the current user.", Severity.Error);
+            return;
+        }
+
         DetailRoutine = await RoutineService.GetDetailRoutineByIdAsync(RoutineId, CurrentUser);
         GetTabList(workoutId);
     }
@@ -163,9 +167,9 @@ else
         var createDialog = await DialogService.ShowAsync<AddWorkoutDialog>("Create a Workout!");
 
         var result = await createDialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
-            string newWorkoutName = await createDialog.GetReturnValueAsync<string>();
+            string newWorkoutName = await createDialog.GetReturnValueAsync<string>() ?? "";
             if (!string.IsNullOrEmpty(newWorkoutName))
             {
                 createDialog.Close();
@@ -202,9 +206,9 @@ else
         var editDialog = await DialogService.ShowAsync<EditRoutineDialog>($"Edit {DetailRoutine.Routine.Name}", dialogParams);
 
         var result = await editDialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
-            EditRoutineDto newRoutine = await editDialog.GetReturnValueAsync<EditRoutineDto>();
+            EditRoutineDto? newRoutine = await editDialog.GetReturnValueAsync<EditRoutineDto>();
             if (newRoutine is not null)
             {
                 editDialog.Close();
@@ -238,9 +242,9 @@ else
         var renameDialog = await DialogService.ShowAsync<WorkoutRenameDialog>("Rename a Workout!", dialogParams);
 
         var result = await renameDialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
-            string newWorkoutName = await renameDialog.GetReturnValueAsync<string>();
+            string newWorkoutName = await renameDialog.GetReturnValueAsync<string>() ?? "";
             if (!string.IsNullOrEmpty(newWorkoutName))
             {
                 renameDialog.Close();
@@ -253,6 +257,12 @@ else
                 await RoutineService.RenameWorkoutAsync(renameWorkout);
 
                 var toRename = DetailRoutine.Workouts.Find(x => x.Id == workout.Id);
+                if (toRename is null)
+                {
+                    Snackbar.Add("Unable to find the workout to update and Failed to Save the new workout ", Severity.Error);
+                    return;
+                }
+
                 toRename.Name = newWorkoutName;
             }
             else
@@ -262,7 +272,7 @@ else
         }
     }
 
-    private async Task<IEnumerable<ExerciseDto>> Search(string value, CancellationToken token)
+    private async Task<IEnumerable<ExerciseDto?>> Search(string value, CancellationToken token)
     {
         ExerciseList = await RoutineService.GetAllExercisesAsync();
 

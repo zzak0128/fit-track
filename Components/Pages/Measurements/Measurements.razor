@@ -93,12 +93,18 @@ else
 
         var addMeasurementDialog = await DialogService.ShowAsync<AddMeasurementDialog>("Add a measurement!", parameters, dialogOptions);
         var result = await addMeasurementDialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
             bool success = await addMeasurementDialog.GetReturnValueAsync<bool>();
             if (success)
             {
                 addMeasurementDialog.Close();
+                if (CurrentUser is null)
+                {
+                    Snackbar.Add("Failed Load measurement chart data. Unable to find the current user.", Severity.Error);
+                    return;
+                }
+
                 MeasurementsList = await MeasurementService.GetMeasurementChartDataAsync(CurrentUser);
             }
             else
@@ -123,12 +129,18 @@ else
 
         var addMeasurementDialog = await DialogService.ShowAsync<AddNewMeasurementDialog>($"Add an new {measurementName} measurement", parameters, dialogOptions);
         var result = await addMeasurementDialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
             bool success = await addMeasurementDialog.GetReturnValueAsync<bool>();
             if (success)
             {
                 addMeasurementDialog.Close();
+                if (CurrentUser is null)
+                {
+                    Snackbar.Add("Failed Load measurement chart data. Unable to find the current user.", Severity.Error);
+                    return;
+                }
+
                 MeasurementsList = await MeasurementService.GetMeasurementChartDataAsync(CurrentUser);
             }
             else
@@ -143,6 +155,12 @@ else
         if (await DialogService.ConfirmDelete())
         {
             await MeasurementService.RemoveMeasurementTypeAsync(measurement.MeasurementId);
+            if (CurrentUser is null)
+            {
+                Snackbar.Add("Failed Load measurement chart data. Unable to find the current user.", Severity.Error);
+                return;
+            }
+
             MeasurementsList = await MeasurementService.GetMeasurementChartDataAsync(CurrentUser);
         }
     }

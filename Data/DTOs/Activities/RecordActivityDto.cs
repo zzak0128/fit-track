@@ -2,7 +2,7 @@
 
 public class RecordActivityDto
 {
-    public BestRepsActivityDto BestReps { get; set; }
+    public BestRepsActivityDto BestReps { get; set; } = null!;
 
-    public BestWeightActivityDto BestWeight { get; set; }
+    public BestWeightActivityDto BestWeight { get; set; } = null!;
 }

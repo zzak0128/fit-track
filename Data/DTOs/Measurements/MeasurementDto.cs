@@ -6,7 +6,7 @@ public class MeasurementDto
 
     public string Name { get; set; } = "";
 
-    public List<MeasurementDataDto> MeasurementData { get; set; }
+    public List<MeasurementDataDto> MeasurementData { get; set; } = [];
 
-    public ApplicationUser User { get; set; }
+    public ApplicationUser User { get; set; } = null!;
 }

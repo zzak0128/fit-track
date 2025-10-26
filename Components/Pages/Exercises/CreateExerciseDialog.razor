@@ -30,7 +30,7 @@
     private IMudDialogInstance MudDialog { get; set; } = null!;
 
     private CreateExerciseDto NewExercise { get; set; } = new();
-    private MudForm form;
+    private MudForm form = null!;
     private bool success;
     private string[] errors = [];
 

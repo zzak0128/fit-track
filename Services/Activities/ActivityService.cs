@@ -57,6 +57,15 @@ public class ActivityService : IActivityService
             });
         }
 
+        if (!activitySets.Any())
+        {
+            activitySets.Add(new ActivitySet
+            {
+                Repetitions = reps,
+                Weight = weight
+            });
+        }
+
         return activitySets;
     }
 

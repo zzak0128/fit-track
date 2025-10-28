@@ -32,69 +32,33 @@ else
             </MudMenu>
         </Authorized>
     </AuthorizeView>
+    <MudStack Spacing="6">
+        <MudStack Spacing="2" Justify="Justify.FlexStart">
+            <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true" Variant="Variant.Outlined"
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" TextChanged="FilterExercises" />
 
-    @if (_isGrid)
-    {
-        <MudStack Spacing="6">
-            <MudStack Spacing="2" Justify="Justify.FlexStart">
-                <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true" Variant="Variant.Filled"
-                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" TextChanged="Search" />
-
-                <MudChipSet T="MuscleGroup"
-                            @bind-SelectedValues="_selectedMuscleGroups"
-                            SelectionMode="SelectionMode.MultiSelection">
-                    <MudGrid Spacing="1">
-                        @foreach (var group in Enum.GetValues(typeof(MuscleGroup)).Cast<MuscleGroup>())
-                        {
-                            <MudItem>
-                                <MudChip T="MuscleGroup" Variant="Variant.Text" Color="Color.Primary" Value="@group" OnClick="FilterExercises" />
-                            </MudItem>
-                        }
-                    </MudGrid>
-                </MudChipSet>
-
-            </MudStack>
-            <MudGrid T="ExerciseDto" Items="ExerciseList" Spacing="2" Justify="Justify.FlexStart">
-                @foreach (var exercise in FilteredExerciseList)
-                {
-                    <MudItem xs="12" sm="6" md="4" lg="3" xl="2" Style="display:flex">
-                        <ExerciseGridItem Exercise="exercise" OnEdit="OnEditHandler" OnRemove="OnRemoveHandler" OnAdd="OnAddHandler" />
-                    </MudItem>
-                }
-            </MudGrid>
-        </MudStack>
-    }
-    else
-    {
-        <MudStack Spacing="6">
-            <MudToolBar Gutters Class="mt-12">
-                <MudStack Spacing="2">
-                    <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true" Variant="Variant.Filled"
-                                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" TextChanged="Search" />
-                    <MudChipSet T="MuscleGroup"
-                                @bind-SelectedValues="_selectedMuscleGroups"
-                                SelectionMode="SelectionMode.MultiSelection">
-                        @foreach (var group in Enum.GetValues(typeof(MuscleGroup)).Cast<MuscleGroup>())
-                        {
+            <MudChipSet T="MuscleGroup"
+                        @bind-SelectedValues="_selectedMuscleGroups"
+                        SelectionMode="SelectionMode.MultiSelection">
+                <MudGrid Spacing="1">
+                    @foreach (var group in Enum.GetValues(typeof(MuscleGroup)).Cast<MuscleGroup>())
+                    {
+                        <MudItem>
                             <MudChip T="MuscleGroup" Variant="Variant.Text" Color="Color.Primary" Value="@group" OnClick="FilterExercises" />
-                        }
-                    </MudChipSet>
-                </MudStack>
-            </MudToolBar>
-            <MudTable T="ExerciseDto" Items="@FilteredExerciseList" Hover Striped>
-                <HeaderContent>
-                    <MudTh></MudTh>
-                    <MudTh>Name</MudTh>
-                    <MudTh>Muscle Group</MudTh>
-                    <MudTh></MudTh>
-                    <MudTh></MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <ExerciseTableRowItem Exercise="@context" OnEdit="OnEditHandler" OnRemove="OnRemoveHandler" OnAdd="OnAddHandler" />
-                </RowTemplate>
-            </MudTable>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudChipSet>
         </MudStack>
-    }
+        <MudGrid T="ExerciseDto" Items="ExerciseList" Spacing="2" Justify="Justify.FlexStart">
+            @foreach (var exercise in FilteredExerciseList)
+            {
+                <MudItem xs="12" sm="6" md="4" lg="3" xl="2" Style="display:flex">
+                    <ExerciseGridItem Exercise="exercise" OnEdit="OnEditHandler" OnRemove="OnRemoveHandler" OnAdd="OnAddHandler" />
+                </MudItem>
+            }
+        </MudGrid>
+    </MudStack>
 }
 
 @if (_isLoading)
@@ -159,15 +123,26 @@ else
 
     private void FilterExercises()
     {
+        _isLoading = true;
+
+        IEnumerable<ExerciseDto> stringFilter = [];
+        if (string.IsNullOrEmpty(_searchString))
+        {
+            stringFilter = FullExerciseList;
+        }
+        else
+        {
+            stringFilter = FullExerciseList.Where(x => x.Name.Contains(_searchString, StringComparison.InvariantCultureIgnoreCase));
+        }
+
         if (!_selectedMuscleGroups.Any())
         {
-            FilteredExerciseList = FullExerciseList;
+            FilteredExerciseList = stringFilter.ToList();
             _isLoading = false;
             return;
         }
 
-        FilteredExerciseList = FullExerciseList.Where(x => _selectedMuscleGroups.Contains(x.MuscleGroup)).ToList();
-
+        FilteredExerciseList = stringFilter.Where(x => _selectedMuscleGroups.Contains(x.MuscleGroup)).ToList();
         _isLoading = false;
     }
 

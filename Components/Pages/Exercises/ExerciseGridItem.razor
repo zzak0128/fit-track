@@ -7,7 +7,14 @@
         <MudPaper Elevation="2" Outlined Width="100%">
             <MudText Align="Align.Center" Typo="Typo.subtitle1" Inline="false">@Exercise.Name</MudText>
         </MudPaper>
-        <MudImage ObjectFit="ObjectFit.Cover" Elevation="2" Style="width:95%;height:240px" Src="@Exercise.ImagePaths.FirstOrDefault()" FallbackSrc="no-image-icon.png"></MudImage>
+        @if (Exercise.ImagePaths.Any())
+        {
+            <MudImage ObjectFit="ObjectFit.Cover" Elevation="2" Style="width:95%;height:240px" Src="@Exercise.ImagePaths.FirstOrDefault()" FallbackSrc="no-image-icon.png"></MudImage>
+        }
+        else
+        {
+            <MudImage ObjectFit="ObjectFit.Cover" Elevation="2" Style="width:95%;height:240px" Src="no-image-icon.png"></MudImage>
+        }
         <MudStack AlignItems="AlignItems.Center" Row Style="width:100%">
             <MudChip T="string" Color="Color.Secondary" Variant="Variant.Filled">@Exercise.MuscleGroup</MudChip>
             <MudSpacer />

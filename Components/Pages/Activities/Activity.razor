@@ -25,7 +25,7 @@
     <MudMenuItem OnClick="RemoveWorkout" Disabled="@(_selectedWorkout is null)">Remove this Workout</MudMenuItem>
 </MudMenu>
 <MudStack spacing="0" Justify="Justify.SpaceBetween">
-    <MudTabs @ref="mudTabs" Elevation="1" Outlined ApplyEffectsToContainer Rounded PanelClass="pa-6">
+    <MudTabs @ref="mudTabs" Elevation="1" ActiveTabClass="border-solid border-2 mud-border-primary" HideSlider Border Outlined ApplyEffectsToContainer Rounded PanelClass="pa-6">
         @if (_activity is not null)
         {
             <MudContainer Gutters="false" Style="overflow:scroll">

@@ -36,21 +36,25 @@ else
     @if (_isGrid)
     {
         <MudStack Spacing="6">
-            <MudToolBar Gutters Class="mt-12">
-                <MudStack Spacing="2">
-                    <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true" Variant="Variant.Filled"
-                                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" TextChanged="Search" />
-                    <MudChipSet T="MuscleGroup"
-                                @bind-SelectedValues="_selectedMuscleGroups"
-                                SelectionMode="SelectionMode.MultiSelection">
+            <MudStack Spacing="2" Justify="Justify.FlexStart">
+                <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true" Variant="Variant.Filled"
+                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" TextChanged="Search" />
+
+                <MudChipSet T="MuscleGroup"
+                            @bind-SelectedValues="_selectedMuscleGroups"
+                            SelectionMode="SelectionMode.MultiSelection">
+                    <MudGrid Spacing="1">
                         @foreach (var group in Enum.GetValues(typeof(MuscleGroup)).Cast<MuscleGroup>())
                         {
-                            <MudChip T="MuscleGroup" Variant="Variant.Text" Color="Color.Primary" Value="@group" OnClick="FilterExercises" />
+                            <MudItem>
+                                <MudChip T="MuscleGroup" Variant="Variant.Text" Color="Color.Primary" Value="@group" OnClick="FilterExercises" />
+                            </MudItem>
                         }
-                    </MudChipSet>
-                </MudStack>
-            </MudToolBar>
-            <MudGrid T="ExerciseDto" Items="ExerciseList" Spacing="2" Justify="Justify.FlexStart" Class="mt-6">
+                    </MudGrid>
+                </MudChipSet>
+
+            </MudStack>
+            <MudGrid T="ExerciseDto" Items="ExerciseList" Spacing="2" Justify="Justify.FlexStart">
                 @foreach (var exercise in FilteredExerciseList)
                 {
                     <MudItem xs="12" sm="6" md="4" lg="3" xl="2" Style="display:flex">

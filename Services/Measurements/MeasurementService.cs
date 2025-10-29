@@ -1,5 +1,4 @@
-﻿using FitTrack.Components.Pages.Measurements;
-using FitTrack.Data;
+﻿using FitTrack.Data;
 using FitTrack.Data.DTOs.Measurements;
 using FitTrack.Data.Models.Measurements;
 using Microsoft.EntityFrameworkCore;

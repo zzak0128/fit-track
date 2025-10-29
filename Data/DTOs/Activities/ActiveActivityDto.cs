@@ -1,6 +1,4 @@
-﻿using FitTrack.Data.DTOs.ExerciseSets;
-
-namespace FitTrack.Data.DTOs.Activities;
+﻿namespace FitTrack.Data.DTOs.Activities;
 
 public class ActiveActivityDto
 {

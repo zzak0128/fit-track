@@ -133,7 +133,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .IsRequired();
 
             e.Property(x => x.Amount)
-            .HasPrecision(5,2)
+            .HasPrecision(5, 2)
             .IsRequired();
         });
     }

@@ -8,11 +8,13 @@
 
 <MudDialog>
     <TitleContent>
-        Rename the workout @updateWorkout.Name!
+        @MudDialog.Title
     </TitleContent>
     <DialogContent>
         <MudForm @ref="@form" @bind-IsValid="@success">
-            <MudTextField @bind-Value="NewWorkout" Label="Name" Required="true" Variant="Variant.Outlined" RequiredError="A name is required for a new Workout." />
+            <MudFocusTrap>
+                <MudTextField @bind-Value="NewWorkout" AutoFocus="true" Label="Name" Required="true" Variant="Variant.Outlined" RequiredError="A name is required for a new Workout." />
+            </MudFocusTrap>
         </MudForm>
     </DialogContent>
     <DialogActions>
@@ -33,4 +35,12 @@
     private bool success;
 
     private void OK() => MudDialog.Close(DialogResult.Ok(NewWorkout));
+
+
+    protected override void OnParametersSet()
+    {
+        NewWorkout = updateWorkout.Name;
+
+        base.OnParametersSet();
+    }
 }

@@ -10,12 +10,14 @@
 
 <MudDialog>
     <TitleContent>
-        Create a new Routine!
+        @MudDialog.Title
     </TitleContent>
     <DialogContent>
         <MudForm @ref="@form" @bind-IsValid="@success" @bind-Errors="@errors">
-            <MudTextField @bind-Value="NewRoutine.Name" Label="Name" Required="true" Variant="Variant.Outlined" RequiredError="A name is required for a new Routine." />
-            <MudTextField @bind-Value="NewRoutine.Description" AutoGrow Lines="5" MaxLines="10" Label="Description" Variant="Variant.Outlined" />
+            <MudFocusTrap>
+                <MudTextField @bind-Value="NewRoutine.Name" Label="Name" Required="true" Variant="Variant.Outlined" RequiredError="A name is required for a new Routine." />
+                <MudTextField @bind-Value="NewRoutine.Description" AutoGrow Lines="5" MaxLines="10" Label="Description" Variant="Variant.Outlined" />
+            </MudFocusTrap>
         </MudForm>
     </DialogContent>
     <DialogActions>

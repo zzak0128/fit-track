@@ -30,14 +30,6 @@
         @if (_activity is not null)
         {
             <MudContainer Gutters="false" Style="overflow:scroll">
-                @*                 <MudTabPanel @ref ="startPanel" Text="Time to get started!" Visible="@(_notStarted)" Disabled="@(!_notStarted)">
-                    <MudStack Justify="Justify.Center" Class="ma-6" Style="height:400px;max-height:65vh">
-                        <MudText Align="Align.Center" Color="Color.Primary" GutterBottom Typo="Typo.h5">Start your workout!</MudText>
-                        <MudStack Justify="Justify.Center" Row>
-                            <MudButton OnClick="StartWorkout" Variant="Variant.Filled" IconSize="Size.Large" Style="height:100px; width:100px; border-radius:50%" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large">Start</MudButton>
-                        </MudStack>
-                    </MudStack>
-                </MudTabPanel> *@
                 @foreach (var exercise in _activity.ExerciseList)
                 {
                     <MudTabPanel Style="max-height:65vh" Disabled="@(exercise.IsCompleted)" Icon="@(exercise.IsCompleted? Icons.Material.Rounded.Check : null)" OnClick="() => SetSelectedWorkout(exercise)">

@@ -12,9 +12,10 @@
     </TitleContent>
     <DialogContent>
         <MudForm @ref="@form" @bind-IsValid="@success">
-            <MudTextField @bind-Value="EditRoutine.NewName" Label="Name" Required="true" Variant="Variant.Outlined" RequiredError="A name is required." />
-            <MudTextField @bind-Value="EditRoutine.Description" Label="Description" Variant="Variant.Outlined" Lines="4" />
-
+            <MudFocusTrap>
+                <MudTextField @bind-Value="EditRoutine.NewName" Label="Name" Required="true" Variant="Variant.Outlined" RequiredError="A name is required." />
+                <MudTextField @bind-Value="EditRoutine.Description" Label="Description" Variant="Variant.Outlined" Lines="4" />
+            </MudFocusTrap>
         </MudForm>
     </DialogContent>
     <DialogActions>

@@ -11,25 +11,27 @@
 
 <MudDialog>
     <TitleContent>
-        Add to an existing workout!
+        @MudDialog.Title
     </TitleContent>
     <DialogContent>
         <MudForm @ref="@form" @bind-IsValid="@success">
-            <MudAutocomplete @bind-Value="_selectedExercise"
-                             SearchFunc="Search"
-                             Variant="Variant.Outlined"
-                             Label="Select an Exercise"
-                             Dense
-                             Placeholder="Search"
-                             Clearable
-                             ToStringFunc="(e) => e?.Name">
-                <ItemTemplate>
-                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                        <MudText>@context?.Name</MudText>
-                        <MudChip T="MuscleGroup" Color="Color.Secondary" Variant="Variant.Filled">@context?.MuscleGroup</MudChip>
-                    </MudStack>
-                </ItemTemplate>
-            </MudAutocomplete>
+            <MudFocusTrap>
+                <MudAutocomplete @bind-Value="_selectedExercise"
+                                 SearchFunc="Search"
+                                 Variant="Variant.Outlined"
+                                 Label="Select an Exercise"
+                                 Dense
+                                 Placeholder="Search"
+                                 Clearable
+                                 ToStringFunc="(e) => e?.Name">
+                    <ItemTemplate>
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudText>@context?.Name</MudText>
+                            <MudChip T="MuscleGroup" Color="Color.Secondary" Variant="Variant.Filled">@context?.MuscleGroup</MudChip>
+                        </MudStack>
+                    </ItemTemplate>
+                </MudAutocomplete>
+            </MudFocusTrap>
         </MudForm>
     </DialogContent>
     <DialogActions>

@@ -5,18 +5,20 @@
 
 <MudDialog>
     <TitleContent>
-        Update this Exercise!
+        @MudDialog.Title
     </TitleContent>
     <DialogContent>
         <MudForm @ref="@form" @bind-IsValid="@success" @bind-Errors="@errors">
-            <MudTextField @bind-Value="UpdateExercise.Name" Label="Name" Required="true" Variant="Variant.Outlined" RequiredError="A name is required for an Exercise." />
-            <MudTextField @bind-Value="UpdateExercise.Description" AutoGrow Lines="5" MaxLines="10" Label="Description" Variant="Variant.Outlined" />
-            <MudSelect T="MuscleGroup" @bind-Value="UpdateExercise.MuscleGroup" Label="Muscle Group" Required="true" Variant="Variant.Outlined">
-                @foreach (var group in Enum.GetValues<MuscleGroup>())
-                {
-                    <MudSelectItem T="MuscleGroup" Value="group">@group</MudSelectItem>
-                }
-            </MudSelect>
+            <MudFocusTrap>
+                <MudTextField @bind-Value="UpdateExercise.Name" Label="Name" Required="true" Variant="Variant.Outlined" RequiredError="A name is required for an Exercise." />
+                <MudTextField @bind-Value="UpdateExercise.Description" AutoGrow Lines="5" MaxLines="10" Label="Description" Variant="Variant.Outlined" />
+                <MudSelect T="MuscleGroup" @bind-Value="UpdateExercise.MuscleGroup" Label="Muscle Group" Required="true" Variant="Variant.Outlined">
+                    @foreach (var group in Enum.GetValues<MuscleGroup>())
+                    {
+                        <MudSelectItem T="MuscleGroup" Value="group">@group</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudFocusTrap>
         </MudForm>
     </DialogContent>
     <DialogActions>

@@ -11,36 +11,37 @@
 
 <MudDialog>
     <TitleContent>
-        Start a new Workout!
+        @MudDialog.Title
     </TitleContent>
     <DialogContent>
         <MudForm @ref="@form" @bind-IsValid="@success" @bind-Errors="@errors">
-            @if (_userRoutines.Any())
-            {
-                <MudSelect T="BaseRoutineDto"
-                           Value="_selectedRoutine"
-                           MultiSelection="false"
-                           Label="Select a Routine"
-                           Required="true"
-                           Variant="Variant.Outlined"
-                           ValueChanged="@GetRoutineWorkouts">
-                    @foreach (var routine in _userRoutines)
-                    {
-                        <MudSelectItem T="BaseRoutineDto" Value="routine">@routine.Name</MudSelectItem>
-                    }
-                </MudSelect>
-            }
+            <MudFocusTrap>
+                @if (_userRoutines.Any())
+                {
+                    <MudSelect T="BaseRoutineDto"
+                               Value="_selectedRoutine"
+                               MultiSelection="false"
+                               Label="Select a Routine"
+                               Required="true"
+                               Variant="Variant.Outlined"
+                               ValueChanged="@GetRoutineWorkouts">
+                        @foreach (var routine in _userRoutines)
+                        {
+                            <MudSelectItem T="BaseRoutineDto" Value="routine">@routine.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
 
-            @if (_userWorkouts.Any())
-            {
-                <MudSelect @bind-Value="_selectedWorkout" T="BaseWorkoutDto" Label="Select a Workout" Required="true" Variant="Variant.Outlined">
-                    @foreach (var workout in _userWorkouts)
-                    {
-                        <MudSelectItem T="BaseWorkoutDto" Value="workout">@workout.Name</MudSelectItem>
-                    }
-                </MudSelect>
-            }
-
+                @if (_userWorkouts.Any())
+                {
+                    <MudSelect @bind-Value="_selectedWorkout" T="BaseWorkoutDto" Label="Select a Workout" Required="true" Variant="Variant.Outlined">
+                        @foreach (var workout in _userWorkouts)
+                        {
+                            <MudSelectItem T="BaseWorkoutDto" Value="workout">@workout.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
+            </MudFocusTrap>
         </MudForm>
     </DialogContent>
     <DialogActions>

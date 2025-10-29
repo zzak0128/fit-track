@@ -9,13 +9,15 @@
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="Typo.h6">Add a new @AddMeasurement.Name Measurement.</MudText>
+        <MudText Typo="Typo.h6">@MudDialog.Title</MudText>
     </TitleContent>
     <DialogContent>
         <MudForm @ref="@form" @bind-IsValid="@success">
-            <MudNumericField @bind-Value="AddMeasurement.Amount" Label="Amount" Required Variant="Variant.Outlined" />
-            <MudTextField @bind-Value="AddMeasurement.Unit" Label="Unit" Disabled Variant="Variant.Outlined"/>
-            <MudDatePicker @bind-Date="AddMeasurement.Date" Label="Date" Required Variant="Variant.Outlined" RequiredError="Please select a date." />
+            <MudFocusTrap>
+                <MudNumericField @bind-Value="AddMeasurement.Amount" Label="Amount" Required Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="AddMeasurement.Unit" Label="Unit" Disabled Variant="Variant.Outlined" />
+                <MudDatePicker @bind-Date="AddMeasurement.Date" Label="Date" Required Variant="Variant.Outlined" RequiredError="Please select a date." />
+            </MudFocusTrap>
         </MudForm>
     </DialogContent>
     <DialogActions>

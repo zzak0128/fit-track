@@ -11,24 +11,24 @@
 
 <MudDialog>
     <TitleContent>
-        Create a new Routine!
+        @MudDialog.Title
     </TitleContent>
     <DialogContent>
         <MudForm @ref="@form" @bind-IsValid="@success">
-                            <MudAutocomplete @bind-Value="AddMeasurement.Name"
+            <MudFocusTrap>
+                <MudAutocomplete @bind-Value="AddMeasurement.Name"
                                  SearchFunc="Search"
                                  Variant="Variant.Outlined"
                                  Label="Enter a Measurement"
                                  Dense
                                  Placeholder="Search"
                                  Clearable
-                                 CoerceValue/>
+                                 CoerceValue />
 
-            <MudNumericField @bind-Value="AddMeasurement.Amount" Label="Amount" Required Variant="Variant.Outlined" />
-            <MudTextField @bind-Value="AddMeasurement.Unit" Label="Unit" Required="true" Variant="Variant.Outlined" RequiredError="Enter the units for this measurement, e.g. lbs, kgs, etc" />
-            <MudDatePicker @bind-Date="AddMeasurement.Date" Label="Date" Required="true" Variant="Variant.Outlined" RequiredError="Please select a date." />
-
-
+                <MudNumericField @bind-Value="AddMeasurement.Amount" Label="Amount" Required Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="AddMeasurement.Unit" Label="Unit" Required="true" Variant="Variant.Outlined" RequiredError="Enter the units for this measurement, e.g. lbs, kgs, etc" />
+                <MudDatePicker @bind-Date="AddMeasurement.Date" Label="Date" Required="true" Variant="Variant.Outlined" RequiredError="Please select a date." />
+            </MudFocusTrap>
         </MudForm>
     </DialogContent>
     <DialogActions>

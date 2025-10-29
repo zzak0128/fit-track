@@ -2,10 +2,10 @@
 @using FitTrack.Data.DTOs.Exercises
 @inject IDialogService _dialogService
 
-<MudPaper Elevation="1" Class="pa-3" MinHeight="300px" Width="300px">
+<MudPaper Elevation="2" Class="pa-3" MinHeight="300px" Width="300px">
     <MudStack AlignItems="AlignItems.Center" Style="width:100%">
-        <MudPaper Elevation="2" Outlined Width="100%">
-            <MudText Align="Align.Center" Typo="Typo.subtitle1" Inline="false">@Exercise.Name</MudText>
+        <MudPaper Elevation="2" Outlined Width="100%" Class="mud-theme-primary">
+            <MudText Align="Align.Center" Typo="Typo.subtitle1">@Exercise.Name</MudText>
         </MudPaper>
         @if (Exercise.ImagePaths.Any())
         {

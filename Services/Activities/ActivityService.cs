@@ -45,7 +45,7 @@ public class ActivityService : IActivityService
         return newActivity.Id;
     }
 
-    private List<ActivitySet> SetSetsCount(int setCount, int reps, double weight)
+    private static List<ActivitySet> SetSetsCount(int setCount, int reps, double weight)
     {
         List<ActivitySet> activitySets = [];
         for (int i = 0; i < setCount; i++)
@@ -124,7 +124,7 @@ public class ActivityService : IActivityService
             TotalExercises = x.WorkoutLogs.Count(),
             DateCompleted = x.DateCompleted,
             User = x.User
-        }).ToListAsync();
+        }).OrderBy(x => x.DateCompleted).ToListAsync();
 
         return activityList;
     }

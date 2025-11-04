@@ -66,6 +66,21 @@
             }
 
             _measurement = await MeasurementService.GetMeasurementByIdAsync(MeasurementId, CurrentUser);
+
+            if (_measurement.MeasurementData.Count == 0)
+            {
+                try
+                {
+                    await MeasurementService.RemoveMeasurementTypeAsync(_measurement.Id);
+                    NavManager.NavigateTo("/measurements");
+                }
+                catch (Exception)
+                {
+                    Snackbar.Add("Unable to remove this measurement", Severity.Error);
+                    NavManager.NavigateTo("/measurements");
+                }
+
+            }
         }
     }
 }

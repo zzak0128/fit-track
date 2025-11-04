@@ -124,7 +124,7 @@ public class ActivityService : IActivityService
             TotalExercises = x.WorkoutLogs.Count(),
             DateCompleted = x.DateCompleted,
             User = x.User
-        }).OrderBy(x => x.DateCompleted).ToListAsync();
+        }).OrderByDescending(x => x.DateCompleted.HasValue == false).ThenByDescending(x => x.DateCompleted).ToListAsync();
 
         return activityList;
     }

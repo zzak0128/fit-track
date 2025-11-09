@@ -63,7 +63,7 @@ else
                             <MudButton StartIcon="@Icons.Material.Filled.MoreHoriz">More</MudButton>
                         </ActivatorContent>
                         <ChildContent>
-                            <MudMenuItem IconColor="Color.Default" Icon="@Icons.Material.Filled.Edit" Label="Rename" OnClick="() => RenameWorkoutAsync(workout)"/>
+                            <MudMenuItem IconColor="Color.Default" Icon="@Icons.Material.Filled.Edit" Label="Rename" OnClick="() => RenameWorkoutAsync(workout)" />
                             <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.Remove" Label="Remove" OnClick="() => RemoveWorkoutAsync(workout)" />
                         </ChildContent>
                     </MudMenu>
@@ -85,16 +85,36 @@ else
                         <PropertyColumn Title="# of Sets" Property="x => x.SetCount" />
                     </Columns>
                     <ChildRowContent>
-                        <MudStack>
-                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudGrid>
+                            <MudItem xs="12" sm="9">
                                 <MudStack Row AlignItems="AlignItems.Center">
                                     <MudText Typo="Typo.h6">@context.Item.Exercise.Name</MudText>
                                     <MudChip T="MuscleGroup" Color="Color.Secondary" Variant="Variant.Filled">@context.Item.Exercise.MuscleGroup</MudChip>
                                 </MudStack>
+                            </MudItem>
+                            <MudItem xs="12" sm="3">
+                                <MudSpacer />
                                 <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Filled.RemoveCircle" OnClick="() => RemoveExerciseSetAsync(context.Item)">Remove</MudButton>
-                            </MudStack>
-                            <MudText>@context.Item.Exercise.Description</MudText>
-                        </MudStack>
+                            </MudItem>
+                            @if (context.Item.Exercise.ImagePaths.Any())
+                            {
+                                <MudItem xs="12" sm="3" md="4">
+                                    <MudPaper MaxHeight="15%">
+                                        <MudImage Src="@context.Item.Exercise.ImagePaths.FirstOrDefault()" FallbackSrc="no-image-icon.png" ObjectPosition="ObjectPosition.Left" ObjectFit="ObjectFit.Contain" Fluid></MudImage>
+                                    </MudPaper>
+                                </MudItem>
+
+                                <MudItem xs="12" sm="9" md="8">
+                                    <MudText>@context.Item.Exercise.Description</MudText>
+                                </MudItem>
+                            }
+                            else
+                            { 
+                                <MudItem xs="12">
+                                    <MudText>@context.Item.Exercise.Description</MudText>
+                                </MudItem>
+                            }
+                        </MudGrid>
                     </ChildRowContent>
                 </MudDataGrid>
             </MudTabPanel>
@@ -304,7 +324,7 @@ else
 
     private async Task RemoveExerciseSetAsync(DetailExerciseSetDto exercise)
     {
-        if(await DialogService.ConfirmDelete())
+        if (await DialogService.ConfirmDelete())
         {
             await RoutineService.RemoveExerciseSetAsync(new RemoveExerciseSetDto
             {

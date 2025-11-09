@@ -189,6 +189,7 @@ public class RoutineService : IRoutineService
         {
             exerciseSets.AddRange(await context.ExerciseSets
                 .Include(x => x.Exercise)
+                .ThenInclude(x => x.Thumbnails)
                 .Where(x => x.Workout.Id == workout.Id)
                 .Select(x => new DetailExerciseSetDto
                 {
@@ -199,7 +200,8 @@ public class RoutineService : IRoutineService
                         Id = x.Exercise.Id,
                         Name = x.Exercise.Name,
                         Description = x.Exercise.Description,
-                        MuscleGroup = x.Exercise.MuscleGroup
+                        MuscleGroup = x.Exercise.MuscleGroup,
+                        ImagePaths = x.Exercise.Thumbnails.Select(x => x.RelativePath).ToList()
                     },
                     Weight = x.Weight,
                     Repetitions = x.Repetitions,
@@ -221,7 +223,6 @@ public class RoutineService : IRoutineService
             ExerciseSets = exerciseSets,
             User = user
         };
-
     }
     public async Task CreateRoutineAsync(CreateRoutineDto routine)
     {

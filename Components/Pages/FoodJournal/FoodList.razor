@@ -1,0 +1,115 @@
+﻿@page "/foods"
+@inject IFoodService FoodService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+@using FitTrack.Data.DTOs.FoodJournal
+@using FitTrack.Services.FoodJournal
+
+<PageTitle>Food List</PageTitle>
+<PageHeaderTitle Title="Food List" ActionMenu="_headerMenu" />
+
+@if (!AllFoodItems.Any())
+{
+    <MudPaper Elevation="2" Class="pa-3">
+        <MudText Typo="Typo.h2" Color="Color.Primary">No food have been added.</MudText>
+        <MudText Typo="Typo.h6">Click the button below to add your first food item!</MudText>
+    </MudPaper>
+}
+else
+{
+    <MudStack Spacing="6">
+        <MudStack Spacing="2" Justify="Justify.FlexStart">
+            <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true" Variant="Variant.Outlined"
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" TextChanged="FilterFood" />
+            <MudGrid T="FoodItemDto" Items="AllFoodItems" Spacing="2" Justify="Justify.FlexStart">
+                @foreach (var food in FilteredFoodItems)
+                {
+                    <MudItem xs="12" sm="6" md="4" lg="3" xl="2">
+                        @food.Name
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudStack>
+    </MudStack>
+}
+
+<AuthorizeView>
+    <Authorized>
+        <MudMenu @ref="_headerMenu" PositionAtCursor>
+            <ChildContent>
+                <MudMenuItem Icon="@Icons.Material.Outlined.Add" OnClick="CreateFoodItemAsync">Add a new Food</MudMenuItem>
+            </ChildContent>
+        </MudMenu>
+    </Authorized>
+</AuthorizeView>
+
+@if (_isLoading)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="mb-4 mt-4" />
+}
+
+<MudStack Row Spacing="6" Style="position:fixed; bottom:25px; right:25px;">
+    <MudScrollToTop>
+        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.KeyboardArrowUp" />
+    </MudScrollToTop>
+</MudStack>
+
+@code {
+    private string _searchString = "";
+    private bool _isLoading = false;
+
+    private List<FoodItemDto> AllFoodItems { get; set; } = [];
+    private List<FoodItemDto> FilteredFoodItems { get; set; } = [];
+
+    private MudMenu _headerMenu = null!;
+
+    protected async override Task OnInitializedAsync()
+    {
+        AllFoodItems = await FoodService.GetAllFoodAsync();
+    }
+
+    private async Task CreateFoodItemAsync()
+    {
+        var dialogOptions = new DialogOptions
+        {
+            FullWidth = false
+        };
+
+        var createDialog = await DialogService.ShowAsync<CreateFoodItemDialog>("Create a new Food Item!", dialogOptions);
+        var result = await createDialog.Result;
+        if (!result!.Canceled)
+        {
+            bool success = await createDialog.GetReturnValueAsync<bool>();
+            if (success)
+            {
+                createDialog.Close();
+                AllFoodItems = await FoodService.GetAllFoodAsync();
+                FilterFood();
+            }
+            else
+            {
+                Snackbar.Add("Failed to save the Food Item", Severity.Error);
+            }
+        }
+    }
+
+    private void FilterFood()
+    {
+        _isLoading = true;
+
+        IEnumerable<FoodItemDto> stringFilter = [];
+        if (string.IsNullOrEmpty(_searchString))
+        {
+            stringFilter = AllFoodItems;
+        }
+        else
+        {
+            stringFilter = AllFoodItems.Where(x => x.Name.Contains(_searchString, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        FilteredFoodItems = stringFilter.ToList();
+
+        _isLoading = false;
+    }
+}

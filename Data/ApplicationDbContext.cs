@@ -1,4 +1,5 @@
 using FitTrack.Data.Models.Activities;
+using FitTrack.Data.Models.FoodJournal;
 using FitTrack.Data.Models.Measurements;
 using FitTrack.Data.Models.Routines;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -27,6 +28,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<MeasurementData> MeasurementData { get; set; }
 
     public DbSet<ExerciseImage> ExerciseImages { get; set; }
+
+    public DbSet<FoodItem> FoodItems { get; set; }
+
+    public DbSet<Meal> Meals { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -135,6 +140,23 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             e.Property(x => x.Amount)
             .HasPrecision(5, 2)
             .IsRequired();
+        });
+
+        modelBuilder.Entity<Meal>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasMany(m => m.Foods)
+            .WithMany(f => f.Meals);
+        });
+
+        modelBuilder.Entity<FoodItem>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name)
+            .HasMaxLength(250)
+            .IsRequired();
+            e.Property(x => x.Units)
+            .HasMaxLength(50);
         });
     }
 }

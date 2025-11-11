@@ -12,6 +12,7 @@
                 <MudNavLink Href="Activity/History" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.SportsGymnastics">Activity History</MudNavLink>
             </MudNavGroup>
             <MudNavLink Href="Measurements" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart">Measurements</MudNavLink>
+            <MudNavLink Href="Foods" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingBasket">Foods</MudNavLink>
             <MudNavLink Href="Account/Manage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">@context.User.Identity?.Name</MudNavLink>
             <form action="Account/Logout" method="post">
                 <AntiforgeryToken />
@@ -23,6 +24,7 @@
         </Authorized>
         <NotAuthorized>
             <MudNavLink Href="Exercises" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.DirectionsBike">Exercises</MudNavLink>
+            <MudNavLink Href="Foods" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingBasket">Foods</MudNavLink>
             <MudNavLink Href="Account/Login" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Password">Login</MudNavLink>
         </NotAuthorized>
     </AuthorizeView>

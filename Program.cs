@@ -2,6 +2,7 @@ using FitTrack.Components;
 using FitTrack.Components.Account;
 using FitTrack.Data;
 using FitTrack.Services.Activities;
+using FitTrack.Services.FoodJournal;
 using FitTrack.Services.Measurements;
 using FitTrack.Services.Routines;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -25,6 +26,8 @@ builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuth
 builder.Services.AddScoped<IRoutineService, RoutineService>();
 builder.Services.AddScoped<IMeasurementService, MeasurementService>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
+builder.Services.AddScoped<IFoodService, FoodService>();
+
 
 builder.Services.AddAuthentication(options =>
     {

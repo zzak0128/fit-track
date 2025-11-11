@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FitTrack.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251013170914_exerciseImageFK")]
-    partial class exerciseImageFK
+    [Migration("20251111014812_FoodJournalItems")]
+    partial class FoodJournalItems
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
@@ -97,25 +97,49 @@ namespace FitTrack.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("EndTime")
+                    b.Property<DateTime?>("DateCompleted")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime(6)");
+                    b.Property<string>("RoutineName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("UserId")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<int>("WorkoutId")
-                        .HasColumnType("int");
+                    b.Property<string>("WorkoutName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("WorkoutId");
-
                     b.ToTable("Activities");
+                });
+
+            modelBuilder.Entity("FitTrack.Data.Models.Activities.ActivitySet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Repetitions")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Weight")
+                        .HasColumnType("double");
+
+                    b.Property<int>("WorkoutLogId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkoutLogId");
+
+                    b.ToTable("ActivitySets");
                 });
 
             modelBuilder.Entity("FitTrack.Data.Models.Activities.WorkoutLog", b =>
@@ -126,35 +150,92 @@ namespace FitTrack.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("DateCompleted")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("Repetitions")
+                    b.Property<int>("ActivityId")
                         .HasColumnType("int");
+
+                    b.Property<int>("ExerciseId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<int>("SetCount")
                         .HasColumnType("int");
 
-                    b.Property<int>("TimeElapsedSeconds")
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActivityId");
+
+                    b.HasIndex("ExerciseId");
+
+                    b.ToTable("WorkoutLogs");
+                });
+
+            modelBuilder.Entity("FitTrack.Data.Models.FoodJournal.FoodItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Calories")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Carbs")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Fats")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MealId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
+
+                    b.Property<int>("Proteins")
+                        .HasColumnType("int");
+
+                    b.Property<double>("ServingSize")
+                        .HasColumnType("double");
+
+                    b.Property<string>("Units")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MealId");
+
+                    b.ToTable("FoodItems");
+                });
+
+            modelBuilder.Entity("FitTrack.Data.Models.FoodJournal.Meal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("MealType")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("varchar(255)");
-
-                    b.Property<double>("Weight")
-                        .HasColumnType("double");
-
-                    b.Property<int>("WorkoutId")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("WorkoutId");
-
-                    b.ToTable("WorkoutLogs");
+                    b.ToTable("Meals");
                 });
 
             modelBuilder.Entity("FitTrack.Data.Models.Measurements.Measurement", b =>
@@ -167,7 +248,8 @@ namespace FitTrack.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("UserId")
                         .HasColumnType("varchar(255)");
@@ -188,6 +270,7 @@ namespace FitTrack.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<double>("Amount")
+                        .HasPrecision(5, 2)
                         .HasColumnType("double");
 
                     b.Property<DateTime>("Date")
@@ -198,7 +281,8 @@ namespace FitTrack.Migrations
 
                     b.Property<string>("Unit")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.HasKey("Id");
 
@@ -223,7 +307,8 @@ namespace FitTrack.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.HasKey("Id");
 
@@ -267,7 +352,9 @@ namespace FitTrack.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("Sequence")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
 
                     b.Property<int>("SetCount")
                         .HasColumnType("int");
@@ -296,11 +383,13 @@ namespace FitTrack.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("UserId")
                         .HasColumnType("varchar(255)");
@@ -322,7 +411,8 @@ namespace FitTrack.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
 
                     b.Property<int>("RoutineId")
                         .HasColumnType("int");
@@ -472,34 +562,57 @@ namespace FitTrack.Migrations
                         .WithMany()
                         .HasForeignKey("UserId");
 
-                    b.HasOne("FitTrack.Data.Models.Routines.Workout", "Workout")
-                        .WithMany()
-                        .HasForeignKey("WorkoutId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FitTrack.Data.Models.Activities.ActivitySet", b =>
+                {
+                    b.HasOne("FitTrack.Data.Models.Activities.WorkoutLog", "WorkoutLog")
+                        .WithMany("ActivitySets")
+                        .HasForeignKey("WorkoutLogId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
-
-                    b.Navigation("Workout");
+                    b.Navigation("WorkoutLog");
                 });
 
             modelBuilder.Entity("FitTrack.Data.Models.Activities.WorkoutLog", b =>
                 {
+                    b.HasOne("FitTrack.Data.Models.Activities.Activity", "Activity")
+                        .WithMany("WorkoutLogs")
+                        .HasForeignKey("ActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FitTrack.Data.Models.Routines.Exercise", "Exercise")
+                        .WithMany()
+                        .HasForeignKey("ExerciseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Activity");
+
+                    b.Navigation("Exercise");
+                });
+
+            modelBuilder.Entity("FitTrack.Data.Models.FoodJournal.FoodItem", b =>
+                {
+                    b.HasOne("FitTrack.Data.Models.FoodJournal.Meal", "Meal")
+                        .WithMany("Foods")
+                        .HasForeignKey("MealId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Meal");
+                });
+
+            modelBuilder.Entity("FitTrack.Data.Models.FoodJournal.Meal", b =>
+                {
                     b.HasOne("FitTrack.Data.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FitTrack.Data.Models.Routines.Workout", "Workout")
-                        .WithMany()
-                        .HasForeignKey("WorkoutId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
-
-                    b.Navigation("Workout");
                 });
 
             modelBuilder.Entity("FitTrack.Data.Models.Measurements.Measurement", b =>
@@ -621,6 +734,21 @@ namespace FitTrack.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("FitTrack.Data.Models.Activities.Activity", b =>
+                {
+                    b.Navigation("WorkoutLogs");
+                });
+
+            modelBuilder.Entity("FitTrack.Data.Models.Activities.WorkoutLog", b =>
+                {
+                    b.Navigation("ActivitySets");
+                });
+
+            modelBuilder.Entity("FitTrack.Data.Models.FoodJournal.Meal", b =>
+                {
+                    b.Navigation("Foods");
                 });
 
             modelBuilder.Entity("FitTrack.Data.Models.Measurements.Measurement", b =>

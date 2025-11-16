@@ -1,6 +1,8 @@
 ﻿@using FitTrack.Data.DTOs.FoodJournal
 @using FitTrack.Services.FoodJournal
 @inject IFoodService FoodService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <MudDialog>
     <TitleContent>
@@ -48,7 +50,7 @@
     <DialogActions>
         <MudStack Row>
             <MudMenu Color="Color.Secondary" Variant="Variant.Filled" Icon="@Icons.Material.Filled.MoreHoriz">
-                <MudMenuItem Label="Edit" Icon="@Icons.Material.Filled.Edit" />
+                <MudMenuItem Label="Edit" Icon="@Icons.Material.Filled.Edit" OnClick="EditFoodItemAsync"/>
                 <MudMenuItem Label="Delete" Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" OnClick="DeleteFoodItemAsync" />
             </MudMenu>
             <MudButton Color="Color.Primary" OnClick="Close" Variant="Variant.Filled">OK</MudButton>
@@ -77,6 +79,29 @@
         catch (Exception)
         {
             MudDialog.Close(false);
+        }
+    }
+
+    private async Task EditFoodItemAsync()
+    {
+        var parameters = new DialogParameters<EditFoodItemDialog>
+        {
+            { x => x.EditFoodItem, FoodItem }
+        };
+
+        var editDialog = await DialogService.ShowAsync<EditFoodItemDialog>("Edit Food Item", parameters);
+        var result = await editDialog.Result;
+        if (!result!.Canceled)
+        {
+            FoodItemDto? updatedFoodItem = await editDialog.GetReturnValueAsync<FoodItemDto>();
+            if (updatedFoodItem is not null)
+            {
+                FoodItem = updatedFoodItem;
+            }
+            else
+            {
+                Snackbar.Add("Failed to update the Food Item", Severity.Error);
+            }
         }
     }
 }

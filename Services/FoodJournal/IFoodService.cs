@@ -7,4 +7,5 @@ public interface IFoodService
     Task CreateFoodItemAsync(CreateFoodItemDto newFoodDto);
     Task DeleteFoodItemAsync(int deleteFoodId);
     Task<List<FoodItemDto>> GetAllFoodAsync();
+    Task UpdateFoodItemAsync(FoodItemDto foodItem);
 }

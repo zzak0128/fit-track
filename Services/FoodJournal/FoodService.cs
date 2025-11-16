@@ -58,4 +58,20 @@ public class FoodService : IFoodService
         context.FoodItems.Remove(deleteFoodItem);
         await context.SaveChangesAsync();
     }
+
+    public async Task UpdateFoodItemAsync(FoodItemDto foodItem)
+    {
+        var context = await _dbContextFactory.CreateDbContextAsync();
+        var updateFoodItem = await context.FoodItems.FindAsync(foodItem.Id) ?? throw new Exception("Unable to find the food to update with this ID.");
+        updateFoodItem.Name = foodItem.Name;
+        updateFoodItem.ServingSize = foodItem.ServingSize;
+        updateFoodItem.Units = foodItem.Units;
+        updateFoodItem.Calories = foodItem.Calories;
+        updateFoodItem.Carbs = foodItem.Carbs;
+        updateFoodItem.Fats = foodItem.Fats;
+        updateFoodItem.Proteins = foodItem.Proteins;
+
+        context.FoodItems.Update(updateFoodItem);
+        await context.SaveChangesAsync();
+    }
 }

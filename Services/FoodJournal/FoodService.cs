@@ -49,4 +49,13 @@ public class FoodService : IFoodService
         context.FoodItems.Add(newFood);
         await context.SaveChangesAsync();
     }
+
+    public async Task DeleteFoodItemAsync(int deleteFoodId)
+    {
+        var context = await _dbContextFactory.CreateDbContextAsync();
+        var deleteFoodItem = await context.FoodItems.FindAsync(deleteFoodId) ?? throw new Exception("Unable to find the food to delete with this ID.");
+
+        context.FoodItems.Remove(deleteFoodItem);
+        await context.SaveChangesAsync();
+    }
 }

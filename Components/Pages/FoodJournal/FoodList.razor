@@ -5,6 +5,7 @@
 
 @using FitTrack.Data.DTOs.FoodJournal
 @using FitTrack.Services.FoodJournal
+@using System.Threading.Tasks
 
 <PageTitle>Food List</PageTitle>
 <PageHeaderTitle Title="Food List" ActionMenu="_headerMenu" />
@@ -20,16 +21,30 @@ else
 {
     <MudStack Spacing="6">
         <MudStack Spacing="2" Justify="Justify.FlexStart">
-            <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true" Variant="Variant.Outlined"
-                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" TextChanged="FilterFood" />
-            <MudGrid T="FoodItemDto" Items="AllFoodItems" Spacing="2" Justify="Justify.FlexStart">
-                @foreach (var food in FilteredFoodItems)
-                {
-                    <MudItem xs="12" sm="6" md="4" lg="3" xl="2">
-                        @food.Name
-                    </MudItem>
-                }
-            </MudGrid>
+            <MudTable T="FoodItemDto" Items="AllFoodItems" Breakpoint="Breakpoint.Xs" Striped Hover Filter="new Func<FoodItemDto, bool>(FilterFood)" OnRowClick="OpenDetails">
+                <ToolBarContent>
+                    <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Food</MudTh>
+                    <MudTh>Serving</MudTh>
+                    <MudTh>Calories</MudTh>
+                    <MudTh>Carbs</MudTh>
+                    <MudTh>Fats</MudTh>
+                    <MudTh>Protein</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Food">@context.Name</MudTd>
+                    <MudTd DataLabel="Serving">@context.ServingSize @context.Units</MudTd>
+                    <MudTd DataLabel="Calories">@context.Calories</MudTd>
+                    <MudTd DataLabel="Carbs">@context.Carbs</MudTd>
+                    <MudTd DataLabel="Fats">@context.Fats</MudTd>
+                    <MudTd DataLabel="Protein">@context.Proteins</MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
         </MudStack>
     </MudStack>
 }
@@ -60,7 +75,6 @@ else
     private bool _isLoading = false;
 
     private List<FoodItemDto> AllFoodItems { get; set; } = [];
-    private List<FoodItemDto> FilteredFoodItems { get; set; } = [];
 
     private MudMenu _headerMenu = null!;
 
@@ -71,12 +85,7 @@ else
 
     private async Task CreateFoodItemAsync()
     {
-        var dialogOptions = new DialogOptions
-        {
-            FullWidth = false
-        };
-
-        var createDialog = await DialogService.ShowAsync<CreateFoodItemDialog>("Create a new Food Item!", dialogOptions);
+        var createDialog = await DialogService.ShowAsync<CreateFoodItemDialog>("Create a new Food Item!");
         var result = await createDialog.Result;
         if (!result!.Canceled)
         {
@@ -85,7 +94,6 @@ else
             {
                 createDialog.Close();
                 AllFoodItems = await FoodService.GetAllFoodAsync();
-                FilterFood();
             }
             else
             {
@@ -94,22 +102,39 @@ else
         }
     }
 
-    private void FilterFood()
+    private bool FilterFood(FoodItemDto element) => FilterFood(element, _searchString);
+
+    private bool FilterFood(FoodItemDto element, string searchString)
     {
-        _isLoading = true;
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
 
-        IEnumerable<FoodItemDto> stringFilter = [];
-        if (string.IsNullOrEmpty(_searchString))
+    private async Task OpenDetails(TableRowClickEventArgs<FoodItemDto> args)
+    {
+        var foodItem = args.Item;
+
+        var dialogParams = new DialogParameters<DetailsFoodItemDialog>()
         {
-            stringFilter = AllFoodItems;
-        }
-        else
+            {x => x.FoodItem, foodItem }
+        };
+
+        var detailDialog = await DialogService.ShowAsync<DetailsFoodItemDialog>($"{foodItem.Name} Details", dialogParams);
+        var result = await detailDialog.Result;
+        if (!result!.Canceled)
         {
-            stringFilter = AllFoodItems.Where(x => x.Name.Contains(_searchString, StringComparison.InvariantCultureIgnoreCase));
+            bool success = await detailDialog.GetReturnValueAsync<bool>();
+            if (success)
+            {
+                AllFoodItems = await FoodService.GetAllFoodAsync();
+            }
+            else
+            {
+                Snackbar.Add("Failed to delete the given food item", Severity.Error);
+            }
         }
-
-        FilteredFoodItems = stringFilter.ToList();
-
-        _isLoading = false;
     }
 }

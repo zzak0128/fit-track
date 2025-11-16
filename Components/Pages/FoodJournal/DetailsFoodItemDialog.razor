@@ -1,0 +1,83 @@
+﻿@using FitTrack.Data.DTOs.FoodJournal
+@using FitTrack.Services.FoodJournal
+@inject IFoodService FoodService
+
+<MudDialog>
+    <TitleContent>
+        @MudDialog.Title
+    </TitleContent>
+    <DialogContent>
+        <MudText Align="Align.Start" Typo="Typo.h4">@FoodItem.Name</MudText>
+
+        <MudStack Row AlignItems="AlignItems.Baseline" Justify="Justify.SpaceBetween">
+            <MudText Typo="Typo.subtitle2">Serving Size</MudText>
+            <MudText Typo="Typo.body2">@FoodItem.ServingSize @FoodItem.Units</MudText>
+        </MudStack>
+        <MudPaper Elevation="2" Class="mt-3 pa-3">
+            <MudGrid Spacing="2">
+                <MudItem xs="12">
+                    <MudStack>
+                        <MudText Typo="Typo.subtitle1">@FoodItem.Calories calories</MudText>
+                    </MudStack>
+                    <MudDivider Light />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudStack Row Justify="Justify.SpaceBetween">
+                        <MudText Typo="Typo.subtitle2">Carbs</MudText>
+                        <MudText Typo="Typo.body2">@FoodItem.Carbs</MudText>
+                    </MudStack>
+                    <MudDivider DividerType="DividerType.FullWidth" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudStack Row Justify="Justify.SpaceBetween">
+                        <MudText Typo="Typo.subtitle2">Fats</MudText>
+                        <MudText Typo="Typo.body2">@FoodItem.Fats</MudText>
+                    </MudStack>
+                    <MudDivider DividerType="DividerType.FullWidth" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudStack Row Justify="Justify.SpaceBetween">
+                        <MudText Typo="Typo.subtitle2">Protein</MudText>
+                        <MudText Typo="Typo.body2">@FoodItem.Proteins</MudText>
+                    </MudStack>
+                    <MudDivider DividerType="DividerType.FullWidth" />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+        <MudStack Row>
+            <MudMenu Color="Color.Secondary" Variant="Variant.Filled" Icon="@Icons.Material.Filled.MoreHoriz">
+                <MudMenuItem Label="Edit" Icon="@Icons.Material.Filled.Edit" />
+                <MudMenuItem Label="Delete" Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" OnClick="DeleteFoodItemAsync" />
+            </MudMenu>
+            <MudButton Color="Color.Primary" OnClick="Close" Variant="Variant.Filled">OK</MudButton>
+        </MudStack>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter]
+    public IMudDialogInstance MudDialog { get; set; } = null!;
+    private MudForm form { get; set; } = null!;
+
+    [Parameter]
+    public FoodItemDto FoodItem { get; set; } = null!;
+
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+
+    private async Task DeleteFoodItemAsync()
+    {
+        try
+        {
+            await FoodService.DeleteFoodItemAsync(FoodItem.Id);
+            MudDialog.Close(true);
+        }
+        catch (Exception)
+        {
+            MudDialog.Close(false);
+        }
+    }
+}
+

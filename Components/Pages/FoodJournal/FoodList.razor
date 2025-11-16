@@ -1,4 +1,4 @@
-﻿@page "/foods"
+﻿@page "/FoodJournal/Foods"
 @inject IFoodService FoodService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -122,7 +122,7 @@ else
             {x => x.FoodItem, foodItem }
         };
 
-        var detailDialog = await DialogService.ShowAsync<DetailsFoodItemDialog>($"{foodItem.Name} Details", dialogParams);
+        var detailDialog = await DialogService.ShowAsync<DetailsFoodItemDialog>($"{foodItem?.Name} Details", dialogParams);
         var result = await detailDialog.Result;
         if (!result!.Canceled)
         {

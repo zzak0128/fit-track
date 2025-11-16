@@ -74,4 +74,88 @@ public class FoodService : IFoodService
         context.FoodItems.Update(updateFoodItem);
         await context.SaveChangesAsync();
     }
+
+    // Meals
+    public async Task<List<MealDto>> GetTodaysMealsAsync(ApplicationUser currentUser)
+    {
+        var today = DateTime.Today.Date;
+
+        var context = await _dbContextFactory.CreateDbContextAsync();
+        var todaysMealCount = await context.Meals
+            .Where(m => m.User == currentUser && m.Date.Date == today)
+            .CountAsync();
+
+        if (todaysMealCount == 0)
+        {
+            List<Meal> newMeals = [];
+            foreach (MealType mealType in Enum.GetValues(typeof(MealType)))
+            {
+                newMeals.Add(new Meal
+                {
+                    MealType = mealType,
+                    Date = DateTime.Now,
+                    User = currentUser
+                });
+            }
+
+            context.Attach(currentUser);
+            context.Meals.AddRange(newMeals);
+            await context.SaveChangesAsync();
+
+            return await GetTodaysMealsAsync(currentUser);
+
+        }
+        else
+        {
+            return await context.Meals
+                    .Include(m => m.Foods)
+                    .Select(m => new MealDto
+                    {
+                        Id = m.Id,
+                        MealType = m.MealType,
+                        Date = m.Date,
+                        User = m.User,
+                        Foods = m.Foods.Select(x => new FoodItemDto
+                        {
+                            Id = x.Id,
+                            Name = x.Name,
+                            ServingSize = x.ServingSize,
+                            Units = x.Units,
+                            Calories = x.Calories,
+                            Carbs = x.Carbs,
+                            Fats = x.Fats,
+                            Proteins = x.Proteins
+                        }).OrderBy(x => x.Name).ToList()
+                    })
+                    .Where(m => m.User == currentUser && m.Date.Date == today)
+                    .ToListAsync();
+        }
+    }
+
+    public async Task<List<MealDto>> GetAllMealsAsync(ApplicationUser currentUser)
+    {
+        var context = await _dbContextFactory.CreateDbContextAsync();
+        return await context.Meals
+            .Include(m => m.Foods)
+            .Select(m => new MealDto
+            {
+                Id = m.Id,
+                MealType = m.MealType,
+                Date = m.Date,
+                User = m.User,
+                Foods = m.Foods.Select(x => new FoodItemDto
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    ServingSize = x.ServingSize,
+                    Units = x.Units,
+                    Calories = x.Calories,
+                    Carbs = x.Carbs,
+                    Fats = x.Fats,
+                    Proteins = x.Proteins
+                }).OrderBy(x => x.Name).ToList()
+            })
+            .Where(m => m.User == currentUser)
+            .ToListAsync();
+    }
 }

@@ -1,0 +1,33 @@
+﻿@page "/FoodJournal/Today"
+@using FitTrack.Data
+@using FitTrack.Data.DTOs.FoodJournal
+@using FitTrack.Services.FoodJournal
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IFoodService FoodService
+
+<PageTitle>Today's Meals</PageTitle>
+<PageHeaderTitle Title="Today's Meals" />
+
+@foreach (var item in TodaysMeals)
+{
+    <MudText GutterBottom>@item.MealType</MudText>
+}
+
+
+@code {
+    public List<MealDto> TodaysMeals { get; set; } = [];
+    public ApplicationUser? CurrentUser { get; set; } = null!;
+
+    protected async override Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        CurrentUser = await UserManager.GetUserAsync(authState.User);
+
+        if (CurrentUser is not null)
+        {
+            TodaysMeals = await FoodService.GetTodaysMealsAsync(CurrentUser);
+        }
+    }
+}

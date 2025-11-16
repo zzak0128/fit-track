@@ -10,11 +10,53 @@
 <PageTitle>Today's Meals</PageTitle>
 <PageHeaderTitle Title="Today's Meals" />
 
-@foreach (var item in TodaysMeals)
-{
-    <MudText GutterBottom>@item.MealType</MudText>
-}
 
+<MudExpansionPanels MultiExpansion="true">
+    @foreach (var item in TodaysMeals)
+    {
+        <MudExpansionPanel Expanded>
+            <TitleContent>
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Baseline">
+                    <MudText Typo="Typo.h6" Color="Color.Primary">@item.MealType.ToString()</MudText>
+                    <MudStack row Class="pr-3">
+                        <MudProgressCircular Value="75" Color="Color.Primary">
+                        <ChildContent>
+                            <MudText>C</MudText>
+                        </ChildContent>
+                        </MudProgressCircular>
+                        <MudProgressCircular Value="75" Color="Color.Secondary">
+                            <ChildContent>
+                                <MudText>F</MudText>
+                            </ChildContent>
+                        </MudProgressCircular>
+                        <MudProgressCircular Value="75" Color="Color.Tertiary">
+                            <ChildContent>
+                                <MudText>P</MudText>
+                            </ChildContent>
+                        </MudProgressCircular>
+                    </MudStack>
+                </MudStack>
+            </TitleContent>
+            <ChildContent>
+                <MudTable Items="item.Foods" Breakpoint="Breakpoint.None" Elevation="0">
+                    <HeaderContent>
+                        <MudTh>Name</MudTh>
+                        <MudTh>Calories</MudTh>
+                        <MudTh>Carbs</MudTh>
+                        <MudTh>Fats</MudTh>
+                        <MudTh>Protein</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.Calories</MudTd>
+                        <MudTd>@context.Carbs</MudTd>
+                        <MudTd>@context.Fats</MudTd>
+                        <MudTd>@context.Proteins</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </ChildContent>
+        </MudExpansionPanel>
+    }
+</MudExpansionPanels>
 
 @code {
     public List<MealDto> TodaysMeals { get; set; } = [];

@@ -1,15 +1,30 @@
 ﻿@page "/FoodJournal/Today"
 @using FitTrack.Data
 @using FitTrack.Data.DTOs.FoodJournal
+@using FitTrack.Data.Models.FoodJournal
 @using FitTrack.Services.FoodJournal
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IFoodService FoodService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+@attribute [Authorize]
 
 <PageTitle>Today's Meals</PageTitle>
-<PageHeaderTitle Title="Today's Meals" />
+<PageHeaderTitle Title="Today's Meals" ActionMenu="_headerMenu" />
 
+<AuthorizeView>
+    <Authorized>
+        <MudMenu @ref="_headerMenu" PositionAtCursor>
+            <ChildContent>
+                <MudMenuItem Icon="@Icons.Material.Outlined.Add" OnClick="CreateMealAsync">Add a new Meal</MudMenuItem>
+            </ChildContent>
+        </MudMenu>
+    </Authorized>
+</AuthorizeView>
 
 <MudExpansionPanels MultiExpansion="true">
     @foreach (var item in TodaysMeals)
@@ -20,9 +35,9 @@
                     <MudText Typo="Typo.h6" Color="Color.Primary">@item.MealType.ToString()</MudText>
                     <MudStack row Class="pr-3">
                         <MudProgressCircular Value="75" Color="Color.Primary">
-                        <ChildContent>
-                            <MudText>C</MudText>
-                        </ChildContent>
+                            <ChildContent>
+                                <MudText>C</MudText>
+                            </ChildContent>
                         </MudProgressCircular>
                         <MudProgressCircular Value="75" Color="Color.Secondary">
                             <ChildContent>
@@ -35,22 +50,30 @@
                             </ChildContent>
                         </MudProgressCircular>
                     </MudStack>
+                    <MudIconButton Icon="@Icons.Material.Rounded.Add" Color="Color.Primary" Class="rounded-circle" DropShadow="false" Variant="Variant.Filled" OnClick="() => AddToMealAsync(item)" />
                 </MudStack>
             </TitleContent>
             <ChildContent>
-                <MudTable Items="item.Foods" Breakpoint="Breakpoint.None" Elevation="0">
+                <MudTable Items="item.FoodServings" Breakpoint="Breakpoint.None" Elevation="0">
                     <HeaderContent>
                         <MudTh>Name</MudTh>
+                        <MudTh>Servings</MudTh>
                         <MudTh>Calories</MudTh>
                         <MudTh>Carbs</MudTh>
                         <MudTh>Fats</MudTh>
                         <MudTh>Protein</MudTh>
+                        <MudTh></MudTh>
                     </HeaderContent>
                     <RowTemplate>
-                        <MudTd>@context.Calories</MudTd>
-                        <MudTd>@context.Carbs</MudTd>
-                        <MudTd>@context.Fats</MudTd>
-                        <MudTd>@context.Proteins</MudTd>
+                        <MudTd>@context.FoodItem.Name</MudTd>
+                        <MudTd>@context.Servings</MudTd>
+                        <MudTd>@context.FoodItem.Calories</MudTd>
+                        <MudTd>@context.FoodItem.Carbs</MudTd>
+                        <MudTd>@context.FoodItem.Fats</MudTd>
+                        <MudTd>@context.FoodItem.Proteins</MudTd>
+                        <MudTd Class="d-flex justify-end">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteServingAsync(context.Id)" />
+                        </MudTd>
                     </RowTemplate>
                 </MudTable>
             </ChildContent>
@@ -58,9 +81,11 @@
     }
 </MudExpansionPanels>
 
-@code {
+    @code {
+    private MudMenu? _headerMenu;
+
     public List<MealDto> TodaysMeals { get; set; } = [];
-    public ApplicationUser? CurrentUser { get; set; } = null!;
+    public ApplicationUser? CurrentUser { get; set; }
 
     protected async override Task OnInitializedAsync()
     {
@@ -70,6 +95,52 @@
         if (CurrentUser is not null)
         {
             TodaysMeals = await FoodService.GetTodaysMealsAsync(CurrentUser);
+        }
+    }
+
+    private async void CreateMealAsync()
+    {
+        // Navigation to create food item page can be added here
+    }
+
+    private async Task AddToMealAsync(MealDto meal)
+    {
+        var addFoodItemDialog = await DialogService.ShowAsync<AddFoodToMealDialog>("Select a food to add.");
+        var result = await addFoodItemDialog.Result;
+        if (!result!.Canceled)
+        {
+            MealFoodServingDto? selectedServing = await addFoodItemDialog.GetReturnValueAsync<MealFoodServingDto>();
+            if (selectedServing is not null)
+            {
+                meal.FoodServings.Add(selectedServing);
+                try
+                {
+                    await FoodService.AddFoodToMealAsync(meal.Id, selectedServing);
+                }
+                catch (Exception)
+                {
+                    Snackbar.Add("Failed to add to this meal", Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Add("Failed to add to this meal", Severity.Error);
+            }
+        }
+    }
+
+    private async Task DeleteServingAsync(int id)
+    {
+        try
+        {
+            await FoodService.DeleteMealFoodServingAsync(id);
+            TodaysMeals = await FoodService.GetTodaysMealsAsync(CurrentUser!);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add($"Failed to delete this meal serving.", Severity.Error);
+
+            throw;
         }
     }
 }

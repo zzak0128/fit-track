@@ -6,7 +6,7 @@ public class MealDto
 {
     public int Id { get; set; }
 
-    public List<FoodItemDto> Foods { get; set; } = [];
+    public List<MealFoodServingDto> FoodServings { get; set; } = [];
 
     public DateTime Date { get; set; }
 

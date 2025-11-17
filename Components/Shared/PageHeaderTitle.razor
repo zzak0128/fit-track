@@ -8,7 +8,16 @@
             <MudIconButton Icon="@Icons.Material.Outlined.KeyboardArrowLeft" Color="Color.Primary" OnClick="NavigateBack"></MudIconButton>
         }
 
-        <MudText Typo="Typo.h4" Color="Color.Primary">@(CustomContent)@Title</MudText>
+        <MudText Typo="Typo.h4" Color="Color.Primary">
+            @if(CustomContent is null)
+            {
+                @Title
+            }
+            else
+            {
+                @(CustomContent)
+            }
+            </MudText>
 
         @if (ActionMenu is not null)
         {

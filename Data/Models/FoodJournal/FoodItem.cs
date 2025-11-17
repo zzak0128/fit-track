@@ -19,5 +19,5 @@ public class FoodItem
     public int Proteins { get; set; }
 
     // Nav props
-    public virtual List<Meal> Meals { get; set; } = [];
+    public virtual List<MealFoodServing> MealFoodServings { get; set; } = [];
 }

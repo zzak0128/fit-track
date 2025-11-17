@@ -31,6 +31,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<FoodItem> FoodItems { get; set; }
 
+    public DbSet<MealFoodServing> MealFoodServings { get; set; }
+
     public DbSet<Meal> Meals { get; set; }
 
 
@@ -147,6 +149,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             e.HasKey(x => x.Id);
             e.HasMany(m => m.Foods)
             .WithMany(f => f.Meals);
+        });
+
+        modelBuilder.Entity<MealFoodServing>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasOne(m => m.FoodItem)
+            .WithMany(f => f.MealFoodServings)
+            .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<FoodItem>(e =>

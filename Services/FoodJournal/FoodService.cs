@@ -109,53 +109,57 @@ public class FoodService : IFoodService
         {
             return await context.Meals
                     .Include(m => m.Foods)
+                    .ThenInclude(x => x.FoodItem)
                     .Select(m => new MealDto
                     {
                         Id = m.Id,
                         MealType = m.MealType,
                         Date = m.Date,
                         User = m.User,
-                        Foods = m.Foods.Select(x => new FoodItemDto
+                        FoodServings = m.Foods.Select(x => new MealFoodServingDto
                         {
                             Id = x.Id,
-                            Name = x.Name,
-                            ServingSize = x.ServingSize,
-                            Units = x.Units,
-                            Calories = x.Calories,
-                            Carbs = x.Carbs,
-                            Fats = x.Fats,
-                            Proteins = x.Proteins
-                        }).OrderBy(x => x.Name).ToList()
+                            FoodItem = new FoodItemDto
+                            {
+                                Id = x.FoodItem.Id,
+                                Name = x.FoodItem.Name,
+                                ServingSize = x.FoodItem.ServingSize,
+                                Units = x.FoodItem.Units,
+                                Calories = x.FoodItem.Calories,
+                                Carbs = x.FoodItem.Carbs,
+                                Fats = x.FoodItem.Fats,
+                                Proteins = x.FoodItem.Proteins
+                            },
+                            Servings = x.Servings
+                        }).OrderBy(x => x.FoodItem.Name).ToList()
                     })
                     .Where(m => m.User == currentUser && m.Date.Date == today)
                     .ToListAsync();
         }
     }
 
-    public async Task<List<MealDto>> GetAllMealsAsync(ApplicationUser currentUser)
+    public async Task AddFoodToMealAsync(int mealId, MealFoodServingDto foodServing)
+    { 
+        var context = await _dbContextFactory.CreateDbContextAsync();
+        var mealToUpdate = await context.Meals.FindAsync(mealId) ?? throw new Exception("Unable to find this meal to update.");
+        var foodItemToAdd = await context.FoodItems.FindAsync(foodServing.FoodItem.Id) ?? throw new Exception("Unable to find this food item");
+
+        MealFoodServing servingToAdd = new()
+        {
+            FoodItem = foodItemToAdd,
+            Servings = foodServing.Servings
+        };
+
+        mealToUpdate.Foods.Add(servingToAdd);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task DeleteMealFoodServingAsync(int id)
     {
         var context = await _dbContextFactory.CreateDbContextAsync();
-        return await context.Meals
-            .Include(m => m.Foods)
-            .Select(m => new MealDto
-            {
-                Id = m.Id,
-                MealType = m.MealType,
-                Date = m.Date,
-                User = m.User,
-                Foods = m.Foods.Select(x => new FoodItemDto
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    ServingSize = x.ServingSize,
-                    Units = x.Units,
-                    Calories = x.Calories,
-                    Carbs = x.Carbs,
-                    Fats = x.Fats,
-                    Proteins = x.Proteins
-                }).OrderBy(x => x.Name).ToList()
-            })
-            .Where(m => m.User == currentUser)
-            .ToListAsync();
+        var servingToDelete = await context.MealFoodServings.FindAsync(id) ?? throw new Exception("Unable to find this meal serving to remove.");
+
+        context.MealFoodServings.Remove(servingToDelete);
+        await context.SaveChangesAsync();
     }
 }

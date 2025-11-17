@@ -6,7 +6,7 @@ public class Meal
 
     public MealType MealType { get; set; }
 
-    public List<FoodItem> Foods { get; set; } = [];
+    public List<MealFoodServing> Foods { get; set; } = [];
 
     public DateTime Date { get; set; }
 

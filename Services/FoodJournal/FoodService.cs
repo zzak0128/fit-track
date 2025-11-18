@@ -76,13 +76,13 @@ public class FoodService : IFoodService
     }
 
     // Meals
-    public async Task<List<MealDto>> GetTodaysMealsAsync(ApplicationUser currentUser)
+    public async Task<List<MealDto>> GetMealsByDateAsync(DateTime date, ApplicationUser currentUser)
     {
         var today = DateTime.Today.Date;
 
         var context = await _dbContextFactory.CreateDbContextAsync();
         var todaysMealCount = await context.Meals
-            .Where(m => m.User == currentUser && m.Date.Date == today)
+            .Where(m => m.User == currentUser && m.Date.Date == date.Date)
             .CountAsync();
 
         if (todaysMealCount == 0)
@@ -93,7 +93,7 @@ public class FoodService : IFoodService
                 newMeals.Add(new Meal
                 {
                     MealType = mealType,
-                    Date = DateTime.Now,
+                    Date = date,
                     User = currentUser
                 });
             }
@@ -102,7 +102,7 @@ public class FoodService : IFoodService
             context.Meals.AddRange(newMeals);
             await context.SaveChangesAsync();
 
-            return await GetTodaysMealsAsync(currentUser);
+            return await GetMealsByDateAsync(date, currentUser);
 
         }
         else
@@ -133,13 +133,13 @@ public class FoodService : IFoodService
                             Servings = x.Servings
                         }).OrderBy(x => x.FoodItem.Name).ToList()
                     })
-                    .Where(m => m.User == currentUser && m.Date.Date == today)
+                    .Where(m => m.User == currentUser && m.Date.Date == date.Date)
                     .ToListAsync();
         }
     }
 
     public async Task AddFoodToMealAsync(int mealId, MealFoodServingDto foodServing)
-    { 
+    {
         var context = await _dbContextFactory.CreateDbContextAsync();
         var mealToUpdate = await context.Meals.FindAsync(mealId) ?? throw new Exception("Unable to find this meal to update.");
         var foodItemToAdd = await context.FoodItems.FindAsync(foodServing.FoodItem.Id) ?? throw new Exception("Unable to find this food item");

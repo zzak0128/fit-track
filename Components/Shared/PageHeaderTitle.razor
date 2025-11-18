@@ -9,15 +9,20 @@
         }
 
         <MudText Typo="Typo.h4" Color="Color.Primary">
-            @if(CustomContent is null)
+            @if (CustomTitle is null)
             {
                 @Title
             }
             else
             {
-                @(CustomContent)
+                @(CustomTitle)
             }
-            </MudText>
+        </MudText>
+
+        @if (ChildContent is not null)
+        {
+            @(ChildContent)
+        }
 
         @if (ActionMenu is not null)
         {
@@ -38,7 +43,10 @@
     public MudMenu? ActionMenu { get; set; } = null;
 
     [Parameter]
-    public RenderFragment? CustomContent { get; set; }
+    public RenderFragment? CustomTitle { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
 
     [Parameter]
     public string? CustomBackUrl { get; set; } = null;

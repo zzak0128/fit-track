@@ -14,7 +14,17 @@
 @attribute [Authorize]
 
 <PageTitle>Today's Meals</PageTitle>
-<PageHeaderTitle Title="Today's Meals" ActionMenu="_headerMenu" />
+<PageHeaderTitle Title="Today's Meals" ActionMenu="_headerMenu">
+    <ChildContent>
+        <MudSpacer />
+            <MudStack Row AlignItems="AlignItems.Center">
+                <MudIconButton Icon="@Icons.Material.Rounded.ArrowCircleLeft" OnClick="PreviousDayAsync" />
+                <MudButton Variant="Variant.Text" Color="Color.Info" OnClick="CurrentDayAsync">@_currentDate.ToShortDateString()</MudButton>
+                <MudIconButton Icon="@Icons.Material.Rounded.ArrowCircleRight" OnClick="NextDayAsync" Disabled="@(_currentDate.Date >= DateTime.Now.Date)" />
+            </MudStack>
+            <MudSpacer />
+    </ChildContent>
+</PageHeaderTitle>
 
 <AuthorizeView>
     <Authorized>
@@ -31,20 +41,20 @@
     {
         <MudExpansionPanel Expanded>
             <TitleContent>
-                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Baseline">
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                     <MudText Typo="Typo.h6" Color="Color.Primary">@item.MealType.ToString()</MudText>
                     <MudStack row Class="pr-3">
-                        <MudProgressCircular Value="75" Color="Color.Primary">
+                        <MudProgressCircular Value="@(CalculateGoals(item.FoodServings, "carbs"))" Color="Color.Primary">
                             <ChildContent>
                                 <MudText>C</MudText>
                             </ChildContent>
                         </MudProgressCircular>
-                        <MudProgressCircular Value="75" Color="Color.Secondary">
+                        <MudProgressCircular Value="@(CalculateGoals(item.FoodServings, "fat"))" Color="Color.Secondary">
                             <ChildContent>
                                 <MudText>F</MudText>
                             </ChildContent>
                         </MudProgressCircular>
-                        <MudProgressCircular Value="75" Color="Color.Tertiary">
+                        <MudProgressCircular Value="@(CalculateGoals(item.FoodServings, "protein"))" Color="Color.Tertiary">
                             <ChildContent>
                                 <MudText>P</MudText>
                             </ChildContent>
@@ -67,10 +77,10 @@
                     <RowTemplate>
                         <MudTd>@context.FoodItem.Name</MudTd>
                         <MudTd>@context.Servings</MudTd>
-                        <MudTd>@context.FoodItem.Calories</MudTd>
-                        <MudTd>@context.FoodItem.Carbs</MudTd>
-                        <MudTd>@context.FoodItem.Fats</MudTd>
-                        <MudTd>@context.FoodItem.Proteins</MudTd>
+                        <MudTd>@(context.FoodItem.Calories* context.Servings)</MudTd>
+                        <MudTd>@(context.FoodItem.Carbs* context.Servings)</MudTd>
+                        <MudTd>@(context.FoodItem.Fats* context.Servings)</MudTd>
+                        <MudTd>@(context.FoodItem.Proteins* context.Servings)</MudTd>
                         <MudTd Class="d-flex justify-end">
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteServingAsync(context.Id)" />
                         </MudTd>
@@ -82,7 +92,13 @@
 </MudExpansionPanels>
 
     @code {
+    private int _calorieGoal = 2000;
+    private int _proteinGoal = 90;
+    private int _fatGoal = 70;
+    private int _carbGoal = 250;
+
     private MudMenu? _headerMenu;
+    public DateTime _currentDate { get; set; } = DateTime.Now;
 
     public List<MealDto> TodaysMeals { get; set; } = [];
     public ApplicationUser? CurrentUser { get; set; }
@@ -94,7 +110,23 @@
 
         if (CurrentUser is not null)
         {
-            TodaysMeals = await FoodService.GetTodaysMealsAsync(CurrentUser);
+            TodaysMeals = await FoodService.GetMealsByDateAsync(_currentDate, CurrentUser);
+        }
+    }
+
+    private int CalculateGoals(List<MealFoodServingDto> foodsToCalc, string goalToCalc)
+    {
+        // Logic to calculate goals can be added here
+        switch (goalToCalc)
+        {
+            case "carbs":
+                return (int)foodsToCalc.Sum(x => x.FoodItem.Carbs * x.Servings);
+            case "protein":
+                return (int)foodsToCalc.Sum(x => x.FoodItem.Proteins * x.Servings);
+            case "fat":
+                return (int)foodsToCalc.Sum(x => x.FoodItem.Fats * x.Servings);
+            default:
+                return 0;
         }
     }
 
@@ -134,13 +166,35 @@
         try
         {
             await FoodService.DeleteMealFoodServingAsync(id);
-            TodaysMeals = await FoodService.GetTodaysMealsAsync(CurrentUser!);
+            TodaysMeals = await FoodService.GetMealsByDateAsync(_currentDate, CurrentUser!);
         }
         catch (Exception)
         {
             Snackbar.Add($"Failed to delete this meal serving.", Severity.Error);
-
             throw;
         }
+    }
+
+    private async Task CurrentDayAsync()
+    {
+        _currentDate = DateTime.Now;
+        TodaysMeals = await FoodService.GetMealsByDateAsync(_currentDate, CurrentUser!);
+    }
+
+    private async Task PreviousDayAsync()
+    {
+        _currentDate = _currentDate.AddDays(-1);
+        TodaysMeals = await FoodService.GetMealsByDateAsync(_currentDate, CurrentUser!);
+    }
+
+    private async Task NextDayAsync()
+    {
+        if (_currentDate.Date >= DateTime.Now.Date)
+        {
+            return;
+        }
+
+        _currentDate = _currentDate.AddDays(1);
+        TodaysMeals = await FoodService.GetMealsByDateAsync(_currentDate, CurrentUser!);
     }
 }

@@ -10,6 +10,6 @@ public interface IFoodService
     Task DeleteFoodItemAsync(int deleteFoodId);
     Task DeleteMealFoodServingAsync(int id);
     Task<List<FoodItemDto>> GetAllFoodAsync();
-    Task<List<MealDto>> GetTodaysMealsAsync(ApplicationUser currentUser);
+    Task<List<MealDto>> GetMealsByDateAsync(DateTime date, ApplicationUser currentUser);
     Task UpdateFoodItemAsync(FoodItemDto foodItem);
 }

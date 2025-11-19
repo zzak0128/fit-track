@@ -11,5 +11,7 @@ public interface IFoodService
     Task DeleteMealFoodServingAsync(int id);
     Task<List<FoodItemDto>> GetAllFoodAsync();
     Task<List<MealDto>> GetMealsByDateAsync(DateTime date, ApplicationUser currentUser);
+    Task<UserGoalsDto> GetUserGoalsAsync(ApplicationUser currentUser);
+    Task SaveUserGoalsAsync(UserGoalsDto userGoals, ApplicationUser currentUser);
     Task UpdateFoodItemAsync(FoodItemDto foodItem);
 }

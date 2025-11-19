@@ -35,6 +35,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<Meal> Meals { get; set; }
 
+    public DbSet<UserGoals> UserGoals { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -167,6 +169,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .IsRequired();
             e.Property(x => x.Units)
             .HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<UserGoals>(e =>
+        {
+            e.HasKey(x => x.Id);
         });
     }
 }

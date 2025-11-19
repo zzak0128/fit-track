@@ -162,4 +162,50 @@ public class FoodService : IFoodService
         context.MealFoodServings.Remove(servingToDelete);
         await context.SaveChangesAsync();
     }
+
+
+    // User Goals
+    public async Task<UserGoalsDto> GetUserGoalsAsync(ApplicationUser currentUser)
+    {
+        var context = await _dbContextFactory.CreateDbContextAsync();
+        return await context.UserGoals
+            .Where(ug => ug.User == currentUser)
+            .Select(ug => new UserGoalsDto
+            {
+                Id = ug.Id,
+                Calories = ug.Calories,
+                Carbs = ug.Carbs,
+                Fats = ug.Fats,
+                Protein = ug.Protein,
+                User = ug.User
+            })
+            .FirstOrDefaultAsync() ?? new UserGoalsDto();
+    }
+
+    public async Task SaveUserGoalsAsync(UserGoalsDto userGoals, ApplicationUser currentUser)
+    {
+        var context = await _dbContextFactory.CreateDbContextAsync();
+        var goalToUpdate = await context.UserGoals.FindAsync(userGoals.Id) ?? new UserGoals
+        {
+            User = currentUser
+        };
+
+        goalToUpdate.Calories = userGoals.Calories;
+        goalToUpdate.Carbs = userGoals.Carbs;
+        goalToUpdate.Fats = userGoals.Fats;
+        goalToUpdate.Protein = userGoals.Protein;
+
+        if (goalToUpdate.Id == 0)
+        {
+            context.UserGoals.Add(goalToUpdate);
+        }
+        else
+        {
+            context.UserGoals.Update(goalToUpdate);
+        }
+
+        context.Attach(currentUser);
+
+        await context.SaveChangesAsync();
+    }
 }

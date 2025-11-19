@@ -58,19 +58,19 @@
                     <MudText Typo="Typo.h6" Color="Color.Primary">@item.MealType.ToString()</MudText>
                     <MudStack row Class="pr-3" Spacing="6">
                         <MudStack Spacing="0" AlignItems="AlignItems.Center">
-                            <MudText Typo="Typo.body1" Color="Color.Success">@(CalculateMealTotals(item.FoodServings, "calories"))</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Success">@(item.FoodServings.Sum(x => x.FoodItem.Calories * x.Servings))</MudText>
                             <MudText Color="Color.Success">kC</MudText>
                         </MudStack>
                         <MudStack Spacing="0" AlignItems="AlignItems.Center">
-                            <MudText Typo="Typo.body1" Color="Color.Primary">@(CalculateMealTotals(item.FoodServings, "carbs"))</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">@(item.FoodServings.Sum(x => x.FoodItem.Carbs * x.Servings))</MudText>
                             <MudText Color="Color.Primary">C</MudText>
                         </MudStack>
                         <MudStack Spacing="0" AlignItems="AlignItems.Center">
-                            <MudText Typo="Typo.body1" Color="Color.Secondary">@(CalculateMealTotals(item.FoodServings, "fat"))</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Secondary">@(item.FoodServings.Sum(x => x.FoodItem.Fats * x.Servings))</MudText>
                             <MudText Color="Color.Secondary">F</MudText>
                         </MudStack>
                         <MudStack Spacing="0" AlignItems="AlignItems.Center">
-                            <MudText Typo="Typo.body1" Color="Color.Tertiary">@(CalculateMealTotals(item.FoodServings, "protein"))</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Tertiary">@(item.FoodServings.Sum(x => x.FoodItem.Proteins * x.Servings))</MudText>
                             <MudText Color="Color.Tertiary">P</MudText>
                         </MudStack>
                     </MudStack>
@@ -128,23 +128,6 @@
             TodaysMeals = await FoodService.GetMealsByDateAsync(_currentDate, CurrentUser);
             _userGoals = await FoodService.GetUserGoalsAsync(CurrentUser);
             CalculateGoalTotals();
-        }
-    }
-
-    private int CalculateMealTotals(List<MealFoodServingDto> foodsToCalc, string goalToCalc)
-    {
-        switch (goalToCalc)
-        {
-            case "carbs":
-                return (int)foodsToCalc.Sum(x => x.FoodItem.Carbs * x.Servings);
-            case "protein":
-                return (int)foodsToCalc.Sum(x => x.FoodItem.Proteins * x.Servings);
-            case "fat":
-                return (int)foodsToCalc.Sum(x => x.FoodItem.Fats * x.Servings);
-            case "calories":
-                return (int)foodsToCalc.Sum(x => x.FoodItem.Calories * x.Servings);
-            default:
-                return 0;
         }
     }
 

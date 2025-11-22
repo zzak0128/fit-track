@@ -1,0 +1,109 @@
+﻿@using FitTrack.Data
+@using FitTrack.Data.DTOs.FoodJournal
+@using FitTrack.Services.FoodJournal
+@using Microsoft.AspNetCore.Identity
+
+@inject IFoodService FoodService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        @MudDialog.Title
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="@form" @bind-IsValid="@success">
+            <MudFocusTrap>
+                <MudStack Row AlignItems="AlignItems.Center">
+                    <MudAutocomplete @bind-Value="_selectedFoodItem"
+                                     SearchFunc="Search"
+                                     Variant="Variant.Outlined"
+                                     Label="Select a food item"
+                                     Dense
+                                     Placeholder="Search"
+                                     Clearable
+                                     ToStringFunc="(e) => e?.Name">
+                        <ItemTemplate>
+                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText>@context?.Name</MudText>
+                                <MudText>@context?.Calories kcals</MudText>
+                            </MudStack>
+                        </ItemTemplate>
+                    </MudAutocomplete>
+
+                    <MudIconButton Icon="@Icons.Material.Filled.Add" Class="rounded-circle" Color="Color.Secondary" OnClick="AddFoodItem"/>
+                </MudStack>
+               
+                <MudNumericField @bind-Value="@_foodServing.Servings" Label="Servings" Required="true" Min="1" Variant="Variant.Outlined" RequiredError="A serving amount is required for a new Food Item." Class="mb-6"/>
+            </MudFocusTrap>
+
+            @if (_selectedFoodItem != null)
+            {
+                <FoodItemDetailsItem FoodItem="_selectedFoodItem" />
+            }
+        </MudForm>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="() => MudDialog.Cancel()" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="SelectFoodAsync" Variant="Variant.Filled">Add</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private MudForm form = null!;
+    private bool success;
+
+    private List<FoodItemDto> AllFoodItems = [];
+    private FoodItemDto? _selectedFoodItem;
+    private MealFoodServingDto _foodServing = new();
+
+    private async Task<IEnumerable<FoodItemDto?>> Search(string value, CancellationToken token)
+    {
+        AllFoodItems = await FoodService.GetAllFoodAsync();
+
+        // if text is null or empty, show complete list
+        if (string.IsNullOrEmpty(value))
+        {
+            return AllFoodItems;
+        }
+
+        return AllFoodItems.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private async Task SelectFoodAsync()
+    {
+        await form.Validate();
+        if (form.IsValid && _selectedFoodItem is not null)
+        {
+            _foodServing.FoodItem = _selectedFoodItem;
+
+            MudDialog.Close(DialogResult.Ok(_foodServing));
+        }
+        else
+        {
+            MudDialog.Close(null!);
+        }
+    }
+
+    private async Task AddFoodItem()
+    {
+        var createDialog = await DialogService.ShowAsync<CreateFoodItemDialog>("Create a new Food Item!");
+        var result = await createDialog.Result;
+        if (!result!.Canceled)
+        {
+            bool success = await createDialog.GetReturnValueAsync<bool>();
+            if (success)
+            {
+                createDialog.Close();
+            }
+            else
+            {
+                Snackbar.Add("Failed to save the Food Item", Severity.Error);
+            }
+        }
+    }
+}

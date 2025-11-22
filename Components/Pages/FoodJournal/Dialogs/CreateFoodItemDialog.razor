@@ -1,0 +1,75 @@
+﻿@using FitTrack.Data.DTOs.FoodJournal
+@using FitTrack.Data
+@using FitTrack.Services.FoodJournal
+@inject IFoodService FoodService
+
+<MudDialog>
+    <TitleContent>
+        @MudDialog.Title
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="@form" @bind-IsValid="@success" @bind-Errors="@errors">
+            <MudFocusTrap>
+                <MudGrid Spacing="2">
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="NewFoodItem.Name" Label="Name" Required="true" Variant="Variant.Text" RequiredError="A name is required for a new Food Item." />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudNumericField @bind-Value="NewFoodItem.ServingSize" Min="0" Label="Serving Size" Required="true" Variant="Variant.Text" RequiredError="A Serving Size must be set for new food items." />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudTextField @bind-Value="NewFoodItem.Units" Label="Units" Required="true" Variant="Variant.Text" RequiredError="A unit type is required for a new Food Item." />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudNumericField @bind-Value="NewFoodItem.Calories" Label="Calories" Min="0" Required="true" Variant="Variant.Text" RequiredError="A Calorie amount is required for a new Food Item." />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudNumericField @bind-Value="NewFoodItem.Carbs" Label="Carbs" Required="true" Min="0" Variant="Variant.Text" RequiredError="A Carb amount is required for a new Food Item." />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudNumericField @bind-Value="NewFoodItem.Fats" Label="Fat" Required="true" Min="0" Variant="Variant.Text" RequiredError="A Fat amount is required for a new Food Item." />
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudNumericField @bind-Value="NewFoodItem.Proteins" Label="Protein" Required="true" Min="0" Variant="Variant.Text" RequiredError="A protein amount is required for a new Food Item." />
+                    </MudItem>
+                </MudGrid>
+            </MudFocusTrap>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="() => MudDialog.Cancel()" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="CreateFoodItemAsync" Variant="Variant.Filled">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private CreateFoodItemDto NewFoodItem { get; set; } = new();
+    private MudForm form = null!;
+    private bool success;
+    private string[] errors = [];
+
+    private async Task CreateFoodItemAsync()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            try
+            {
+                await FoodService.CreateFoodItemAsync(NewFoodItem);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            catch
+            {
+                MudDialog.Close(DialogResult.Ok(false));
+            }
+        }
+    }
+}

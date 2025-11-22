@@ -6,12 +6,17 @@
     <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
     <AuthorizeView>
         <Authorized>
-            <MudNavGroup Title="Exercises" Expanded="true">
+            <MudNavGroup Title="Exercises" Expanded="true" Icon="@Icons.Material.Filled.ElectricBike">
                 <MudNavLink Href="Exercises" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.DirectionsBike">Exercises</MudNavLink>
                 <MudNavLink Href="Routines" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CalendarToday">Routines</MudNavLink>
                 <MudNavLink Href="Activity/History" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.SportsGymnastics">Activity History</MudNavLink>
             </MudNavGroup>
             <MudNavLink Href="Measurements" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart">Measurements</MudNavLink>
+            <MudNavGroup Title="Food Journal" Expanded="true" Icon="@Icons.Material.Filled.Book">
+                <MudNavLink Href="FoodJournal/Today" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CalendarToday">Today</MudNavLink>
+                <MudNavLink Href="FoodJournal/Goals" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AccountCircle">Goals</MudNavLink>
+                <MudNavLink Href="FoodJournal/Foods" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingBasket">Foods</MudNavLink>
+            </MudNavGroup>
             <MudNavLink Href="Account/Manage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">@context.User.Identity?.Name</MudNavLink>
             <form action="Account/Logout" method="post">
                 <AntiforgeryToken />
@@ -23,6 +28,7 @@
         </Authorized>
         <NotAuthorized>
             <MudNavLink Href="Exercises" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.DirectionsBike">Exercises</MudNavLink>
+            <MudNavLink Href="FoodJournal/Foods" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingBasket">Foods</MudNavLink>
             <MudNavLink Href="Account/Login" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Password">Login</MudNavLink>
         </NotAuthorized>
     </AuthorizeView>

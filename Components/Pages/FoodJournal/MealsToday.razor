@@ -1,0 +1,264 @@
+﻿@page "/FoodJournal/Today"
+@using FitTrack.Data
+@using FitTrack.Data.DTOs.FoodJournal
+@using FitTrack.Data.Models.FoodJournal
+@using FitTrack.Services.FoodJournal
+@using FitTrack.Components.Pages.FoodJournal.Dialogs
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IFoodService FoodService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+@attribute [Authorize]
+
+<PageTitle>Food Journal</PageTitle>
+<PageHeaderTitle Title="Food Journal">
+    <ChildContent>
+        <MudStack Row AlignItems="AlignItems.Center" Spacing="0">
+            <MudIconButton Icon="@Icons.Material.Rounded.ArrowCircleLeft" OnClick="PreviousDayAsync" />
+            <MudButton Variant="Variant.Text" Color="Color.Info" OnClick="CurrentDayAsync">@_currentDate.ToShortDateString()</MudButton>
+            <MudIconButton Icon="@Icons.Material.Rounded.ArrowCircleRight" OnClick="NextDayAsync" Disabled="@(_currentDate.Date >= DateTime.Now.Date)" />
+        </MudStack>
+    </ChildContent>
+</PageHeaderTitle>
+
+<MudPaper Elevation="2">
+    <MudStack Row Justify="Justify.SpaceAround" Class="ma-3 pa-3">
+        <MudStack AlignItems="AlignItems.Center" Spacing="0">
+            <MudProgressCircular Value="@(_calorieGoalTotal / _userGoals.Calories * 100)" Color="Color.Success" />
+            <MudText>@_calorieGoalTotal</MudText>
+            <MudText Color="Color.Success">Calories</MudText>
+        </MudStack>
+        <MudStack AlignItems="AlignItems.Center" Spacing="0">
+            <MudProgressCircular Value="@(_carbGoalTotal / _userGoals.Carbs * 100)" Color="Color.Primary" />
+            <MudText>@_carbGoalTotal</MudText>
+            <MudText Color="Color.Primary">Carbs</MudText>
+        </MudStack>
+        <MudStack AlignItems="AlignItems.Center" Spacing="0">
+            <MudProgressCircular Value="@(_fatGoalTotal / _userGoals.Fats * 100)" Color="Color.Secondary" />
+            <MudText>@_fatGoalTotal</MudText>
+            <MudText Color="Color.Secondary">Fats</MudText>
+        </MudStack>
+        <MudStack AlignItems="AlignItems.Center" Spacing="0">
+            <MudProgressCircular Value="@(_proteinGoalTotal / _userGoals.Protein * 100)" Color="Color.Tertiary" />
+            <MudText>@_proteinGoalTotal</MudText>
+            <MudText Color="Color.Tertiary">Protein</MudText>
+        </MudStack>
+    </MudStack>
+</MudPaper>
+
+<MudExpansionPanels MultiExpansion="true">
+    @foreach (var item in TodaysMeals)
+    {
+        <MudExpansionPanel Expanded="item.FoodServings.Count > 0">
+            <TitleContent>
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.h6" Color="Color.Primary">@item.MealType.ToString()</MudText>
+                    <MudStack row Class="pr-3" Spacing="6">
+                            <MudStack Spacing="0" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body1" Color="Color.Success">@(item.FoodServings.Sum(x => x.FoodItem.Calories * x.Servings))</MudText>
+                                <MudText Color="Color.Success">Cal</MudText>
+                            </MudStack>
+                            <MudDivider Vertical FlexItem/>
+                        <MudStack Spacing="0" AlignItems="AlignItems.Center">
+                            <MudText Typo="Typo.body1" Color="Color.Primary">@(item.FoodServings.Sum(x => x.FoodItem.Carbs * x.Servings))</MudText>
+                            <MudText Color="Color.Primary">C</MudText>
+                        </MudStack>
+                        <MudDivider Vertical FlexItem />
+                        <MudStack Spacing="0" AlignItems="AlignItems.Center">
+                            <MudText Typo="Typo.body1" Color="Color.Secondary">@(item.FoodServings.Sum(x => x.FoodItem.Fats * x.Servings))</MudText>
+                            <MudText Color="Color.Secondary">F</MudText>
+                        </MudStack>
+                        <MudDivider Vertical FlexItem />
+                        <MudStack Spacing="0" AlignItems="AlignItems.Center">
+                            <MudText Typo="Typo.body1" Color="Color.Tertiary">@(item.FoodServings.Sum(x => x.FoodItem.Proteins * x.Servings))</MudText>
+                            <MudText Color="Color.Tertiary">P</MudText>
+                        </MudStack>
+                    </MudStack>
+                    <MudStack row AlignItems="AlignItems.Center">
+                        <MudIconButton Icon="@Icons.Material.Rounded.Add" Color="Color.Primary" Class="rounded-circle" DropShadow="false" Variant="Variant.Filled" OnClick="() => AddToMealAsync(item)" />
+                        <MudMenu>
+                            <ActivatorContent>
+                                <MudIconButton Icon="@Icons.Material.Filled.MoreHoriz" Class="rounded-circle" DropShadow="false" Variant="Variant.Filled" Size="Size.Small" />
+                            </ActivatorContent>
+                            <ChildContent>
+                                <MudMenuItem Icon="@Icons.Material.Filled.CopyAll" OnClick="@(() => CopyMealToAsync(item))">Copy To</MudMenuItem>
+                            </ChildContent>
+                        </MudMenu>
+                    </MudStack>
+
+                </MudStack>
+            </TitleContent>
+            <ChildContent>
+                <MudTable Items="item.FoodServings" Breakpoint="Breakpoint.Xs" Elevation="0">
+                    <HeaderContent>
+                        <MudTh>Name</MudTh>
+                        <MudTh>Servings</MudTh>
+                        <MudTh>Calories</MudTh>
+                        <MudTh>Carbs</MudTh>
+                        <MudTh>Fats</MudTh>
+                        <MudTh>Protein</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Name">@context.FoodItem.Name</MudTd>
+                        <MudTd DataLabel="Servings">@context.Servings</MudTd>
+                        <MudTd DataLabel="Calories">@(context.FoodItem.Calories* context.Servings)</MudTd>
+                        <MudTd DataLabel="Carbs">@(context.FoodItem.Carbs* context.Servings)</MudTd>
+                        <MudTd DataLabel="Fats">@(context.FoodItem.Fats* context.Servings)</MudTd>
+                        <MudTd DataLabel="Protein">@(context.FoodItem.Proteins* context.Servings)</MudTd>
+                        <MudTd Class="d-flex justify-end">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteServingAsync(context.Id)" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </ChildContent>
+        </MudExpansionPanel>
+    }
+</MudExpansionPanels>
+
+@code {
+    private double _calorieGoalTotal = 0;
+    private double _proteinGoalTotal = 0;
+    private double _fatGoalTotal = 0;
+    private double _carbGoalTotal = 0;
+
+    public DateTime _currentDate { get; set; } = DateTime.Now;
+
+    public List<MealDto> TodaysMeals { get; set; } = [];
+    private UserGoalsDto _userGoals = new();
+    public ApplicationUser? CurrentUser { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        CurrentUser = await UserManager.GetUserAsync(authState.User);
+
+        if (CurrentUser is not null)
+        {
+            TodaysMeals = await FoodService.GetMealsByDateAsync(_currentDate, CurrentUser);
+            _userGoals = await FoodService.GetUserGoalsAsync(CurrentUser);
+            CalculateGoalTotals();
+        }
+    }
+
+    private void CalculateGoalTotals()
+    {
+        var servings = TodaysMeals.Select(x => x.FoodServings);
+        var allMeals = servings;
+        double calories = 0;
+        double carbs = 0;
+        double fats = 0;
+        double protein = 0;
+
+        foreach (var meal in allMeals)
+        {
+            foreach (var food in meal)
+            {
+                calories += food.FoodItem.Calories * food.Servings;
+                carbs += food.FoodItem.Carbs * food.Servings;
+                fats += food.FoodItem.Fats * food.Servings;
+                protein += food.FoodItem.Proteins * food.Servings;
+            }
+        }
+
+        _calorieGoalTotal = calories;
+        _carbGoalTotal = carbs;
+        _fatGoalTotal = fats;
+        _proteinGoalTotal = protein;
+    }
+
+    private async Task AddToMealAsync(MealDto meal)
+    {
+        var addFoodItemDialog = await DialogService.ShowAsync<AddFoodToMealDialog>("Select a food to add.");
+        var result = await addFoodItemDialog.Result;
+        if (!result!.Canceled)
+        {
+            MealFoodServingDto? selectedServing = await addFoodItemDialog.GetReturnValueAsync<MealFoodServingDto>();
+            if (selectedServing is not null)
+            {
+                meal.FoodServings.Add(selectedServing);
+                try
+                {
+                    await FoodService.AddFoodToMealAsync(meal.Id, selectedServing);
+                    CalculateGoalTotals();
+                }
+                catch (Exception)
+                {
+                    Snackbar.Add("Failed to add to this meal", Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Add("Failed to add to this meal", Severity.Error);
+            }
+        }
+    }
+
+    private async Task CopyMealToAsync(MealDto meal)
+    {
+        var dialogParams = new DialogParameters<CopyToMealDialog>()
+        {
+            { x => x.MealToCopy, meal }
+        };
+
+        var copyMealDialog = await DialogService.ShowAsync<CopyToMealDialog>("Copy Meal To...", dialogParams);
+        var result = await copyMealDialog.Result;
+        if (!result!.Canceled)
+        {
+            bool success = await copyMealDialog.GetReturnValueAsync<bool>();
+            if (success)
+            {
+                Snackbar.Add("Meal copied successfully!", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to copy the meal.", Severity.Error);
+            }
+        }
+    }
+
+    private async Task DeleteServingAsync(int id)
+    {
+        try
+        {
+            await FoodService.DeleteMealFoodServingAsync(id);
+            TodaysMeals = await FoodService.GetMealsByDateAsync(_currentDate, CurrentUser!);
+            CalculateGoalTotals();
+        }
+        catch (Exception)
+        {
+            Snackbar.Add($"Failed to delete this meal serving.", Severity.Error);
+            throw;
+        }
+    }
+
+    private async Task CurrentDayAsync()
+    {
+        _currentDate = DateTime.Now;
+        TodaysMeals = await FoodService.GetMealsByDateAsync(_currentDate, CurrentUser!);
+        CalculateGoalTotals();
+    }
+
+    private async Task PreviousDayAsync()
+    {
+        _currentDate = _currentDate.AddDays(-1);
+        TodaysMeals = await FoodService.GetMealsByDateAsync(_currentDate, CurrentUser!);
+        CalculateGoalTotals();
+    }
+
+    private async Task NextDayAsync()
+    {
+        if (_currentDate.Date >= DateTime.Now.Date)
+        {
+            return;
+        }
+
+        _currentDate = _currentDate.AddDays(1);
+        TodaysMeals = await FoodService.GetMealsByDateAsync(_currentDate, CurrentUser!);
+        CalculateGoalTotals();
+    }
+}

@@ -1,0 +1,71 @@
+﻿@page "/FoodJournal/Goals"
+@using FitTrack.Data
+@using FitTrack.Data.DTOs.FoodJournal
+@using FitTrack.Services.FoodJournal
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IFoodService FoodService
+@inject ISnackbar Snackbar
+@attribute [Authorize]
+
+<PageTitle>Goals</PageTitle>
+<PageHeaderTitle Title="My Daily Goals"/>
+
+<MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+
+    <MudPaper Elevation="2" Class="pa-6">
+    <MudForm>
+                <MudGrid>
+            <MudItem xs="12" sm="6">
+                    <MudNumericField T="int" Label="Daily Calorie Goal" @bind-Value="_userGoals.Calories" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                    <MudNumericField T="int" Label="Daily Carbs Goal" @bind-Value="_userGoals.Carbs" />
+
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                    <MudNumericField T="int" Label="Daily Fats Goal" @bind-Value="_userGoals.Fats" />
+
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                    <MudNumericField T="int" Label="Daily Protein Goal" @bind-Value="_userGoals.Protein" />
+            </MudItem>
+            <MudItem xs="12">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth OnClick="SaveGoalsAsync">Save</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudForm>
+</MudPaper>
+</MudStack>
+
+@code {
+    private UserGoalsDto _userGoals = new();
+    private ApplicationUser? _currentUser = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        _currentUser = await UserManager.GetUserAsync(authState.User);
+
+        if (_currentUser != null)
+        {
+            _userGoals = await FoodService.GetUserGoalsAsync(_currentUser);
+        }
+    }
+
+    private async Task SaveGoalsAsync()
+    {
+        try
+        {
+            await FoodService.SaveUserGoalsAsync(_userGoals, _currentUser!);
+            Snackbar.Add("User goals have been saved successfully!", Severity.Success);
+
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("An error occurred while saving your goals. Please try again later.", Severity.Error);
+        }
+    }
+}

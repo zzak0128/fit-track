@@ -2,6 +2,7 @@
 using FitTrack.Data.DTOs.FoodJournal;
 using FitTrack.Data.Models.FoodJournal;
 using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FitTrack.Services.FoodJournal;
 
@@ -103,7 +104,6 @@ public class FoodService : IFoodService
             await context.SaveChangesAsync();
 
             return await GetMealsByDateAsync(date, currentUser);
-
         }
         else
         {
@@ -136,6 +136,56 @@ public class FoodService : IFoodService
                     .Where(m => m.User == currentUser && m.Date.Date == date.Date)
                     .ToListAsync();
         }
+    }
+
+    public async Task CopyToDateAsync(MealDto copyFromMeal, DateTime copyToDate, MealType mealType)
+    {
+        var context = await _dbContextFactory.CreateDbContextAsync();
+        var daysMealCount = await context.Meals
+            .Where(m => m.User == copyFromMeal.User && m.Date.Date == copyToDate.Date)
+            .CountAsync();
+
+        if (daysMealCount == 0)
+        {
+            List<Meal> newMeals = [];
+            foreach (MealType mType in Enum.GetValues<MealType>())
+            {
+                newMeals.Add(new Meal
+                {
+                    MealType = mType,
+                    Date = copyToDate,
+                    User = copyFromMeal.User
+                });
+            }
+
+            context.Attach(copyFromMeal.User);
+            context.Meals.AddRange(newMeals);
+        }
+
+        List<(FoodItem, double)> copyFromFood = [];
+        foreach (var serving in copyFromMeal.FoodServings)
+        {
+            copyFromFood.Add(
+                (await context.FoodItems.FindAsync(serving.FoodItem.Id) ?? throw new Exception("Could not find food item."),
+                serving.Servings));
+        }
+
+        var copyTo = await context.Meals
+            .Include(x => x.Foods)
+            .ThenInclude(x => x.FoodItem)
+            .Where(m => m.User == copyFromMeal.User && m.Date.Date == copyToDate.Date && m.MealType == mealType)
+            .FirstOrDefaultAsync();
+
+        foreach (var food in copyFromFood)
+        {
+            copyTo?.Foods.Add(new MealFoodServing
+            {
+                FoodItem = food.Item1,
+                Servings = food.Item2
+            });
+        }
+        context.Meals.Update(copyTo!);
+        await context.SaveChangesAsync();
     }
 
     public async Task AddFoodToMealAsync(int mealId, MealFoodServingDto foodServing)

@@ -1,0 +1,71 @@
+﻿@using FitTrack.Data.DTOs.FoodJournal
+@using FitTrack.Data.Models.FoodJournal
+@using FitTrack.Services.FoodJournal
+@inject IFoodService FoodService
+
+<MudDialog>
+    <TitleContent>
+        @MudDialog.Title
+    </TitleContent>
+    <DialogContent>
+        @*LIST OF ITEMS*@
+
+        <MudForm @ref="@form">
+            <MudFocusTrap>
+                <MudDatePicker @bind-Date="_selectedDate" Variant="Variant.Outlined" Label="Copy To Date..." Class="mb-3" />
+                <MudSelect @bind-Value="_selectedMealType" T="MealType" Label="Select a Meal" Required="true" Variant="Variant.Outlined">
+                    @foreach (var type in Enum.GetValues<MealType>())
+                    {
+                        <MudSelectItem Value="type">@type.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudFocusTrap>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="() => MudDialog.Cancel()" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="CopyMealAsync" Variant="Variant.Filled">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public required MealDto MealToCopy { get; set; }
+
+    private MudForm form = null!;
+    private DateTime? _selectedDate;
+    private MealType _selectedMealType;
+
+    protected override void OnParametersSet()
+    {
+        _selectedMealType = MealToCopy.MealType;
+        base.OnParametersSet();
+    }
+
+    private async Task CopyMealAsync()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            if (_selectedDate.HasValue)
+            {
+                try
+                {
+                    await FoodService.CopyToDateAsync(MealToCopy, _selectedDate.Value, _selectedMealType);
+                    MudDialog.Close(DialogResult.Ok(true));
+                }
+                catch (Exception)
+                {
+                    MudDialog.Close(DialogResult.Ok(false));
+                }
+            }
+        }
+        else
+        {
+            MudDialog.Close(DialogResult.Ok(false));
+        }
+    }
+}

@@ -157,8 +157,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             e.HasKey(x => x.Id);
             e.HasOne(m => m.FoodItem)
-            .WithMany(f => f.MealFoodServings)
-            .OnDelete(DeleteBehavior.Cascade);
+            .WithMany(f => f.MealFoodServings);
         });
 
         modelBuilder.Entity<FoodItem>(e =>

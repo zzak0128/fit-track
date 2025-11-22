@@ -3,6 +3,7 @@
 @using FitTrack.Data.DTOs.FoodJournal
 @using FitTrack.Data.Models.FoodJournal
 @using FitTrack.Services.FoodJournal
+@using FitTrack.Components.Pages.FoodJournal.Dialogs
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
@@ -13,8 +14,8 @@
 
 @attribute [Authorize]
 
-<PageTitle>Today's Meals</PageTitle>
-<PageHeaderTitle Title="Today's Meals">
+<PageTitle>Food Journal</PageTitle>
+<PageHeaderTitle Title="Food Journal">
     <ChildContent>
         <MudStack Row AlignItems="AlignItems.Center" Spacing="0">
             <MudIconButton Icon="@Icons.Material.Rounded.ArrowCircleLeft" OnClick="PreviousDayAsync" />
@@ -57,24 +58,38 @@
                 <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                     <MudText Typo="Typo.h6" Color="Color.Primary">@item.MealType.ToString()</MudText>
                     <MudStack row Class="pr-3" Spacing="6">
-                        <MudStack Spacing="0" AlignItems="AlignItems.Center">
-                            <MudText Typo="Typo.body1" Color="Color.Success">@(item.FoodServings.Sum(x => x.FoodItem.Calories * x.Servings))</MudText>
-                            <MudText Color="Color.Success">kC</MudText>
-                        </MudStack>
+                            <MudStack Spacing="0" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body1" Color="Color.Success">@(item.FoodServings.Sum(x => x.FoodItem.Calories * x.Servings))</MudText>
+                                <MudText Color="Color.Success">Cal</MudText>
+                            </MudStack>
+                            <MudDivider Vertical FlexItem/>
                         <MudStack Spacing="0" AlignItems="AlignItems.Center">
                             <MudText Typo="Typo.body1" Color="Color.Primary">@(item.FoodServings.Sum(x => x.FoodItem.Carbs * x.Servings))</MudText>
                             <MudText Color="Color.Primary">C</MudText>
                         </MudStack>
+                        <MudDivider Vertical FlexItem />
                         <MudStack Spacing="0" AlignItems="AlignItems.Center">
                             <MudText Typo="Typo.body1" Color="Color.Secondary">@(item.FoodServings.Sum(x => x.FoodItem.Fats * x.Servings))</MudText>
                             <MudText Color="Color.Secondary">F</MudText>
                         </MudStack>
+                        <MudDivider Vertical FlexItem />
                         <MudStack Spacing="0" AlignItems="AlignItems.Center">
                             <MudText Typo="Typo.body1" Color="Color.Tertiary">@(item.FoodServings.Sum(x => x.FoodItem.Proteins * x.Servings))</MudText>
                             <MudText Color="Color.Tertiary">P</MudText>
                         </MudStack>
                     </MudStack>
-                    <MudIconButton Icon="@Icons.Material.Rounded.Add" Color="Color.Primary" Class="rounded-circle" DropShadow="false" Variant="Variant.Filled" OnClick="() => AddToMealAsync(item)" />
+                    <MudStack row AlignItems="AlignItems.Center">
+                        <MudIconButton Icon="@Icons.Material.Rounded.Add" Color="Color.Primary" Class="rounded-circle" DropShadow="false" Variant="Variant.Filled" OnClick="() => AddToMealAsync(item)" />
+                        <MudMenu>
+                            <ActivatorContent>
+                                <MudIconButton Icon="@Icons.Material.Filled.MoreHoriz" Class="rounded-circle" DropShadow="false" Variant="Variant.Filled" Size="Size.Small" />
+                            </ActivatorContent>
+                            <ChildContent>
+                                <MudMenuItem Icon="@Icons.Material.Filled.CopyAll" OnClick="@(() => CopyMealToAsync(item))">Copy To</MudMenuItem>
+                            </ChildContent>
+                        </MudMenu>
+                    </MudStack>
+
                 </MudStack>
             </TitleContent>
             <ChildContent>
@@ -111,7 +126,6 @@
     private double _fatGoalTotal = 0;
     private double _carbGoalTotal = 0;
 
-    private MudMenu? _headerMenu;
     public DateTime _currentDate { get; set; } = DateTime.Now;
 
     public List<MealDto> TodaysMeals { get; set; } = [];
@@ -157,11 +171,6 @@
         _proteinGoalTotal = protein;
     }
 
-    private async void CreateMealAsync()
-    {
-        // Navigation to create food item page can be added here
-    }
-
     private async Task AddToMealAsync(MealDto meal)
     {
         var addFoodItemDialog = await DialogService.ShowAsync<AddFoodToMealDialog>("Select a food to add.");
@@ -185,6 +194,29 @@
             else
             {
                 Snackbar.Add("Failed to add to this meal", Severity.Error);
+            }
+        }
+    }
+
+    private async Task CopyMealToAsync(MealDto meal)
+    {
+        var dialogParams = new DialogParameters<CopyToMealDialog>()
+        {
+            { x => x.MealToCopy, meal }
+        };
+
+        var copyMealDialog = await DialogService.ShowAsync<CopyToMealDialog>("Copy Meal To...", dialogParams);
+        var result = await copyMealDialog.Result;
+        if (!result!.Canceled)
+        {
+            bool success = await copyMealDialog.GetReturnValueAsync<bool>();
+            if (success)
+            {
+                Snackbar.Add("Meal copied successfully!", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to copy the meal.", Severity.Error);
             }
         }
     }

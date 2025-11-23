@@ -124,7 +124,7 @@
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Name">@context.FoodItem.Name</MudTd>
-                        <MudTd DataLabel="Servings">@context.Servings</MudTd>
+                        <MudTd DataLabel="Servings">@context.Servings @context.FoodItem.Units</MudTd>
                         <MudTd DataLabel="Calories">@(context.FoodItem.Calories* context.Servings)</MudTd>
                         <MudTd DataLabel="Carbs">@(context.FoodItem.Carbs* context.Servings)</MudTd>
                         <MudTd DataLabel="Fats">@(context.FoodItem.Fats* context.Servings)</MudTd>

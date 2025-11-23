@@ -10,7 +10,7 @@
 <PageTitle>Exercises</PageTitle>
 <PageHeaderTitle title="Exercises" ActionMenu="_headerMenu" />
 
-@if (!FullExerciseList.Any())
+@if (!FullExerciseList.Any() && !_isLoading)
 {
     <MudPaper Elevation="2" Class="pa-3">
         <MudText Typo="Typo.h2" Color="Color.Primary">No exercises are available.</MudText>
@@ -58,10 +58,10 @@ else
                 </MudGrid>
             </MudChipSet>
         </MudStack>
-        <MudGrid T="ExerciseDto" Items="ExerciseList" Spacing="2" Justify="Justify.FlexStart">
+        <MudGrid T="ExerciseDto" Items="ExerciseList" Spacing="3" Justify="Justify.FlexStart">
             @foreach (var exercise in FilteredExerciseList)
             {
-                <MudItem xs="12" sm="6" md="4" lg="3" xl="2" Style="display:flex">
+                <MudItem xs="12" sm="12" md="4" lg="3" xl="2" Style="display:flex">
                     <ExerciseGridItem Exercise="exercise" OnEdit="OnEditHandler" OnRemove="OnRemoveHandler" OnAdd="OnAddHandler" />
                 </MudItem>
             }

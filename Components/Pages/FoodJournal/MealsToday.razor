@@ -28,23 +28,43 @@
 <MudPaper Elevation="2">
     <MudStack Row Justify="Justify.SpaceAround" Class="ma-3 pa-3">
         <MudStack AlignItems="AlignItems.Center" Spacing="0">
-            <MudProgressCircular Value="@(_calorieGoalTotal / _userGoals.Calories * 100)" Color="Color.Success" />
-            <MudText>@_calorieGoalTotal</MudText>
+            <MudProgressCircular Value="@(_calorieGoalTotal / _userGoals.Calories * 100)" Color="Color.Success">
+                @if (_calorieGoalTotal > _userGoals.Calories)
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                }
+            </MudProgressCircular>
+            <MudText Align="Align.Center">@_calorieGoalTotal.ToString("n") / <MudText Inline Color="Color.Success">@_userGoals.Calories.ToString("n2")</MudText></MudText>
             <MudText Color="Color.Success">Calories</MudText>
         </MudStack>
         <MudStack AlignItems="AlignItems.Center" Spacing="0">
-            <MudProgressCircular Value="@(_carbGoalTotal / _userGoals.Carbs * 100)" Color="Color.Primary" />
-            <MudText>@_carbGoalTotal</MudText>
+            <MudProgressCircular Value="@(_carbGoalTotal / _userGoals.Carbs * 100)" Color="Color.Primary">
+                @if (_carbGoalTotal > _userGoals.Carbs)
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                }
+            </MudProgressCircular>
+            <MudText Align="Align.Center">@_carbGoalTotal.ToString("n") / <MudText Inline Color="Color.Primary">@_userGoals.Carbs.ToString("n2")</MudText></MudText>
             <MudText Color="Color.Primary">Carbs</MudText>
         </MudStack>
         <MudStack AlignItems="AlignItems.Center" Spacing="0">
-            <MudProgressCircular Value="@(_fatGoalTotal / _userGoals.Fats * 100)" Color="Color.Secondary" />
-            <MudText>@_fatGoalTotal</MudText>
+            <MudProgressCircular Value="@(_fatGoalTotal / _userGoals.Fats * 100)" Color="Color.Secondary">
+                @if (_fatGoalTotal > _userGoals.Fats)
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                }
+            </MudProgressCircular>
+            <MudText Align="Align.Center">@_fatGoalTotal.ToString("n") / <MudText Inline Color="Color.Secondary">@_userGoals.Fats.ToString("n2")</MudText></MudText>
             <MudText Color="Color.Secondary">Fats</MudText>
         </MudStack>
         <MudStack AlignItems="AlignItems.Center" Spacing="0">
-            <MudProgressCircular Value="@(_proteinGoalTotal / _userGoals.Protein * 100)" Color="Color.Tertiary" />
-            <MudText>@_proteinGoalTotal</MudText>
+            <MudProgressCircular Value="@(_proteinGoalTotal / _userGoals.Protein * 100)" Color="Color.Tertiary">
+                @if (_proteinGoalTotal > _userGoals.Protein)
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                }
+            </MudProgressCircular>
+            <MudText Align="Align.Center">@_proteinGoalTotal.ToString("n") / <MudText Inline Color="Color.Tertiary">@_userGoals.Protein.ToString("n2")</MudText></MudText>
             <MudText Color="Color.Tertiary">Protein</MudText>
         </MudStack>
     </MudStack>
@@ -53,9 +73,9 @@
 <MudExpansionPanels MultiExpansion="true">
     @foreach (var item in TodaysMeals)
     {
-        <MudExpansionPanel Expanded="item.FoodServings.Count > 0">
+        <MudExpansionPanel Expanded="item.FoodServings.Count > 0" HideIcon Dense>
             <TitleContent>
-                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Breakpoint="Breakpoint.Xs">
                     <MudText Typo="Typo.h6" Color="Color.Primary">@item.MealType.ToString()</MudText>
                     <MudStack row Class="pr-3" Spacing="6">
                             <MudStack Spacing="0" AlignItems="AlignItems.Center">
@@ -89,11 +109,10 @@
                             </ChildContent>
                         </MudMenu>
                     </MudStack>
-
                 </MudStack>
             </TitleContent>
             <ChildContent>
-                <MudTable Items="item.FoodServings" Breakpoint="Breakpoint.Xs" Elevation="0">
+                <MudTable Items="item.FoodServings" Breakpoint="Breakpoint.Xs" Elevation="0" EditTrigger="TableEditTrigger.RowClick" Striped Bordered>
                     <HeaderContent>
                         <MudTh>Name</MudTh>
                         <MudTh>Servings</MudTh>
@@ -114,6 +133,19 @@
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteServingAsync(context.Id)" />
                         </MudTd>
                     </RowTemplate>
+                    <RowEditingTemplate>
+                        <MudTd DataLabel="Name">@context.FoodItem.Name</MudTd>
+                        <MudTd DataLabel="Servings">
+                            <MudNumericField @bind-Value="context.Servings" Required Min="1" />
+                        </MudTd>
+                        <MudTd DataLabel="Calories">@(context.FoodItem.Calories* context.Servings)</MudTd>
+                        <MudTd DataLabel="Carbs">@(context.FoodItem.Carbs* context.Servings)</MudTd>
+                        <MudTd DataLabel="Fats">@(context.FoodItem.Fats* context.Servings)</MudTd>
+                        <MudTd DataLabel="Protein">@(context.FoodItem.Proteins* context.Servings)</MudTd>
+                        <MudTd Class="d-flex justify-end">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteServingAsync(context.Id)" />
+                        </MudTd>
+                    </RowEditingTemplate>
                 </MudTable>
             </ChildContent>
         </MudExpansionPanel>
@@ -213,6 +245,8 @@
             if (success)
             {
                 Snackbar.Add("Meal copied successfully!", Severity.Success);
+                TodaysMeals = await FoodService.GetMealsByDateAsync(_currentDate, CurrentUser!);
+                CalculateGoalTotals();
             }
             else
             {

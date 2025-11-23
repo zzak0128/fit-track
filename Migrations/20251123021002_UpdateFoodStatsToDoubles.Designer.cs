@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FitTrack.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251111014812_FoodJournalItems")]
-    partial class FoodJournalItems
+    [Migration("20251123021002_UpdateFoodStatsToDoubles")]
+    partial class UpdateFoodStatsToDoubles
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "9.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
@@ -179,25 +179,22 @@ namespace FitTrack.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Calories")
-                        .HasColumnType("int");
+                    b.Property<double>("Calories")
+                        .HasColumnType("double");
 
-                    b.Property<int>("Carbs")
-                        .HasColumnType("int");
+                    b.Property<double>("Carbs")
+                        .HasColumnType("double");
 
-                    b.Property<int>("Fats")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MealId")
-                        .HasColumnType("int");
+                    b.Property<double>("Fats")
+                        .HasColumnType("double");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("varchar(250)");
 
-                    b.Property<int>("Proteins")
-                        .HasColumnType("int");
+                    b.Property<double>("Proteins")
+                        .HasColumnType("double");
 
                     b.Property<double>("ServingSize")
                         .HasColumnType("double");
@@ -208,8 +205,6 @@ namespace FitTrack.Migrations
                         .HasColumnType("varchar(50)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MealId");
 
                     b.ToTable("FoodItems");
                 });
@@ -236,6 +231,57 @@ namespace FitTrack.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Meals");
+                });
+
+            modelBuilder.Entity("FitTrack.Data.Models.FoodJournal.MealFoodServing", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FoodItemId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Servings")
+                        .HasColumnType("double");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FoodItemId");
+
+                    b.ToTable("MealFoodServings");
+                });
+
+            modelBuilder.Entity("FitTrack.Data.Models.FoodJournal.UserGoals", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("Calories")
+                        .HasColumnType("double");
+
+                    b.Property<double>("Carbs")
+                        .HasColumnType("double");
+
+                    b.Property<double>("Fats")
+                        .HasColumnType("double");
+
+                    b.Property<double>("Protein")
+                        .HasColumnType("double");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserGoals");
                 });
 
             modelBuilder.Entity("FitTrack.Data.Models.Measurements.Measurement", b =>
@@ -424,6 +470,21 @@ namespace FitTrack.Migrations
                     b.ToTable("Workouts");
                 });
 
+            modelBuilder.Entity("MealMealFoodServing", b =>
+                {
+                    b.Property<int>("FoodsId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MealsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("FoodsId", "MealsId");
+
+                    b.HasIndex("MealsId");
+
+                    b.ToTable("MealMealFoodServing");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -595,18 +656,27 @@ namespace FitTrack.Migrations
                     b.Navigation("Exercise");
                 });
 
-            modelBuilder.Entity("FitTrack.Data.Models.FoodJournal.FoodItem", b =>
+            modelBuilder.Entity("FitTrack.Data.Models.FoodJournal.Meal", b =>
                 {
-                    b.HasOne("FitTrack.Data.Models.FoodJournal.Meal", "Meal")
-                        .WithMany("Foods")
-                        .HasForeignKey("MealId")
+                    b.HasOne("FitTrack.Data.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FitTrack.Data.Models.FoodJournal.MealFoodServing", b =>
+                {
+                    b.HasOne("FitTrack.Data.Models.FoodJournal.FoodItem", "FoodItem")
+                        .WithMany("MealFoodServings")
+                        .HasForeignKey("FoodItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Meal");
+                    b.Navigation("FoodItem");
                 });
 
-            modelBuilder.Entity("FitTrack.Data.Models.FoodJournal.Meal", b =>
+            modelBuilder.Entity("FitTrack.Data.Models.FoodJournal.UserGoals", b =>
                 {
                     b.HasOne("FitTrack.Data.ApplicationUser", "User")
                         .WithMany()
@@ -685,6 +755,21 @@ namespace FitTrack.Migrations
                     b.Navigation("Routine");
                 });
 
+            modelBuilder.Entity("MealMealFoodServing", b =>
+                {
+                    b.HasOne("FitTrack.Data.Models.FoodJournal.MealFoodServing", null)
+                        .WithMany()
+                        .HasForeignKey("FoodsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FitTrack.Data.Models.FoodJournal.Meal", null)
+                        .WithMany()
+                        .HasForeignKey("MealsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -746,9 +831,9 @@ namespace FitTrack.Migrations
                     b.Navigation("ActivitySets");
                 });
 
-            modelBuilder.Entity("FitTrack.Data.Models.FoodJournal.Meal", b =>
+            modelBuilder.Entity("FitTrack.Data.Models.FoodJournal.FoodItem", b =>
                 {
-                    b.Navigation("Foods");
+                    b.Navigation("MealFoodServings");
                 });
 
             modelBuilder.Entity("FitTrack.Data.Models.Measurements.Measurement", b =>

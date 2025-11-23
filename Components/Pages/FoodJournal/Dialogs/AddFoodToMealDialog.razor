@@ -34,7 +34,15 @@
                     <MudIconButton Icon="@Icons.Material.Filled.Add" Class="rounded-circle" Color="Color.Secondary" OnClick="AddFoodItem"/>
                 </MudStack>
                
-                <MudNumericField @bind-Value="@_foodServing.Servings" Label="Servings" Required="true" Min="1" Variant="Variant.Outlined" RequiredError="A serving amount is required for a new Food Item." Class="mb-6"/>
+                <MudNumericField @bind-Value="@_foodServing.Servings"
+                                 Label="Servings"
+                                 Required="true"
+                                 Min="1"
+                                 Variant="Variant.Outlined"
+                                 RequiredError="A serving amount is required for a new Food Item."
+                                 Class="mb-6"
+                                 Adornment="Adornment.End"
+                                 AdornmentText="@(_selectedFoodItem is null ? "" : _selectedFoodItem.Units + "s")" />
             </MudFocusTrap>
 
             @if (_selectedFoodItem != null)

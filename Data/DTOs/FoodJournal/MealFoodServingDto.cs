@@ -6,5 +6,5 @@ public class MealFoodServingDto
 
     public FoodItemDto FoodItem { get; set; } = null!;
 
-    public double Servings { get; set; }
+    public double Servings { get; set; } = 1;
 }

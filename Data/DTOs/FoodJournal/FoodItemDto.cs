@@ -10,11 +10,11 @@ public class FoodItemDto
 
     public string Units { get; set; } = "";
 
-    public int Calories { get; set; }
+    public double Calories { get; set; }
 
-    public int Carbs { get; set; }
+    public double Carbs { get; set; }
 
-    public int Fats { get; set; }
+    public double Fats { get; set; }
 
-    public int Proteins { get; set; }
+    public double Proteins { get; set; }
 }

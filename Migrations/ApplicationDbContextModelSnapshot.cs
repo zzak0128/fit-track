@@ -176,22 +176,22 @@ namespace FitTrack.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Calories")
-                        .HasColumnType("int");
+                    b.Property<double>("Calories")
+                        .HasColumnType("double");
 
-                    b.Property<int>("Carbs")
-                        .HasColumnType("int");
+                    b.Property<double>("Carbs")
+                        .HasColumnType("double");
 
-                    b.Property<int>("Fats")
-                        .HasColumnType("int");
+                    b.Property<double>("Fats")
+                        .HasColumnType("double");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("varchar(250)");
 
-                    b.Property<int>("Proteins")
-                        .HasColumnType("int");
+                    b.Property<double>("Proteins")
+                        .HasColumnType("double");
 
                     b.Property<double>("ServingSize")
                         .HasColumnType("double");
@@ -259,17 +259,17 @@ namespace FitTrack.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Calories")
-                        .HasColumnType("int");
+                    b.Property<double>("Calories")
+                        .HasColumnType("double");
 
-                    b.Property<int>("Carbs")
-                        .HasColumnType("int");
+                    b.Property<double>("Carbs")
+                        .HasColumnType("double");
 
-                    b.Property<int>("Fats")
-                        .HasColumnType("int");
+                    b.Property<double>("Fats")
+                        .HasColumnType("double");
 
-                    b.Property<int>("Protein")
-                        .HasColumnType("int");
+                    b.Property<double>("Protein")
+                        .HasColumnType("double");
 
                     b.Property<string>("UserId")
                         .HasColumnType("varchar(255)");

@@ -11,33 +11,44 @@
 @attribute [Authorize]
 
 <PageTitle>Goals</PageTitle>
-<PageHeaderTitle Title="My Daily Goals"/>
+<PageHeaderTitle Title="My Daily Goals" />
 
+<MudPaper Elevation="2" Class="mb-3 pa-3">
+    <MudText Typo="Typo.h5">How are Macros calculated?</MudText>
+    <MudText Typo="Typo.body1">
+        Calculations are based your total Calorie Goal.
+        <br />
+        Carbs are <strong>40%</strong> of calories, Fats are <strong>30%</strong>, and Protein is another <strong>30%</strong>
+        <br />
+
+    </MudText>
+</MudPaper>
 <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
 
-    <MudPaper Elevation="2" Class="pa-6">
-    <MudForm>
-                <MudGrid>
-            <MudItem xs="12" sm="6">
-                    <MudNumericField T="int" Label="Daily Calorie Goal" @bind-Value="_userGoals.Calories" />
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                    <MudNumericField T="int" Label="Daily Carbs Goal" @bind-Value="_userGoals.Carbs" />
+    <MudPaper Elevation="2" Class="pa-3">
+        <MudForm>
+            <MudGrid>
+                    <MudItem xs="12">
+                        <MudNumericField T="double" Label="Daily Calorie Goal" @bind-Value="_userGoals.Calories" Variant="Variant.Outlined" TextChanged="CalculateMacros" />
+                    </MudItem>
 
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                    <MudNumericField T="int" Label="Daily Fats Goal" @bind-Value="_userGoals.Fats" />
+                <MudItem xs="12" sm="6">
+                    <MudNumericField T="double" Format="n2" Label="Daily Carbs Goal" @bind-Value="_userGoals.Carbs" />
 
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                    <MudNumericField T="int" Label="Daily Protein Goal" @bind-Value="_userGoals.Protein" />
-            </MudItem>
-            <MudItem xs="12">
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudNumericField T="double" Format="n2" Label="Daily Fats Goal" @bind-Value="_userGoals.Fats" />
+
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudNumericField T="double" Format="n2" Label="Daily Protein Goal" @bind-Value="_userGoals.Protein" />
+                </MudItem>
+                <MudItem xs="12">
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth OnClick="SaveGoalsAsync">Save</MudButton>
-            </MudItem>
-        </MudGrid>
-    </MudForm>
-</MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </MudPaper>
 </MudStack>
 
 @code {
@@ -67,5 +78,12 @@
         {
             Snackbar.Add("An error occurred while saving your goals. Please try again later.", Severity.Error);
         }
+    }
+
+    private void CalculateMacros()
+    {
+        _userGoals.Carbs = _userGoals.Calories * 0.4 / 4;
+        _userGoals.Fats = _userGoals.Calories * 0.3 / 9;
+        _userGoals.Protein = _userGoals.Calories * 0.3 / 4;
     }
 }

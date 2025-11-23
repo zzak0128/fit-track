@@ -9,6 +9,29 @@
     </TitleContent>
     <DialogContent>
         @*LIST OF ITEMS*@
+        <MudPaper Elevation="2" Outlined Class="mb-3">
+            <MudTable Items="MealToCopy.FoodServings" Breakpoint="Breakpoint.Xs" Dense Striped Bordered>
+                <ToolBarContent>
+                    <MudText Typo="Typo.body1">Items to Copy:</MudText>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Food</MudTh>
+                    <MudTh>Servings</MudTh>
+                    <MudTh>Calories</MudTh>
+                    <MudTh>Carbs</MudTh>
+                    <MudTh>Fats</MudTh>
+                    <MudTh>Protein</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Food">@context.FoodItem.Name</MudTd>
+                    <MudTd DataLabel="Servings">@context.Servings @context.FoodItem.Units</MudTd>
+                    <MudTd DataLabel="Calories">@context.FoodItem.Calories</MudTd>
+                    <MudTd DataLabel="Carbs">@context.FoodItem.Carbs</MudTd>
+                    <MudTd DataLabel="Fats">@context.FoodItem.Fats</MudTd>
+                    <MudTd DataLabel="Protein">@context.FoodItem.Proteins</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
 
         <MudForm @ref="@form">
             <MudFocusTrap>

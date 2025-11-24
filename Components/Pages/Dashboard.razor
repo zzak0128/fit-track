@@ -1,8 +1,10 @@
 ﻿@page "/dashboard"
 @using FitTrack.Data
 @using FitTrack.Data.DTOs.Activities
+@using FitTrack.Data.DTOs.FoodJournal
 @using FitTrack.Data.DTOs.Measurements
 @using FitTrack.Services.Activities
+@using FitTrack.Services.FoodJournal
 @using FitTrack.Services.Measurements
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -10,6 +12,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IActivityService ActivityService
 @inject IMeasurementService MeasurementService
+@inject IFoodService FoodService
 @attribute [Authorize]
 
 <PageTitle>Dashboard</PageTitle>
@@ -17,6 +20,41 @@
 
 <MudContainer Class="mt-12" MaxWidth="MaxWidth.False">
     <MudGrid>
+        <MudItem xs="12" md="4">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: fit-content;">
+                <MudPaper Elevation="3" Outlined Width="100%" Class="mud-theme-primary">
+                    <MudText Align="Align.Center" Typo="Typo.h6">Workout Records</MudText>
+                </MudPaper>
+                @if (_recordActivity is not null)
+                {
+                    <MudStack Spacing="6" AlignItems="AlignItems.Center">
+                        <MudStack Spacing="0" AlignItems="AlignItems.Center">
+                            <MudText Typo="Typo.subtitle1" Color="Color.Primary">@_recordActivity.BestReps.Exercise</MudText>
+                            <MudText Typo="Typo.subtitle2">@_recordActivity.BestReps.Routine</MudText>
+                            <MudText Typo="Typo.body1">@_recordActivity.BestReps.Reps Reps</MudText>
+                        </MudStack>
+                        <MudStack Spacing="0" AlignItems="AlignItems.Center">
+                            @if (!_recordActivity.BestWeight.Exercise.Equals(_recordActivity.BestReps.Exercise))
+                            {
+                                <MudText Typo="Typo.subtitle1" Color="Color.Primary">@_recordActivity.BestWeight.Exercise</MudText>
+                            }
+
+                            @if (!_recordActivity.BestWeight.Routine.Equals(_recordActivity.BestReps.Routine))
+                            {
+                                <MudText Typo="Typo.subtitle2">@_recordActivity.BestWeight.Routine</MudText>
+                            }
+
+                            <MudText Typo="Typo.body1">@_recordActivity.BestWeight.Weight.ToString("n") lbs</MudText>
+                        </MudStack>
+                    </MudStack>
+                }
+                else
+                {
+                    <MudText Typo="Typo.subtitle1" Color="Color.Secondary">No Recent Activity</MudText>
+                }
+            </MudPaper>
+        </MudItem>
+
         <MudItem xs="12" md="4">
             <MudPaper Elevation="2" Class="pa-4" Style="height: fit-content;">
                 <MudPaper Elevation="3" Outlined Width="100%" Class="mud-theme-primary">
@@ -54,41 +92,89 @@
         </MudItem>
 
         <MudItem xs="12" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: fit-content;">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: fit-content">
                 <MudPaper Elevation="3" Outlined Width="100%" Class="mud-theme-primary">
-                    <MudText Align="Align.Center" Typo="Typo.h6">Workout Records</MudText>
+                    <MudText Align="Align.Center" Typo="Typo.h6">Calorie Goal</MudText>
                 </MudPaper>
-                @if (_recordActivity is not null)
-                {
-                    <MudStack Spacing="6" AlignItems="AlignItems.Center">
-                        <MudStack Spacing="0" AlignItems="AlignItems.Center">
-                            <MudText Typo="Typo.subtitle1" Color="Color.Primary">@_recordActivity.BestReps.Exercise</MudText>
-                            <MudText Typo="Typo.subtitle2">@_recordActivity.BestReps.Routine</MudText>
-                            <MudText Typo="Typo.body1">@_recordActivity.BestReps.Reps Reps</MudText>
-                        </MudStack>
-                        <MudStack Spacing="0" AlignItems="AlignItems.Center">
-                            @if (!_recordActivity.BestWeight.Exercise.Equals(_recordActivity.BestReps.Exercise))
-                            {
-                                <MudText Typo="Typo.subtitle1" Color="Color.Primary">@_recordActivity.BestWeight.Exercise</MudText>
-                            }
-
-                            @if (!_recordActivity.BestWeight.Routine.Equals(_recordActivity.BestReps.Routine))
-                            {
-                                <MudText Typo="Typo.subtitle2">@_recordActivity.BestWeight.Routine</MudText>
-                            }
-
-                            <MudText Typo="Typo.body1">@_recordActivity.BestWeight.Weight.ToString("n") lbs</MudText>
-                        </MudStack>
-                    </MudStack>
-                }
-                else
-                {
-                    <MudText Typo="Typo.subtitle1" Color="Color.Secondary">No Recent Activity</MudText>
-                }
+                <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="mt-3">
+                    <MudText>Calories</MudText>
+                    <MudProgressCircular Size="Size.Large" StrokeWidth="12" Value="@(_calorieGoalTotal / _userGoals.Calories * 100)" Color="Color.Success"></MudProgressCircular>
+                    <MudText Align="Align.Center">@_calorieGoalTotal.ToString("n2") / <MudText Inline Color="Color.Success">@_userGoals.Calories.ToString("n2")</MudText></MudText>
+                    <MudSimpleTable T="Double" Dense Elevation="0">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <MudProgressCircular Size="Size.Small" Value="@(_carbGoalTotal / _userGoals.Carbs * 100)" Color="Color.Primary">
+                                        <MudText>C</MudText>
+                                    </MudProgressCircular>
+                                </td>
+                                <td>
+                                    <MudText Align="Align.Center">@_carbGoalTotal.ToString("n2") / <MudText Inline Color="Color.Primary">@_userGoals.Carbs.ToString("n2")</MudText></MudText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <MudProgressCircular Size="Size.Small" Value="@(_fatGoalTotal / _userGoals.Fats * 100)" Color="Color.Secondary">
+                                        <MudText>F</MudText>
+                                    </MudProgressCircular>
+                                </td>
+                                <td>
+                                    <MudText Align="Align.Center">@_fatGoalTotal.ToString("n2") / <MudText Inline Color="Color.Secondary">@_userGoals.Fats.ToString("n2")</MudText></MudText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <MudProgressCircular Size="Size.Small" Value="@(_proteinGoalTotal / _userGoals.Protein * 100)" Color="Color.Tertiary">
+                                        <MudText>P</MudText>
+                                    </MudProgressCircular>
+                                </td>
+                                <td>
+                                    <MudText Align="Align.Center">@_proteinGoalTotal.ToString("n2") / <MudText Inline Color="Color.Tertiary">@_userGoals.Protein.ToString("n2")</MudText></MudText>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudStack>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: fit-content">
+                <MudPaper Elevation="3" Outlined Width="100%" Class="mud-theme-primary mb-3">
+                    <MudText Align="Align.Center" Typo="Typo.h6">Today's Meals</MudText>
+                </MudPaper>
+
+                <MudExpansionPanels Dense>
+                    @foreach (var meal in _meals)
+                    {
+                        <MudExpansionPanel Text="@meal.MealType.ToString()" Gutters="false" HeaderClass="px-3">
+                            <MudSimpleTable Outlined="false" Striped Elevation="0">
+                                <tbody>
+                                    @if (meal.FoodServings.Count > 0)
+                                    {
+                                        @foreach (var serving in meal.FoodServings)
+                                        {
+                                            <tr>
+                                                <td><strong>@serving.FoodItem.Name</strong></td>
+                                                <td>@serving.Servings @serving.FoodItem.Units</td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td>No foods have been logged for this meal today.</td>
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </MudSimpleTable>
+                        </MudExpansionPanel>
+                    }
+                </MudExpansionPanels>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: fit-content">
                 <MudPaper Elevation="3" Outlined Width="100%" Class="mud-theme-primary">
                     <MudText Align="Align.Center" Typo="Typo.h6">Measurements</MudText>
                 </MudPaper>
@@ -129,6 +215,13 @@
     private List<string> _measurementNames = [];
     private string _selectedMeasurement = "";
     private MeasurementChartDto? _measurementChartData { get; set; } = null!;
+    private List<MealDto> _meals = [];
+    private UserGoalsDto _userGoals = new();
+    private double _calorieGoalTotal = 0;
+    private double _carbGoalTotal = 0;
+    private double _fatGoalTotal = 0;
+    private double _proteinGoalTotal = 0;
+
 
     private RecordActivityDto? _recordActivity;
 
@@ -150,6 +243,9 @@
             _recordActivity = await ActivityService.GetRecordActivityAsync(_currentUser);
             _measurementNames = await MeasurementService.GetMeasurementNamesAsync(_currentUser);
             _selectedMeasurement = _measurementNames.FirstOrDefault() ?? "";
+            _meals = await FoodService.GetMealsByDateAsync(DateTime.Now, _currentUser);
+            _userGoals = await FoodService.GetUserGoalsAsync(_currentUser);
+            CalculateCalorieTotals();
             await GetMeasurementChartDataAsync();
         }
     }
@@ -161,6 +257,25 @@
         if (!string.IsNullOrEmpty(_selectedMeasurement) && _currentUser is not null)
         {
             _measurementChartData = await MeasurementService.GetMeasurementChartDataAsync(_selectedMeasurement, _currentUser);
+        }
+    }
+
+    private void CalculateCalorieTotals()
+    {
+        _calorieGoalTotal = 0;
+        _carbGoalTotal = 0;
+        _fatGoalTotal = 0;
+        _proteinGoalTotal = 0;
+
+        foreach (var meal in _meals)
+        {
+            foreach (var serving in meal.FoodServings)
+            {
+                _calorieGoalTotal += serving.FoodItem.Calories * serving.Servings;
+                _carbGoalTotal += serving.FoodItem.Carbs * serving.Servings;
+                _fatGoalTotal += serving.FoodItem.Fats * serving.Servings;
+                _proteinGoalTotal += serving.FoodItem.Proteins * serving.Servings;
+            }
         }
     }
 }

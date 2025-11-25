@@ -33,7 +33,7 @@ public class FoodService : IFoodService
         .ToListAsync();
     }
 
-    public async Task CreateFoodItemAsync(CreateFoodItemDto newFoodDto)
+    public async Task<FoodItemDto> CreateFoodItemAsync(CreateFoodItemDto newFoodDto)
     {
         FoodItem newFood = new()
         {
@@ -49,6 +49,18 @@ public class FoodService : IFoodService
         var context = await _dbContextFactory.CreateDbContextAsync();
         context.FoodItems.Add(newFood);
         await context.SaveChangesAsync();
+
+        return new FoodItemDto
+        {
+            Id = newFood.Id,
+            Name = newFood.Name,
+            ServingSize = newFood.ServingSize,
+            Units = newFood.Units,
+            Calories = newFood.Calories,
+            Carbs = newFood.Carbs,
+            Fats = newFood.Fats,
+            Proteins = newFood.Proteins
+        };
     }
 
     public async Task DeleteFoodItemAsync(int deleteFoodId)

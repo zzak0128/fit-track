@@ -34,7 +34,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
                 }
             </MudProgressCircular>
-            <MudText Align="Align.Center">@_calorieGoalTotal.ToString("n") / <MudText Inline Color="Color.Success">@_userGoals.Calories.ToString("n2")</MudText></MudText>
+            <MudText Align="Align.Center">@_calorieGoalTotal.ToString("n2") / <MudText Inline Color="Color.Success">@_userGoals.Calories.ToString("n2")</MudText></MudText>
             <MudText Color="Color.Success">Calories</MudText>
         </MudStack>
         <MudStack AlignItems="AlignItems.Center" Spacing="0">
@@ -44,7 +44,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
                 }
             </MudProgressCircular>
-            <MudText Align="Align.Center">@_carbGoalTotal.ToString("n") / <MudText Inline Color="Color.Primary">@_userGoals.Carbs.ToString("n2")</MudText></MudText>
+            <MudText Align="Align.Center">@_carbGoalTotal.ToString("n2") / <MudText Inline Color="Color.Primary">@_userGoals.Carbs.ToString("n2")</MudText></MudText>
             <MudText Color="Color.Primary">Carbs</MudText>
         </MudStack>
         <MudStack AlignItems="AlignItems.Center" Spacing="0">
@@ -54,7 +54,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
                 }
             </MudProgressCircular>
-            <MudText Align="Align.Center">@_fatGoalTotal.ToString("n") / <MudText Inline Color="Color.Secondary">@_userGoals.Fats.ToString("n2")</MudText></MudText>
+            <MudText Align="Align.Center">@_fatGoalTotal.ToString("n2") / <MudText Inline Color="Color.Secondary">@_userGoals.Fats.ToString("n2")</MudText></MudText>
             <MudText Color="Color.Secondary">Fats</MudText>
         </MudStack>
         <MudStack AlignItems="AlignItems.Center" Spacing="0">
@@ -64,7 +64,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
                 }
             </MudProgressCircular>
-            <MudText Align="Align.Center">@_proteinGoalTotal.ToString("n") / <MudText Inline Color="Color.Tertiary">@_userGoals.Protein.ToString("n2")</MudText></MudText>
+            <MudText Align="Align.Center">@_proteinGoalTotal.ToString("n2") / <MudText Inline Color="Color.Tertiary">@_userGoals.Protein.ToString("n2")</MudText></MudText>
             <MudText Color="Color.Tertiary">Protein</MudText>
         </MudStack>
     </MudStack>
@@ -79,22 +79,22 @@
                     <MudText Typo="Typo.h6" Color="Color.Primary">@item.MealType.ToString()</MudText>
                     <MudStack row Class="pr-3" Spacing="6">
                             <MudStack Spacing="0" AlignItems="AlignItems.Center">
-                                <MudText Typo="Typo.body1" Color="Color.Success">@(item.FoodServings.Sum(x => x.FoodItem.Calories * x.Servings))</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Success">@(item.FoodServings.Sum(x => x.FoodItem.Calories * x.Servings).ToString("n2"))</MudText>
                                 <MudText Color="Color.Success">Cal</MudText>
                             </MudStack>
                             <MudDivider Vertical FlexItem/>
                         <MudStack Spacing="0" AlignItems="AlignItems.Center">
-                            <MudText Typo="Typo.body1" Color="Color.Primary">@(item.FoodServings.Sum(x => x.FoodItem.Carbs * x.Servings))</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">@(item.FoodServings.Sum(x => x.FoodItem.Carbs * x.Servings).ToString("n2"))</MudText>
                             <MudText Color="Color.Primary">C</MudText>
                         </MudStack>
                         <MudDivider Vertical FlexItem />
                         <MudStack Spacing="0" AlignItems="AlignItems.Center">
-                            <MudText Typo="Typo.body1" Color="Color.Secondary">@(item.FoodServings.Sum(x => x.FoodItem.Fats * x.Servings))</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Secondary">@(item.FoodServings.Sum(x => x.FoodItem.Fats * x.Servings).ToString("n2"))</MudText>
                             <MudText Color="Color.Secondary">F</MudText>
                         </MudStack>
                         <MudDivider Vertical FlexItem />
                         <MudStack Spacing="0" AlignItems="AlignItems.Center">
-                            <MudText Typo="Typo.body1" Color="Color.Tertiary">@(item.FoodServings.Sum(x => x.FoodItem.Proteins * x.Servings))</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Tertiary">@(item.FoodServings.Sum(x => x.FoodItem.Proteins * x.Servings).ToString("n2"))</MudText>
                             <MudText Color="Color.Tertiary">P</MudText>
                         </MudStack>
                     </MudStack>
@@ -216,6 +216,7 @@
                 try
                 {
                     await FoodService.AddFoodToMealAsync(meal.Id, selectedServing);
+                    TodaysMeals = await FoodService.GetMealsByDateAsync(_currentDate, CurrentUser!);
                     CalculateGoalTotals();
                 }
                 catch (Exception)

@@ -42,7 +42,7 @@
                                  RequiredError="A serving amount is required for a new Food Item."
                                  Class="mb-6"
                                  Adornment="Adornment.End"
-                                 AdornmentText="@(_selectedFoodItem is null ? "" : _selectedFoodItem.Units + "s")" />
+                                 AdornmentText="Servings" />
             </MudFocusTrap>
 
             @if (_selectedFoodItem != null)
@@ -103,14 +103,15 @@
         var result = await createDialog.Result;
         if (!result!.Canceled)
         {
-            bool success = await createDialog.GetReturnValueAsync<bool>();
-            if (success)
+            FoodItemDto? newFoodItem = await createDialog.GetReturnValueAsync<FoodItemDto>();
+            if (newFoodItem is null)
             {
-                createDialog.Close();
+                Snackbar.Add("Failed to save the Food Item", Severity.Error);
             }
             else
             {
-                Snackbar.Add("Failed to save the Food Item", Severity.Error);
+                createDialog.Close(DialogResult.Ok(newFoodItem));
+                _selectedFoodItem = newFoodItem;
             }
         }
     }

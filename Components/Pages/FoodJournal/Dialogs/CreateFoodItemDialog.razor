@@ -63,12 +63,12 @@
         {
             try
             {
-                await FoodService.CreateFoodItemAsync(NewFoodItem);
-                MudDialog.Close(DialogResult.Ok(true));
+                FoodItemDto returnFoodItem = await FoodService.CreateFoodItemAsync(NewFoodItem);
+                MudDialog.Close(DialogResult.Ok(returnFoodItem));
             }
             catch
             {
-                MudDialog.Close(DialogResult.Ok(false));
+                MudDialog.Close(null!);
             }
         }
     }
